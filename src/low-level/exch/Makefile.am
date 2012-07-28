@@ -1,6 +1,6 @@
 # libEtPan! -- a mail stuff library
 #
-# Copyright (C) 2007 g10 Code GmbH
+# exhange support: Copyright (C) 2012 Lysann Kessler
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,19 +29,13 @@
 
 include $(top_srcdir)/rules.mk
 
-SUBDIRS = imap imf maildir mbox mh mime nntp pop3 smtp feed exch
+etpaninclude_HEADERS = \
+  mailexch.h mailexch_types.h
 
-noinst_LTLIBRARIES = liblow-level.la
-liblow_level_la_SOURCES = 
-liblow_level_la_LIBADD = \
-	imap/libimap.la \
-	imf/libimf.la \
-	maildir/libmaildir.la \
-	mbox/libmbox.la \
-	mh/libmh.la \
-	mime/libmime.la \
-	nntp/libnntp.la \
-	pop3/libpop3.la \
-	smtp/libsmtp.la \
-	feed/libfeed.la \
-	exch/libexch.la
+AM_CPPFLAGS = -I$(top_builddir)/include \
+  -I$(top_srcdir)/src/data-types
+
+noinst_LTLIBRARIES = libexch.la
+
+libexch_la_SOURCES = \
+  mailexch.c
