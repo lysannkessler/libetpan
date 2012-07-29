@@ -5,8 +5,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-size_t write_callback( char *ptr, size_t size, size_t nmemb, void *userdata)
-{
+static void check_error(int result, char* msg) {
+  if (result == MAILEXCH_NO_ERROR) return;
+  fprintf(stderr, "%s. result: %d\n", msg, result);
+  exit(EXIT_FAILURE);
+}
+
+size_t write_callback( char *ptr, size_t size, size_t nmemb, void *userdata) {
   size_t response_length = size*nmemb < 1 ? 0 : size*nmemb;
   char* response = (char*) malloc(response_length + 1);
   memcpy(response, ptr, response_length);
@@ -16,8 +21,10 @@ size_t write_callback( char *ptr, size_t size, size_t nmemb, void *userdata)
   return response_length;
 }
 
-int main(int argc, char ** argv)
-{
+int main(int argc, char ** argv) {
+  struct mailexch* exch;
+  int result;
+
   /*
   ./exch-sample myhpiaccount myhpipassword
   */
@@ -26,26 +33,20 @@ int main(int argc, char ** argv)
     exit(EXIT_FAILURE);
   }
 
-#if 0
-  struct mailexch* exch;
-  int r;
-
   exch = mailexch_new(0, NULL);
-  /*r = mailexch_ssl_connect(exch, "m.google.com", 993);
-  fprintf(stderr, "connect: %i\n", r);
-  check_error(r, "could not connect to server");
+  result = mailexch_ssl_connect(exch, "owa2.hpi.uni-potsdam.de", 0);
+  check_error(result, "could not connect to server");
 
-  r = mailexch_login(exch, argv[1], argv[2]);
-  check_error(r, "could not login");
+  result = mailexch_login(exch, argv[1], argv[2], NULL);
+  check_error(result, "could not login");
 
-  r = mailexch_select(exch, "INBOX");
-  check_error(r, "could not select INBOX");
+  printf("foo\n");
 
-  fetch_messages(exch);
+  /*result = mailexch_select(exch, "INBOX");
+  check_error(result, "could not select INBOX");
 
-  mailexch_logout(exch);
-  mailexch_free(exch);*/
-#endif
+  fetch_messages(exch);*/
+  mailexch_free(exch);
 
   CURL *curl;
   CURLcode res;
@@ -66,8 +67,6 @@ int main(int argc, char ** argv)
     "  </soap:Body>\n"
     "</soap:Envelope>";
   long response_code = 0;
-
-  curl_global_init(CURL_GLOBAL_ALL);
 
   curl = curl_easy_init();
   if(curl) {
@@ -114,8 +113,6 @@ int main(int argc, char ** argv)
     curl_slist_free_all(headers);
     curl_easy_cleanup(curl);
   }
-
-  curl_global_cleanup();
 
   return 0;
 }

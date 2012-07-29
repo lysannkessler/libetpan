@@ -34,9 +34,12 @@
 #endif
 
 #include "mailexch.h"
-#include "mail.h"
 
 #include <stdlib.h>
+#include <string.h>
+
+
+size_t mailexch_header_callback(void* ptr, size_t size, size_t nmemb, void* userdata);
 
 /*
   mailexch structure
@@ -54,4 +57,135 @@ mailexch* mailexch_new(size_t progr_rate, progress_function* progr_fun)
   exch->exch_progr_fun = progr_fun;
 
   return exch;
+}
+
+void mailexch_free(mailexch* exch) {
+  if(!exch) return;
+
+  if(exch->curl) {
+    curl_easy_cleanup(exch->curl);
+    exch->curl = NULL;
+  }
+}
+
+int mailexch_ssl_connect(mailexch* exch, const char* server, uint16_t port) {
+  char* url;
+  CURLcode curl_code;
+  long http_response = 0;
+  int result = MAILEXCH_NO_ERROR;
+
+  exch->curl = curl_easy_init();
+  if(!exch->curl) return MAILEXCH_ERROR_INTERNAL;
+  curl_easy_setopt(exch->curl, CURLOPT_VERBOSE, 1L);
+
+  /* For connection, we just GET the wsdl. This will probably result in a 401,
+     but that's ok right now. Thus, after the connection attempt we know which
+     authentication protocol to use. */
+
+  /* url and port */
+  /* url = https://server/ews/services.wsdl\0 */
+  url = (char*) malloc(8 + strlen(server) + 18 + 1);
+  if(!url) return MAILEXCH_ERROR_INTERNAL;
+  sprintf(url, "https://%s/ews/services.wsdl", server);
+
+  curl_easy_setopt(exch->curl, CURLOPT_URL, url);
+  if(port != 0) curl_easy_setopt(exch->curl, CURLOPT_PORT, port);
+
+  /* we want to read the header only */
+  curl_easy_setopt(exch->curl, CURLOPT_NOBODY, 1L);
+  curl_easy_setopt(exch->curl, CURLOPT_HEADERFUNCTION, mailexch_header_callback);
+  curl_easy_setopt(exch->curl, CURLOPT_WRITEHEADER, exch);
+  exch->auth_protocol = 0;
+  /* This way the mailexch_header_callback sets the auth protocol according
+     to any WWW-Authenticate header. */
+
+  /* perform request */
+  curl_code = curl_easy_perform(exch->curl);
+  if(curl_code != CURLE_OK) {
+    result = MAILEXCH_ERROR_CONNECT;
+  } else {
+    curl_easy_getinfo (exch->curl, CURLINFO_RESPONSE_CODE, &http_response);
+    if(http_response != 200 && http_response != 401) {
+      result = MAILEXCH_ERROR_CONNECT;
+    }
+  }
+
+  free(url);
+  return result;
+}
+
+int mailexch_login(mailexch* exch, const char* username, const char* password, const char* domain) {
+  size_t username_length = username ? strlen(username) : 0;
+  size_t password_length = password ? strlen(password) : 0;
+  size_t domain_length = domain ? strlen(domain) : 0;
+  char* userpwd = NULL;
+
+  CURLcode curl_code;
+  long http_response = 0;
+  int result = MAILEXCH_NO_ERROR;
+
+  /* Here we set credentials and the determined authentication protocol.
+     The server should respond with 200. */
+
+  if(domain_length > 0) {
+    userpwd = (char*) malloc(domain_length + 1 + username_length + 1 + password_length + 1); /* last +1 for \0 */
+    if(!userpwd) return MAILEXCH_ERROR_INTERNAL;
+    sprintf(userpwd, "%s\\%s:%s", domain, username, password);
+  } else {
+    userpwd = (char*) malloc(username_length + 1 + password_length + 1); /* last +1 for \0 */
+    if(!userpwd) return MAILEXCH_ERROR_INTERNAL;
+    sprintf(userpwd, "%s:%s", username, password);
+  }
+
+  curl_easy_setopt(exch->curl, CURLOPT_USERPWD, userpwd);
+  curl_easy_setopt(exch->curl, CURLOPT_HTTPAUTH, exch->auth_protocol);
+
+  /* we need the response code only */
+  curl_easy_setopt(exch->curl, CURLOPT_NOBODY, 1L);
+
+  /* perform request */
+  curl_code = curl_easy_perform(exch->curl);
+  if(curl_code != CURLE_OK) {
+    result = MAILEXCH_ERROR_CONNECT;
+  } else {
+    curl_easy_getinfo (exch->curl, CURLINFO_RESPONSE_CODE, &http_response);
+    if(http_response != 200) {
+      result = MAILEXCH_ERROR_CONNECT;
+    }
+  }
+
+  free(userpwd);
+  return result;
+}
+
+/*
+  mailexch structure callbacks
+*/
+
+size_t mailexch_header_callback(void* ptr, size_t size, size_t nmemb, void* userdata) {
+  mailexch* exch = (mailexch*) userdata;
+  const char* auth_header = "WWW-Authenticate: ";
+  const size_t auth_header_length = strlen(auth_header);
+  size_t header_length = size * nmemb;
+
+  /* ptr may not be null terminated! */
+
+  if(exch->auth_protocol == 0) {
+    if(strncmp(ptr, auth_header, header_length < auth_header_length ? header_length : auth_header_length) == 0) {
+      ptr += auth_header_length - 1;
+      header_length -= auth_header_length;
+
+      if(strncmp(ptr, "Negotiate", header_length < 9 ? header_length : 9) == 0) {
+        /* no-op */
+      } else if(strncmp(ptr, "NTLM", header_length < 4 ? header_length : 4) == 0) {
+        exch->auth_protocol = CURLAUTH_NTLM;
+      } else if(strncmp(ptr, "Basic", header_length < 5 ? header_length : 5) == 0) {
+        exch->auth_protocol = CURLAUTH_BASIC;
+      } else {
+        exch->auth_protocol = CURLAUTH_ANY;
+      }
+    }
+  }
+
+  return size * nmemb;
 }

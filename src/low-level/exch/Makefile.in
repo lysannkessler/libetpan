@@ -330,8 +330,10 @@ etpaninclude_HEADERS = \
   mailexch.h mailexch_types.h
 
 AM_CPPFLAGS = -I$(top_builddir)/include \
-  -I$(top_srcdir)/src/data-types
+  -I$(top_srcdir)/src/data-types \
+  $(LIBCURL_CPPFLAGS)
 
+AM_LDFLAGS = $(LIBCURL)
 noinst_LTLIBRARIES = libexch.la
 libexch_la_SOURCES = \
   mailexch.c

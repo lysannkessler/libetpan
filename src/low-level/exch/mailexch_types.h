@@ -37,19 +37,27 @@
 extern "C" {
 #endif
 
-#include <libetpan/libetpan-config.h>
-#include <libetpan/mailstream.h>
-#include <libetpan/mmapstring.h>
-#include <libetpan/carray.h>
-#include <libetpan/clist.h>
 
-struct mailexch
-{
-  size_t exch_progr_rate;
-  progress_function * exch_progr_fun;
+#include <libetpan/mailstream_types.h>
+
+#include <curl/curl.h>
+
+
+enum {
+  MAILEXCH_NO_ERROR = 0,
+  MAILEXCH_ERROR_INTERNAL,
+  MAILEXCH_ERROR_CONNECT,
 };
 
+struct mailexch {
+  size_t exch_progr_rate;
+  progress_function* exch_progr_fun;
+
+  CURL* curl;
+  long auth_protocol;
+};
 typedef struct mailexch mailexch;
+
 
 #ifdef __cplusplus
 }
