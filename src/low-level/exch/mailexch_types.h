@@ -47,11 +47,14 @@ enum {
   MAILEXCH_NO_ERROR = 0,
   MAILEXCH_ERROR_INTERNAL,
   MAILEXCH_ERROR_CONNECT,
+  MAILEXCH_ERROR_CANT_LIST,
 };
 
 struct mailexch {
   size_t exch_progr_rate;
   progress_function* exch_progr_fun;
+
+  char* host;
 
   CURL* curl;
   long auth_protocol;

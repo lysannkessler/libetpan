@@ -40,6 +40,8 @@ extern "C" {
 
 #include <libetpan/mailexch_types.h>
 
+#include <libetpan/carray.h>
+
 
 LIBETPAN_EXPORT
 mailexch* mailexch_new(size_t progr_rate, progress_function* progr_fun);
@@ -48,10 +50,14 @@ LIBETPAN_EXPORT
 void mailexch_free(mailexch* exch);
 
 LIBETPAN_EXPORT
-int mailexch_ssl_connect(mailexch* exch, const char* server, uint16_t port);
+int mailexch_ssl_connect(mailexch* exch, const char* host, uint16_t port);
 
 LIBETPAN_EXPORT
 int mailexch_login(mailexch* exch, const char* username, const char* password, const char* domain);
+
+LIBETPAN_EXPORT
+int mailexch_list(mailexch* exch, const char* folder_name, int count, carray** list);
+
 
 #ifdef __cplusplus
 }

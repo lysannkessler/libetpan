@@ -40,6 +40,7 @@
 
 
 size_t mailexch_header_callback(void* ptr, size_t size, size_t nmemb, void* userdata);
+size_t mailexch_write_callback( char *ptr, size_t size, size_t nmemb, void *userdata);
 
 /*
   mailexch structure
@@ -62,13 +63,19 @@ mailexch* mailexch_new(size_t progr_rate, progress_function* progr_fun)
 void mailexch_free(mailexch* exch) {
   if(!exch) return;
 
+  if(exch->host) {
+    free(exch->host);
+    exch->host = NULL;
+  }
+
   if(exch->curl) {
     curl_easy_cleanup(exch->curl);
     exch->curl = NULL;
   }
 }
 
-int mailexch_ssl_connect(mailexch* exch, const char* server, uint16_t port) {
+int mailexch_ssl_connect(mailexch* exch, const char* host, uint16_t port) {
+  size_t host_length;
   char* url;
   CURLcode curl_code;
   long http_response = 0;
@@ -83,12 +90,16 @@ int mailexch_ssl_connect(mailexch* exch, const char* server, uint16_t port) {
      authentication protocol to use. */
 
   /* url and port */
-  /* url = https://server/ews/services.wsdl\0 */
-  url = (char*) malloc(8 + strlen(server) + 18 + 1);
+  host_length = strlen(host);
+  exch->host = (char*) malloc(host_length+1);
+  if(!exch->host) return MAILEXCH_ERROR_INTERNAL;
+  memcpy(exch->host, host, host_length+1);
+  /* url = https://[host]/ews/services.wsdl\0 */
+  url = (char*) malloc(8 + host_length + 18 + 1);
   if(!url) return MAILEXCH_ERROR_INTERNAL;
-  sprintf(url, "https://%s/ews/services.wsdl", server);
-
+  sprintf(url, "https://%s/ews/services.wsdl", host);
   curl_easy_setopt(exch->curl, CURLOPT_URL, url);
+  free(url);
   if(port != 0) curl_easy_setopt(exch->curl, CURLOPT_PORT, port);
 
   /* we want to read the header only */
@@ -110,7 +121,6 @@ int mailexch_ssl_connect(mailexch* exch, const char* server, uint16_t port) {
     }
   }
 
-  free(url);
   return result;
 }
 
@@ -123,6 +133,8 @@ int mailexch_login(mailexch* exch, const char* username, const char* password, c
   CURLcode curl_code;
   long http_response = 0;
   int result = MAILEXCH_NO_ERROR;
+
+  char* url;
 
   /* Here we set credentials and the determined authentication protocol.
      The server should respond with 200. */
@@ -138,6 +150,7 @@ int mailexch_login(mailexch* exch, const char* username, const char* password, c
   }
 
   curl_easy_setopt(exch->curl, CURLOPT_USERPWD, userpwd);
+  free(userpwd);
   curl_easy_setopt(exch->curl, CURLOPT_HTTPAUTH, exch->auth_protocol);
 
   /* we need the response code only */
@@ -149,12 +162,95 @@ int mailexch_login(mailexch* exch, const char* username, const char* password, c
     result = MAILEXCH_ERROR_CONNECT;
   } else {
     curl_easy_getinfo (exch->curl, CURLINFO_RESPONSE_CODE, &http_response);
-    if(http_response != 200) {
+    if(http_response == 200) {
+      /* from now on we use POST to the asmx */
+      curl_easy_setopt(exch->curl, CURLOPT_POST, 1L);
+      /* url = https://[host]/EWS/Exchange.asmx\0 */
+      url = (char*) malloc(8 + strlen(exch->host) + 18 + 1);
+      if(!url) return MAILEXCH_ERROR_INTERNAL;
+      sprintf(url, "https://%s/EWS/Exchange.asmx", exch->host);
+      curl_easy_setopt(exch->curl, CURLOPT_URL, url);
+      free(url);
+    } else {
       result = MAILEXCH_ERROR_CONNECT;
     }
   }
 
-  free(userpwd);
+  return result;
+}
+
+int mailexch_list(mailexch* exch, const char* folder_name, int count, carray** list) {
+  CURLcode curl_code;
+  long http_response = 0;
+  int result = MAILEXCH_NO_ERROR;
+
+  const char* request_format =
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+    "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n"
+    "  <soap:Body>\n"
+    "    <FindItem xmlns=\"http://schemas.microsoft.com/exchange/services/2006/messages\"\n"
+    "              xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"\n"
+    "              Traversal=\"Shallow\">\n"
+    "      <ItemShape>\n"
+    "        <t:BaseShape>IdOnly</t:BaseShape>\n"
+    "        <t:AdditionalProperties>\n"
+    "          <t:FieldURI FieldURI=\"item:Subject\"/>\n"
+    "        </t:AdditionalProperties>\n"
+    "      </ItemShape>\n"
+    "      <IndexedPageItemView %s BasePoint=\"Beginning\" Offset=\"0\" />\n"
+    "      <ParentFolderIds>\n"
+    "        <t:DistinguishedFolderId Id=\"inbox\"/>\n"
+    "      </ParentFolderIds>\n"
+    "    </FindItem>\n"
+    "  </soap:Body>\n"
+    "</soap:Envelope>";
+  size_t request_length = strlen(request_format) - 2; /* without format arguments */
+  const char* max_entries_returned_format = "MaxEntriesReturned=\"%d\"";
+  char* request, *max_entries_returned = NULL;
+
+  if(count >= 0) {
+    /* MaxEntriesReturned="" + max uint length when printed + \0 */
+    max_entries_returned = (char*) malloc(21 + 10 + 1);
+    if(!max_entries_returned) return MAILEXCH_ERROR_INTERNAL;
+    sprintf(max_entries_returned, max_entries_returned_format, count);
+    request_length += strlen(max_entries_returned);
+  }
+
+  request = (char*) malloc(request_length + 1);
+  if(!request) {
+    if(max_entries_returned) free(max_entries_returned);
+    return MAILEXCH_ERROR_INTERNAL;
+  }
+  sprintf(request, request_format,
+          max_entries_returned ? max_entries_returned : "");
+
+  if(max_entries_returned) free(max_entries_returned);
+
+  /* headers */
+  struct curl_slist *headers = NULL;
+  headers = curl_slist_append(headers, "Content-Type: text/xml");
+  curl_easy_setopt(exch->curl, CURLOPT_HTTPHEADER, headers);
+
+  /* content */
+  curl_easy_setopt(exch->curl, CURLOPT_POSTFIELDS, request);
+
+  /* result */
+  curl_easy_setopt(exch->curl, CURLOPT_WRITEFUNCTION, mailexch_write_callback);
+  curl_easy_setopt(exch->curl, CURLOPT_WRITEDATA, exch);
+
+  /* perform request */
+  curl_code = curl_easy_perform(exch->curl);
+  if(curl_code != CURLE_OK) {
+    result = MAILEXCH_ERROR_CANT_LIST;
+  } else {
+    curl_easy_getinfo (exch->curl, CURLINFO_RESPONSE_CODE, &http_response);
+    if(http_response != 200) {
+      result = MAILEXCH_ERROR_CANT_LIST;
+    }
+  }
+
+  free(request);
+  curl_slist_free_all(headers);
   return result;
 }
 
@@ -172,11 +268,11 @@ size_t mailexch_header_callback(void* ptr, size_t size, size_t nmemb, void* user
 
   if(exch->auth_protocol == 0) {
     if(strncmp(ptr, auth_header, header_length < auth_header_length ? header_length : auth_header_length) == 0) {
-      ptr += auth_header_length - 1;
+      ptr += auth_header_length;
       header_length -= auth_header_length;
 
       if(strncmp(ptr, "Negotiate", header_length < 9 ? header_length : 9) == 0) {
-        /* no-op */
+        /* no-op. we just don't want to invoke the else branch. */
       } else if(strncmp(ptr, "NTLM", header_length < 4 ? header_length : 4) == 0) {
         exch->auth_protocol = CURLAUTH_NTLM;
       } else if(strncmp(ptr, "Basic", header_length < 5 ? header_length : 5) == 0) {
@@ -188,4 +284,14 @@ size_t mailexch_header_callback(void* ptr, size_t size, size_t nmemb, void* user
   }
 
   return size * nmemb;
+}
+
+size_t mailexch_write_callback( char *ptr, size_t size, size_t nmemb, void *userdata) {
+  size_t response_length = size*nmemb < 1 ? 0 : size*nmemb;
+  char* response = (char*) malloc(response_length + 1);
+  memcpy(response, ptr, response_length);
+  response[response_length] = 0;
+  printf("%s", response);
+
+  return response_length;
 }
