@@ -148,6 +148,8 @@ dnl Can't use AC_PROG_INSTALL
 INSTALL='$(SHELL) $(top_srcdir)/install-sh -c'
 AC_SUBST(INSTALL)
 
+AM_PROG_CC_C_O
+
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(fcntl.h unistd.h ctype.h sys/types.h sys/stat.h sys/mman.h limits.h)
