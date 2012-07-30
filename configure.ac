@@ -109,22 +109,22 @@ AC_PROG_CC
 AC_PROG_CXX
 
 # Compiler flags.
-AC_ARG_ENABLE(debug,   [  --enable-debug          setup flags (gcc) for debugging (default=no)],
+AC_ARG_ENABLE(debug,   [  --enable-debug          setup flags (gcc) for debugging (default=no)],[],[])
+AC_ARG_ENABLE(optim,   [  --enable-optim          setup flags (gcc) for optimizations (default=yes)],[],[])
 if test "x$enable_debug" = xyes; then
-  CFLAGS="$CFLAGS -O2 -g"
+  CFLAGS="$CFLAGS -g -O0"
+  CPPFLAGS="$CPPFLAGS -DDEBUG"
 fi
-CPPFLAGS="$CPPFLAGS -DDEBUG"
-LDFLAGS="$LDFLAGS",)
-AC_ARG_ENABLE(optim,   [  --enable-optim          setup flags (gcc) for optimizations (default=no)],
-if test "x$enable_debug" != "xyes" ; then
-  if test "x$GCC" = xyes; then
-    CFLAGS="$CFLAGS -O2 -ffast-math -funroll-loops -g0"
+if test "x$enable_optim" == "xyes"; then
+  if test "x$enable_debug" != "xyes"; then
+    if test "x$GCC" = xyes; then
+      CFLAGS="$CFLAGS -ffast-math -funroll-loops -g0"
+    fi
+    LDFLAGS="$LDFLAGS -s"
+  else
+    AC_MSG_WARN([enable-optim and enable-debug are incompatible -- disabling optimizations])
   fi
-  CPPFLAGS="$CPPFLAGS"
-  LDFLAGS="$LDFLAGS -s"
-else
-  AC_MSG_WARN([enable-optim and enable-debug are incompatible -- disabling optimizations])
-fi,)
+fi
 if test "x$GCC" = xyes; then
   CFLAGS="$CFLAGS -W -Wall"
 fi
