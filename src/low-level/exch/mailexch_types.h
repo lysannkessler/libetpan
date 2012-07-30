@@ -54,10 +54,7 @@ struct mailexch {
   size_t exch_progr_rate;
   progress_function* exch_progr_fun;
 
-  char* host;
-
   CURL* curl;
-  long auth_protocol;
 };
 typedef struct mailexch mailexch;
 

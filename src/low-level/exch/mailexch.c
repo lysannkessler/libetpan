@@ -39,7 +39,6 @@
 #include <string.h>
 
 
-size_t mailexch_header_callback(void* ptr, size_t size, size_t nmemb, void* userdata);
 size_t mailexch_write_callback( char *ptr, size_t size, size_t nmemb, void *userdata);
 
 /*
@@ -63,68 +62,16 @@ mailexch* mailexch_new(size_t progr_rate, progress_function* progr_fun)
 void mailexch_free(mailexch* exch) {
   if(!exch) return;
 
-  if(exch->host) {
-    free(exch->host);
-    exch->host = NULL;
-  }
-
   if(exch->curl) {
     curl_easy_cleanup(exch->curl);
     exch->curl = NULL;
   }
 }
 
-int mailexch_ssl_connect(mailexch* exch, const char* host, uint16_t port) {
-  size_t host_length;
+int mailexch_login(mailexch* exch, const char* host, uint16_t port,
+                   const char* username, const char* password, const char* domain) {
   char* url;
-  CURLcode curl_code;
-  long http_response = 0;
-  int result = MAILEXCH_NO_ERROR;
 
-  exch->curl = curl_easy_init();
-  if(!exch->curl) return MAILEXCH_ERROR_INTERNAL;
-  curl_easy_setopt(exch->curl, CURLOPT_VERBOSE, 1L);
-
-  /* For connection, we just GET the wsdl. This will probably result in a 401,
-     but that's ok right now. Thus, after the connection attempt we know which
-     authentication protocol to use. */
-
-  /* url and port */
-  host_length = strlen(host);
-  exch->host = (char*) malloc(host_length+1);
-  if(!exch->host) return MAILEXCH_ERROR_INTERNAL;
-  memcpy(exch->host, host, host_length+1);
-  /* url = https://[host]/ews/services.wsdl\0 */
-  url = (char*) malloc(8 + host_length + 18 + 1);
-  if(!url) return MAILEXCH_ERROR_INTERNAL;
-  sprintf(url, "https://%s/ews/services.wsdl", host);
-  curl_easy_setopt(exch->curl, CURLOPT_URL, url);
-  free(url);
-  if(port != 0) curl_easy_setopt(exch->curl, CURLOPT_PORT, port);
-
-  /* we want to read the header only */
-  curl_easy_setopt(exch->curl, CURLOPT_NOBODY, 1L);
-  curl_easy_setopt(exch->curl, CURLOPT_HEADERFUNCTION, mailexch_header_callback);
-  curl_easy_setopt(exch->curl, CURLOPT_WRITEHEADER, exch);
-  exch->auth_protocol = 0;
-  /* This way the mailexch_header_callback sets the auth protocol according
-     to any WWW-Authenticate header. */
-
-  /* perform request */
-  curl_code = curl_easy_perform(exch->curl);
-  if(curl_code != CURLE_OK) {
-    result = MAILEXCH_ERROR_CONNECT;
-  } else {
-    curl_easy_getinfo (exch->curl, CURLINFO_RESPONSE_CODE, &http_response);
-    if(http_response != 200 && http_response != 401) {
-      result = MAILEXCH_ERROR_CONNECT;
-    }
-  }
-
-  return result;
-}
-
-int mailexch_login(mailexch* exch, const char* username, const char* password, const char* domain) {
   size_t username_length = username ? strlen(username) : 0;
   size_t password_length = password ? strlen(password) : 0;
   size_t domain_length = domain ? strlen(domain) : 0;
@@ -134,11 +81,27 @@ int mailexch_login(mailexch* exch, const char* username, const char* password, c
   long http_response = 0;
   int result = MAILEXCH_NO_ERROR;
 
-  char* url;
+  /* For connection and authentication testing, we just GET the wsdl.
+     curl will find out which authentication protocol to use,
+     and the server should respond with code 200 after negotiation. */
 
-  /* Here we set credentials and the determined authentication protocol.
-     The server should respond with 200. */
+  /* initial curl setup */
+  exch->curl = curl_easy_init();
+  if(!exch->curl) return MAILEXCH_ERROR_INTERNAL;
+  //curl_easy_setopt(exch->curl, CURLOPT_VERBOSE, 1L);
 
+  /* url = https://[host]/ews/services.wsdl\0 */
+  url = (char*) malloc(8 + strlen(host) + 18 + 1);
+  if(!url) return MAILEXCH_ERROR_INTERNAL;
+  sprintf(url, "https://%s/ews/services.wsdl", host);
+  curl_easy_setopt(exch->curl, CURLOPT_URL, url);
+  free(url);
+
+  /* port */
+  if(port != 0)
+    curl_easy_setopt(exch->curl, CURLOPT_PORT, port);
+
+  /* credentials */
   if(domain_length > 0) {
     userpwd = (char*) malloc(domain_length + 1 + username_length + 1 + password_length + 1); /* last +1 for \0 */
     if(!userpwd) return MAILEXCH_ERROR_INTERNAL;
@@ -148,10 +111,9 @@ int mailexch_login(mailexch* exch, const char* username, const char* password, c
     if(!userpwd) return MAILEXCH_ERROR_INTERNAL;
     sprintf(userpwd, "%s:%s", username, password);
   }
-
   curl_easy_setopt(exch->curl, CURLOPT_USERPWD, userpwd);
   free(userpwd);
-  curl_easy_setopt(exch->curl, CURLOPT_HTTPAUTH, exch->auth_protocol);
+  curl_easy_setopt(exch->curl, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
 
   /* we need the response code only */
   curl_easy_setopt(exch->curl, CURLOPT_NOBODY, 1L);
@@ -162,18 +124,21 @@ int mailexch_login(mailexch* exch, const char* username, const char* password, c
     result = MAILEXCH_ERROR_CONNECT;
   } else {
     curl_easy_getinfo (exch->curl, CURLINFO_RESPONSE_CODE, &http_response);
-    if(http_response == 200) {
-      /* from now on we use POST to the asmx */
-      curl_easy_setopt(exch->curl, CURLOPT_POST, 1L);
-      /* url = https://[host]/EWS/Exchange.asmx\0 */
-      url = (char*) malloc(8 + strlen(exch->host) + 18 + 1);
-      if(!url) return MAILEXCH_ERROR_INTERNAL;
-      sprintf(url, "https://%s/EWS/Exchange.asmx", exch->host);
-      curl_easy_setopt(exch->curl, CURLOPT_URL, url);
-      free(url);
-    } else {
+    if(http_response != 200)
       result = MAILEXCH_ERROR_CONNECT;
-    }
+  }
+
+  /* from now on we use POST to the asmx */
+  if(result == MAILEXCH_NO_ERROR) {
+    /* method */
+    curl_easy_setopt(exch->curl, CURLOPT_POST, 1L);
+
+    /* url = https://[host]/EWS/Exchange.asmx\0 */
+    url = (char*) malloc(8 + strlen(host) + 18 + 1);
+    if(!url) return MAILEXCH_ERROR_INTERNAL;
+    sprintf(url, "https://%s/EWS/Exchange.asmx", host);
+    curl_easy_setopt(exch->curl, CURLOPT_URL, url);
+    free(url);
   }
 
   return result;
@@ -257,34 +222,6 @@ int mailexch_list(mailexch* exch, const char* folder_name, int count, carray** l
 /*
   mailexch structure callbacks
 */
-
-size_t mailexch_header_callback(void* ptr, size_t size, size_t nmemb, void* userdata) {
-  mailexch* exch = (mailexch*) userdata;
-  const char* auth_header = "WWW-Authenticate: ";
-  const size_t auth_header_length = strlen(auth_header);
-  size_t header_length = size * nmemb;
-
-  /* ptr may not be null terminated! */
-
-  if(exch->auth_protocol == 0) {
-    if(strncmp(ptr, auth_header, header_length < auth_header_length ? header_length : auth_header_length) == 0) {
-      ptr += auth_header_length;
-      header_length -= auth_header_length;
-
-      if(strncmp(ptr, "Negotiate", header_length < 9 ? header_length : 9) == 0) {
-        /* no-op. we just don't want to invoke the else branch. */
-      } else if(strncmp(ptr, "NTLM", header_length < 4 ? header_length : 4) == 0) {
-        exch->auth_protocol = CURLAUTH_NTLM;
-      } else if(strncmp(ptr, "Basic", header_length < 5 ? header_length : 5) == 0) {
-        exch->auth_protocol = CURLAUTH_BASIC;
-      } else {
-        exch->auth_protocol = CURLAUTH_ANY;
-      }
-    }
-  }
-
-  return size * nmemb;
-}
 
 size_t mailexch_write_callback( char *ptr, size_t size, size_t nmemb, void *userdata) {
   size_t response_length = size*nmemb < 1 ? 0 : size*nmemb;

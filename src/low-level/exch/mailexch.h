@@ -50,10 +50,7 @@ LIBETPAN_EXPORT
 void mailexch_free(mailexch* exch);
 
 LIBETPAN_EXPORT
-int mailexch_ssl_connect(mailexch* exch, const char* host, uint16_t port);
-
-LIBETPAN_EXPORT
-int mailexch_login(mailexch* exch, const char* username, const char* password, const char* domain);
+int mailexch_login(mailexch* exch, const char* host, uint16_t port, const char* username, const char* password, const char* domain);
 
 LIBETPAN_EXPORT
 int mailexch_list(mailexch* exch, const char* folder_name, int count, carray** list);

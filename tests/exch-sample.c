@@ -21,10 +21,12 @@ int main(int argc, char ** argv) {
   }
 
   exch = mailexch_new(0, NULL);
-  result = mailexch_ssl_connect(exch, "owa2.hpi.uni-potsdam.de", 0);
-  check_error(result, "could not connect to server");
+  if(exch == NULL) {
+    fputs(stderr, "Could not create mailexch instance.");
+    exit(EXIT_FAILURE);
+  }
 
-  result = mailexch_login(exch, argv[1], argv[2], NULL);
+  result = mailexch_login(exch, "owa2.hpi.uni-potsdam.de", 0, argv[1], argv[2], NULL);
   check_error(result, "could not login");
 
   result = mailexch_list(exch, "inbox", 10, NULL);
