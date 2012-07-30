@@ -69,7 +69,7 @@ BUILD_REVISION=0
 AC_SUBST(BUILD_REVISION)
 BUILD_TIMESTAMP=`date +'%Y-%m-%dT%H:%M%z'`
 AC_SUBST(BUILD_TIMESTAMP)
-changequote(,)dnl 
+changequote(,)dnl
 BUILD_FILEVERSION=`echo "${VERSION_MAJOR}.${VERSION_MINOR}.0" | sed 's/\([0-9.]*\).*/\1./;s/\./,/g'`
 changequote([,])dnl
 BUILD_FILEVERSION="${BUILD_FILEVERSION}${BUILD_REVISION}"
@@ -164,14 +164,14 @@ AC_FUNC_MMAP
 
 dnl Network libs
 AC_CHECK_FUNC(connect, checksocket=no, checksocket=yes)
-if test "x$checksocket" = "xyes"; then 
+if test "x$checksocket" = "xyes"; then
 case "x$LIBS" in
  *-lsocket*);;
  *) AC_CHECK_LIB(socket, connect) ;;
 esac
 fi
 AC_CHECK_FUNC(inet_ntoa, checknsl=no, checknsl=yes)
-if test "x$checknsl" = "xyes"; then 
+if test "x$checknsl" = "xyes"; then
 case "x$LIBS" in
  *-lnsl*);;
  *) AC_CHECK_LIB(nsl, inet_ntoa) ;;
@@ -262,7 +262,7 @@ AC_ARG_ENABLE(iconv,
 if test x$enable_iconv = xyes; then
    dnl get prototype
    AC_CHECK_HEADER(iconv.h, [ICONV_HEADER=1], [ICONV_HEADER=0])
-   
+
    ICONV_PROTO=no
    AC_MSG_CHECKING([checking iconv() prototype])
    if test "x$ICONV_HEADER" = x1 ; then
@@ -291,9 +291,9 @@ if test x$enable_iconv = xyes; then
    ICONV_LINKED=NO
    if test "$ICONV_PROTO" != "xno" ; then
      AC_MSG_RESULT([ok])
-     
+
      AC_MSG_CHECKING([for iconv])
-     
+
      ICONV_LINKED=0
      AC_TRY_LINK([#include <stdlib.h>
 #include <iconv.h>],
@@ -316,7 +316,7 @@ if test x$enable_iconv = xyes; then
        fi
      done
      LIBS="$saved_LIBS"
-     
+
      if test "x$ICONV_LINKED" = "x1" ; then
        AC_MSG_RESULT([found])
      else
@@ -329,7 +329,7 @@ if test x$enable_iconv = xyes; then
    if test "x$ICONV_LINKED" = "x1" ; then
      AC_DEFINE(HAVE_ICONV, 1, [Define if you have the iconv() function.])
    fi
-   
+
    ICONV_PROTO_CONST=0
    if test "x$ICONV_PROTO" = "xconst" ; then
      AC_DEFINE_UNQUOTED(HAVE_ICONV_PROTO_CONST, 1,
@@ -408,7 +408,7 @@ dnl Look for db2 with db_open call
     2)
     AC_MSG_RESULT([version 2.x])
     for lib in db2 db; do
-      if test "x$DBLINKED" = "x0"; then 
+      if test "x$DBLINKED" = "x0"; then
         AC_CHECK_LIB($lib, db_open, [DBLIB="-l$lib"; DBLINKED=1], [])
       fi
     done
@@ -449,8 +449,8 @@ if test "x$enable_threads" = "xyes"; then
   checkpthread=yes
 
   AC_MSG_CHECKING([for pthread_create with libc])
-  AC_TRY_LINK([], [pthread_create();], 
-                  [pthflag=yes; checkpthread=no], 
+  AC_TRY_LINK([], [pthread_create();],
+                  [pthflag=yes; checkpthread=no],
                   [pthflag=no])
   AC_MSG_RESULT($pthflag)
 
@@ -459,8 +459,8 @@ if test "x$enable_threads" = "xyes"; then
       AC_MSG_CHECKING([for pthread_create with -$flag])
       OLDLIBS="$LIBS"
       LIBS="$LIBS -$flag"
-      AC_TRY_LINK([], [pthread_create();], 
-                      [pthflag=yes; checkpthread=no], 
+      AC_TRY_LINK([], [pthread_create();],
+                      [pthflag=yes; checkpthread=no],
                       [pthflag=no; LIBS="$OLDLIBS"])
       AC_MSG_RESULT($pthflag)
     fi
@@ -551,7 +551,7 @@ if test "x$enable_ipv6" != "xno"; then
 
   if test "x$ipv6_support" = "xno"; then
     if test "x$enable_ipv6" = "xyes"; then
-      AC_MSG_ERROR([cannot enable IPv6 support]) 
+      AC_MSG_ERROR([cannot enable IPv6 support])
     fi
   else
     AC_DEFINE(HAVE_IPV6, 1, [Define to enable IPv6 support.])
@@ -559,8 +559,8 @@ if test "x$enable_ipv6" != "xno"; then
     dnl check for getaddrinfo and freeaddrinfo function presence
     for func in "getaddrinfo" "freeaddrinfo"; do
       AC_MSG_CHECKING([for $func])
-      AC_TRY_LINK([], [$func();], 
-                      [func_present=yes], 
+      AC_TRY_LINK([], [$func();],
+                      [func_present=yes],
                       [func_present=no])
       AC_MSG_RESULT($func_present)
 
