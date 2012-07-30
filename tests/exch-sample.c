@@ -13,25 +13,28 @@ int main(int argc, char ** argv) {
   int result;
 
   /*
-  ./exch-sample myhpiaccount myhpipassword
+  ./exch-sample myhpiemail myhpiaccount myhpipassword
   */
-  if (argc < 3) {
-    fprintf(stderr, "usage: exch-sample [HPI user name] [password]\n");
+  if (argc < 4) {
+    fprintf(stderr, "usage: exch-sample [HPI email address] [HPI user name] [password]\n");
     exit(EXIT_FAILURE);
   }
 
   exch = mailexch_new(0, NULL);
   if(exch == NULL) {
-    fputs(stderr, "Could not create mailexch instance.");
+    fprintf(stderr, "Could not create mailexch instance.");
     exit(EXIT_FAILURE);
   }
 
-  result = mailexch_login(exch, "owa2.hpi.uni-potsdam.de", 0, argv[1], argv[2], NULL);
+#if 1
+  result = mailexch_connect(exch, "https://owa2.hpi.uni-potsdam.de/EWS/Exchange.asmx", argv[2], argv[3], NULL);
+#else
+  result = mailexch_connect_autodiscover(exch, argv[1], "owa2.hpi.uni-potsdam.de", argv[2], argv[3], NULL);
+#endif
   check_error(result, "could not login");
 
   result = mailexch_list(exch, "inbox", 10, NULL);
   check_error(result, "could not list messages in inbox");
-  puts("");
 
   mailexch_free(exch);
 

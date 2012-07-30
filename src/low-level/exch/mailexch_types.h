@@ -38,23 +38,43 @@ extern "C" {
 #endif
 
 
+#include <curl/curl.h>
+
 #include <libetpan/mailstream_types.h>
 
-#include <curl/curl.h>
+
+#define MAILEXCH_DEFAULT_RESPONSE_BUFFER_LENGTH 4096
 
 
 enum {
   MAILEXCH_NO_ERROR = 0,
+  MAILEXCH_ERROR_INVALID_PARAMETER,
   MAILEXCH_ERROR_INTERNAL,
   MAILEXCH_ERROR_CONNECT,
+  MAILEXCH_ERROR_NO_EWS,
+  MAILEXCH_ERROR_AUTODISCOVER_UNAVAILABLE,
   MAILEXCH_ERROR_CANT_LIST,
 };
+
+struct mailexch_connection_settings {
+  char* as_url;
+  char* oof_url;
+  char* um_url;
+  char* oab_url;
+};
+typedef struct mailexch_connection_settings mailexch_connection_settings;
 
 struct mailexch {
   size_t exch_progr_rate;
   progress_function* exch_progr_fun;
 
+  mailexch_connection_settings connection_settings;
+
   CURL* curl;
+
+  char* response_buffer;
+  size_t response_buffer_length;
+  size_t response_buffer_length_used;
 };
 typedef struct mailexch mailexch;
 

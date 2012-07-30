@@ -33,13 +33,25 @@
 #	include <config.h>
 #endif
 
-#include "mailexch.h"
+#include <libetpan/mailexch.h>
+#include <libetpan/mailexch_helper.h>
 
 #include <stdlib.h>
 #include <string.h>
 
 
-size_t mailexch_write_callback( char *ptr, size_t size, size_t nmemb, void *userdata);
+#define MAILEXCH_FREE(obj) \
+  if(obj) { \
+    free(obj); \
+    obj = NULL; \
+  }
+
+
+/* see mailexch_autodiscover.c */
+int mailexch_autodiscover(mailexch* exch, const char* email_address, const char* host, const char* username, const char* password, const char* domain);
+
+size_t mailexch_test_connection_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
+
 
 /*
   mailexch structure
@@ -49,7 +61,7 @@ mailexch* mailexch_new(size_t progr_rate, progress_function* progr_fun)
 {
   mailexch* exch;
 
-  exch = malloc(sizeof(* exch));
+  exch = calloc(1, sizeof(* exch));
   if (exch == NULL)
     return NULL;
 
@@ -62,87 +74,80 @@ mailexch* mailexch_new(size_t progr_rate, progress_function* progr_fun)
 void mailexch_free(mailexch* exch) {
   if(!exch) return;
 
+  MAILEXCH_FREE(exch->connection_settings.as_url);
+  MAILEXCH_FREE(exch->connection_settings.oof_url);
+  MAILEXCH_FREE(exch->connection_settings.um_url);
+  MAILEXCH_FREE(exch->connection_settings.oab_url);
+
   if(exch->curl) {
     curl_easy_cleanup(exch->curl);
     exch->curl = NULL;
   }
+
+  mailexch_free_response_buffer(exch);
 }
 
-int mailexch_login(mailexch* exch, const char* host, uint16_t port,
-                   const char* username, const char* password, const char* domain) {
-  char* url;
 
-  size_t username_length = username ? strlen(username) : 0;
-  size_t password_length = password ? strlen(password) : 0;
-  size_t domain_length = domain ? strlen(domain) : 0;
-  char* userpwd = NULL;
+int mailexch_connect(mailexch* exch, const char* ews_url,
+                     const char* username, const char* password, const char* domain) {
 
-  CURLcode curl_code;
-  long http_response = 0;
-  int result = MAILEXCH_NO_ERROR;
+  /* We just do a GET on the given URL to test the connection.
+     It should give us a response with code 200, and a WSDL in the body. */
 
-  /* For connection and authentication testing, we just GET the wsdl.
-     curl will find out which authentication protocol to use,
-     and the server should respond with code 200 after negotiation. */
+  /* prepare curl: curl object + credentials */
+  int result = mailexch_prepare_curl(exch, username, password, domain);
+  if(result != MAILEXCH_NO_ERROR) return result;
 
-  /* initial curl setup */
-  exch->curl = curl_easy_init();
-  if(!exch->curl) return MAILEXCH_ERROR_INTERNAL;
-  //curl_easy_setopt(exch->curl, CURLOPT_VERBOSE, 1L);
+  /* GET url */
+  curl_easy_setopt(exch->curl, CURLOPT_HTTPGET, 1L);
+  curl_easy_setopt(exch->curl, CURLOPT_URL, ews_url);
 
-  /* url = https://[host]/ews/services.wsdl\0 */
-  url = (char*) malloc(8 + strlen(host) + 18 + 1);
-  if(!url) return MAILEXCH_ERROR_INTERNAL;
-  sprintf(url, "https://%s/ews/services.wsdl", host);
-  curl_easy_setopt(exch->curl, CURLOPT_URL, url);
-  free(url);
+  /* Follow redirects, but only to HTTPS. */
+  curl_easy_setopt(exch->curl, CURLOPT_FOLLOWLOCATION, 1L);
+  curl_easy_setopt(exch->curl, CURLOPT_MAXREDIRS, 10L);
+  curl_easy_setopt(exch->curl, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTPS);
+  curl_easy_setopt(exch->curl, CURLOPT_UNRESTRICTED_AUTH, 0L);
 
-  /* port */
-  if(port != 0)
-    curl_easy_setopt(exch->curl, CURLOPT_PORT, port);
-
-  /* credentials */
-  if(domain_length > 0) {
-    userpwd = (char*) malloc(domain_length + 1 + username_length + 1 + password_length + 1); /* last +1 for \0 */
-    if(!userpwd) return MAILEXCH_ERROR_INTERNAL;
-    sprintf(userpwd, "%s\\%s:%s", domain, username, password);
-  } else {
-    userpwd = (char*) malloc(username_length + 1 + password_length + 1); /* last +1 for \0 */
-    if(!userpwd) return MAILEXCH_ERROR_INTERNAL;
-    sprintf(userpwd, "%s:%s", username, password);
-  }
-  curl_easy_setopt(exch->curl, CURLOPT_USERPWD, userpwd);
-  free(userpwd);
-  curl_easy_setopt(exch->curl, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
-
-  /* we need the response code only */
-  curl_easy_setopt(exch->curl, CURLOPT_NOBODY, 1L);
+  /* result */
+  uint8_t found_wsdl = 0;
+  curl_easy_setopt(exch->curl, CURLOPT_WRITEFUNCTION, mailexch_test_connection_write_callback);
+  curl_easy_setopt(exch->curl, CURLOPT_WRITEDATA, &found_wsdl);
 
   /* perform request */
-  curl_code = curl_easy_perform(exch->curl);
+  CURLcode curl_code = curl_easy_perform(exch->curl);
   if(curl_code != CURLE_OK) {
     result = MAILEXCH_ERROR_CONNECT;
   } else {
+    long http_response = 0;
     curl_easy_getinfo (exch->curl, CURLINFO_RESPONSE_CODE, &http_response);
-    if(http_response != 200)
+    if(http_response != 200) {
       result = MAILEXCH_ERROR_CONNECT;
+    } else if(!found_wsdl) {
+      result = MAILEXCH_ERROR_NO_EWS;
+    } else {
+      result = MAILEXCH_NO_ERROR;
+    }
   }
 
-  /* from now on we use POST to the asmx */
+  /* from now on we use POST to the given url */
   if(result == MAILEXCH_NO_ERROR) {
-    /* method */
     curl_easy_setopt(exch->curl, CURLOPT_POST, 1L);
-
-    /* url = https://[host]/EWS/Exchange.asmx\0 */
-    url = (char*) malloc(8 + strlen(host) + 18 + 1);
-    if(!url) return MAILEXCH_ERROR_INTERNAL;
-    sprintf(url, "https://%s/EWS/Exchange.asmx", host);
-    curl_easy_setopt(exch->curl, CURLOPT_URL, url);
-    free(url);
+    curl_easy_setopt(exch->curl, CURLOPT_URL, ews_url);
   }
 
+  /* clean up */
+  curl_easy_setopt(exch->curl, CURLOPT_FOLLOWLOCATION, 0L);
   return result;
 }
+
+int mailexch_connect_autodiscover(mailexch* exch, const char* email_address, const char* host, const char* username, const char* password, const char* domain) {
+  int result = mailexch_autodiscover(exch, email_address, host, username, password, domain);
+  if(result != MAILEXCH_NO_ERROR)
+    return result;
+  else
+    return mailexch_connect(exch, exch->connection_settings.as_url, username, password, domain);
+}
+
 
 int mailexch_list(mailexch* exch, const char* folder_name, int count, carray** list) {
   CURLcode curl_code;
@@ -200,8 +205,11 @@ int mailexch_list(mailexch* exch, const char* folder_name, int count, carray** l
   curl_easy_setopt(exch->curl, CURLOPT_POSTFIELDS, request);
 
   /* result */
-  curl_easy_setopt(exch->curl, CURLOPT_WRITEFUNCTION, mailexch_write_callback);
-  curl_easy_setopt(exch->curl, CURLOPT_WRITEDATA, exch);
+  if(mailexch_write_response_to_buffer(exch, MAILEXCH_DEFAULT_RESPONSE_BUFFER_LENGTH) != MAILEXCH_NO_ERROR) {
+    curl_slist_free_all(headers);
+    free(request);
+    return MAILEXCH_ERROR_INTERNAL;
+  }
 
   /* perform request */
   curl_code = curl_easy_perform(exch->curl);
@@ -211,11 +219,14 @@ int mailexch_list(mailexch* exch, const char* folder_name, int count, carray** l
     curl_easy_getinfo (exch->curl, CURLINFO_RESPONSE_CODE, &http_response);
     if(http_response != 200) {
       result = MAILEXCH_ERROR_CANT_LIST;
+    } else {
+      puts(exch->response_buffer);
     }
   }
 
-  free(request);
+  /* cleanup */
   curl_slist_free_all(headers);
+  free(request);
   return result;
 }
 
@@ -223,12 +234,23 @@ int mailexch_list(mailexch* exch, const char* folder_name, int count, carray** l
   mailexch structure callbacks
 */
 
-size_t mailexch_write_callback( char *ptr, size_t size, size_t nmemb, void *userdata) {
+const char* mailexch_strnstr(const char* str, const char* substr, size_t length) {
+  size_t substr_length = strlen(substr);
+  unsigned int i;
+  for(i = 0; i <= length - substr_length; i++) {
+    if(str[i] == 0) return NULL;
+    if(memcmp(str + i, substr, substr_length) == 0)
+      return str + i;
+  }
+  return NULL;
+}
+
+size_t mailexch_test_connection_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
   size_t response_length = size*nmemb < 1 ? 0 : size*nmemb;
-  char* response = (char*) malloc(response_length + 1);
-  memcpy(response, ptr, response_length);
-  response[response_length] = 0;
-  printf("%s", response);
+  uint8_t* found_wsdl = ((uint8_t*)userdata);
+
+  if(!*found_wsdl && mailexch_strnstr(ptr, "wsdl:definitions", response_length) == NULL)
+    *found_wsdl = 1;
 
   return response_length;
 }

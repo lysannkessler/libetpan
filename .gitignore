@@ -82,6 +82,8 @@
 /src/engine/Makefile.in
 /src/low-level/Makefile
 /src/low-level/Makefile.in
+/src/low-level/exch/Makefile
+/src/low-level/exch/Makefile.in
 /src/low-level/feed/Makefile
 /src/low-level/feed/Makefile.in
 /src/low-level/imap/Makefile

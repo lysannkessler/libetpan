@@ -29,36 +29,36 @@
  * SUCH DAMAGE.
  */
 
-#ifndef MAILEXCH_H
-
-#define MAILEXCH_H
+#ifndef MAILEXCH_HELPER_H
+#define MAILEXCH_HELPER_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
+#include <curl/curl.h>
+
 #include <libetpan/mailexch_types.h>
 
-#include <libetpan/carray.h>
+
+int mailexch_prepare_curl(mailexch* exch, const char* username, const char* password, const char* domain);
+
+int mailexch_set_credentials(mailexch* exch, const char* username, const char* password, const char* domain);
 
 
-LIBETPAN_EXPORT
-mailexch* mailexch_new(size_t progr_rate, progress_function* progr_fun);
+int mailexch_allocate_response_buffer(mailexch* exch, size_t min_size);
 
-LIBETPAN_EXPORT
-void mailexch_free(mailexch* exch);
+int mailexch_allocate_more_in_response_buffer(mailexch* exch, size_t size_to_add);
 
+int mailexch_append_to_response_buffer(mailexch* exch, char* data, size_t length);
 
-LIBETPAN_EXPORT
-int mailexch_connect(mailexch* exch, const char* ews_url, const char* username, const char* password, const char* domain);
-
-LIBETPAN_EXPORT
-int mailexch_connect_autodiscover(mailexch* exch, const char* email_address, const char* host, const char* username, const char* password, const char* domain);
+int mailexch_free_response_buffer(mailexch* exch);
 
 
-LIBETPAN_EXPORT
-int mailexch_list(mailexch* exch, const char* folder_name, int count, carray** list);
+int mailexch_write_response_to_buffer(mailexch* exch, size_t buffer_size_hint);
+
+size_t mailexch_default_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
 
 
 #ifdef __cplusplus
