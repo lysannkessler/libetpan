@@ -27,11 +27,14 @@ int main(int argc, char ** argv) {
   }
 
 #if 1
-  result = mailexch_connect(exch, "https://owa2.hpi.uni-potsdam.de/EWS/Exchange.asmx", argv[2], argv[3], NULL);
+  mailexch_connection_settings settings;
+  settings.as_url = "https://owa2.hpi.uni-potsdam.de/EWS/Exchange.asmx";
+  result = mailexch_set_connection_settings(exch, &settings);
 #else
-  result = mailexch_connect_autodiscover(exch, argv[1], "owa2.hpi.uni-potsdam.de", argv[2], argv[3], NULL);
+  result = mailexch_autodiscover_connection_settings(exch, argv[1], "owa2.hpi.uni-potsdam.de", argv[2], argv[3], NULL);
 #endif
-  check_error(result, "could not login");
+  result = mailexch_connect(exch, argv[2], argv[3], NULL);
+  check_error(result, "could not connect");
 
   result = mailexch_list(exch, "inbox", 10, NULL);
   check_error(result, "could not list messages in inbox");

@@ -48,7 +48,9 @@
 
 
 /* see mailexch_autodiscover.c */
-int mailexch_autodiscover(mailexch* exch, const char* email_address, const char* host, const char* username, const char* password, const char* domain);
+int mailexch_autodiscover(mailexch* exch, const char* email_address, const char* host,
+    const char* username, const char* password, const char* domain,
+    mailexch_connection_settings* settings);
 
 size_t mailexch_test_connection_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
 
@@ -87,9 +89,37 @@ void mailexch_free(mailexch* exch) {
   mailexch_free_response_buffer(exch);
 }
 
+#define MAILEXCH_COPY_STRING(result, dest, source) \
+  if(result == MAILEXCH_NO_ERROR && source) { \
+    (dest) = realloc((dest), strlen(source) + 1); \
+    if(!(dest)) { \
+      result = MAILEXCH_ERROR_INTERNAL; \
+    } else { \
+      memcpy((dest), (source), strlen(source) + 1); \
+    } \
+  } \
+  if(result != MAILEXCH_NO_ERROR || source == NULL) { \
+    if(dest) free(dest); \
+    (dest) = NULL; \
+  }
 
-int mailexch_connect(mailexch* exch, const char* ews_url,
-                     const char* username, const char* password, const char* domain) {
+int mailexch_set_connection_settings(mailexch* exch, mailexch_connection_settings* settings) {
+  int result = MAILEXCH_NO_ERROR;
+  MAILEXCH_COPY_STRING(result, exch->connection_settings.as_url,  settings->as_url);
+  MAILEXCH_COPY_STRING(result, exch->connection_settings.oof_url, settings->oof_url);
+  MAILEXCH_COPY_STRING(result, exch->connection_settings.um_url,  settings->um_url);
+  MAILEXCH_COPY_STRING(result, exch->connection_settings.oab_url, settings->oab_url);
+  return result;
+}
+
+int mailexch_autodiscover_connection_settings(mailexch* exch, const char* email_address,
+    const char* host, const char* username, const char* password, const char* domain) {
+
+  return mailexch_autodiscover(exch, email_address, host, username, password, domain, &exch->connection_settings);
+}
+
+
+int mailexch_connect(mailexch* exch, const char* username, const char* password, const char* domain) {
 
   /* We just do a GET on the given URL to test the connection.
      It should give us a response with code 200, and a WSDL in the body. */
@@ -100,7 +130,7 @@ int mailexch_connect(mailexch* exch, const char* ews_url,
 
   /* GET url */
   curl_easy_setopt(exch->curl, CURLOPT_HTTPGET, 1L);
-  curl_easy_setopt(exch->curl, CURLOPT_URL, ews_url);
+  curl_easy_setopt(exch->curl, CURLOPT_URL, exch->connection_settings.as_url);
 
   /* Follow redirects, but only to HTTPS. */
   curl_easy_setopt(exch->curl, CURLOPT_FOLLOWLOCATION, 1L);
@@ -132,20 +162,12 @@ int mailexch_connect(mailexch* exch, const char* ews_url,
   /* from now on we use POST to the given url */
   if(result == MAILEXCH_NO_ERROR) {
     curl_easy_setopt(exch->curl, CURLOPT_POST, 1L);
-    curl_easy_setopt(exch->curl, CURLOPT_URL, ews_url);
+    curl_easy_setopt(exch->curl, CURLOPT_URL, exch->connection_settings.as_url);
   }
 
   /* clean up */
   curl_easy_setopt(exch->curl, CURLOPT_FOLLOWLOCATION, 0L);
   return result;
-}
-
-int mailexch_connect_autodiscover(mailexch* exch, const char* email_address, const char* host, const char* username, const char* password, const char* domain) {
-  int result = mailexch_autodiscover(exch, email_address, host, username, password, domain);
-  if(result != MAILEXCH_NO_ERROR)
-    return result;
-  else
-    return mailexch_connect(exch, exch->connection_settings.as_url, username, password, domain);
 }
 
 

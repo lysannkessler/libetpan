@@ -51,10 +51,14 @@ void mailexch_free(mailexch* exch);
 
 
 LIBETPAN_EXPORT
-int mailexch_connect(mailexch* exch, const char* ews_url, const char* username, const char* password, const char* domain);
+int mailexch_set_connection_settings(mailexch* exch, mailexch_connection_settings* settings);
 
 LIBETPAN_EXPORT
-int mailexch_connect_autodiscover(mailexch* exch, const char* email_address, const char* host, const char* username, const char* password, const char* domain);
+int mailexch_autodiscover_connection_settings(mailexch* exch, const char* email_address, const char* host, const char* username, const char* password, const char* domain);
+
+
+LIBETPAN_EXPORT
+int mailexch_connect(mailexch* exch, const char* username, const char* password, const char* domain);
 
 
 LIBETPAN_EXPORT

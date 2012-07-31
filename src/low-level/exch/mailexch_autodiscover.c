@@ -44,7 +44,7 @@
 #define MAILEXCH_AUTODISCOVER_REQUEST_FORMAT ( \
   "<Autodiscover xmlns=\"http://schemas.microsoft.com/exchange/autodiscover/outlook/requestschema/2006\">\n" \
   "  <Request>\n" \
-  "    <EMailAddress>lysann.kessler@student.hpi.uni-potsdam.de</EMailAddress>\n" \
+  "    <EMailAddress>%s</EMailAddress>\n" \
   "    <AcceptableResponseSchema>http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a</AcceptableResponseSchema>\n" \
   "  </Request>\n" \
   "</Autodiscover>")
@@ -56,21 +56,22 @@
 #define MAILEXCH_AUTODISCOVER_URL_LENGTH strlen(MAILEXCH_AUTODISCOVER_STEP2_URL_FORMAT - 2) /* longer */
 
 
-#define MAILEXCH_AUTODISCOVER_TRY_STEP_LONG(step, exch, url_buffer, host, result) \
+#define MAILEXCH_AUTODISCOVER_TRY_STEP_LONG(step, exch, url_buffer, settings, host, result) \
   do { \
     sprintf(url_buffer, MAILEXCH_AUTODISCOVER_STEP##step##_URL_FORMAT, host); \
-    result = mailexch_autodiscover_try_url(exch, url_buffer); \
+    result = mailexch_autodiscover_try_url(exch, url_buffer, settings); \
   } while(0);
 
-#define MAILEXCH_AUTODISCOVER_TRY_STEP(step) MAILEXCH_AUTODISCOVER_TRY_STEP_LONG(step, exch, url, host, result)
+#define MAILEXCH_AUTODISCOVER_TRY_STEP(step) MAILEXCH_AUTODISCOVER_TRY_STEP_LONG(step, exch, url, settings, host, result)
 
 
-int mailexch_autodiscover_try_url(mailexch* exch, const char* url);
+int mailexch_autodiscover_try_url(mailexch* exch, const char* url, mailexch_connection_settings* settings);
 size_t mailexch_autodiscover_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
 
 
 int mailexch_autodiscover(mailexch* exch, const char* email_address, const char* host,
-                          const char* username, const char* password, const char* domain) {
+                          const char* username, const char* password, const char* domain,
+                          mailexch_connection_settings* settings) {
   /* http://msdn.microsoft.com/en-us/library/exchange/ee332364(v=exchg.140).aspx */
 
   /* get host name */
@@ -144,7 +145,7 @@ int mailexch_autodiscover(mailexch* exch, const char* email_address, const char*
   return result;
 }
 
-int mailexch_autodiscover_try_url(mailexch* exch, const char* url) {
+int mailexch_autodiscover_try_url(mailexch* exch, const char* url, mailexch_connection_settings* settings) {
   curl_easy_setopt(exch->curl, CURLOPT_URL, url);
   CURLcode curl_code = curl_easy_perform(exch->curl);
 
@@ -164,9 +165,11 @@ int mailexch_autodiscover_try_url(mailexch* exch, const char* url) {
 
           /* copy ASUrl */
           size_t as_url_length = as_url_end - as_url;
-          exch->connection_settings.as_url = (char*) malloc(as_url_length + 1);
-          memcpy(exch->connection_settings.as_url, as_url, as_url_length);
-          exch->connection_settings.as_url[as_url_length] = 0;
+          settings->as_url = (char*) malloc(as_url_length + 1);
+          memcpy(settings->as_url, as_url, as_url_length);
+          settings->as_url[as_url_length] = 0;
+
+          /* TODO copy other settings */
 
           result = MAILEXCH_NO_ERROR;
         }
