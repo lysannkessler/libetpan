@@ -30,7 +30,6 @@
  */
 
 #ifndef MAILEXCH_H
-
 #define MAILEXCH_H
 
 #ifdef __cplusplus

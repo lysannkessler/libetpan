@@ -47,15 +47,6 @@ int mailexch_prepare_curl(mailexch* exch, const char* username, const char* pass
 int mailexch_set_credentials(mailexch* exch, const char* username, const char* password, const char* domain);
 
 
-int mailexch_allocate_response_buffer(mailexch* exch, size_t min_size);
-
-int mailexch_allocate_more_in_response_buffer(mailexch* exch, size_t size_to_add);
-
-int mailexch_append_to_response_buffer(mailexch* exch, char* data, size_t length);
-
-int mailexch_free_response_buffer(mailexch* exch);
-
-
 int mailexch_write_response_to_buffer(mailexch* exch, size_t buffer_size_hint);
 
 size_t mailexch_default_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata);

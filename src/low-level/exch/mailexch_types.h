@@ -41,6 +41,7 @@ extern "C" {
 #include <curl/curl.h>
 
 #include <libetpan/mailstream_types.h>
+#include <libetpan/mmapstring.h>
 
 
 #define MAILEXCH_DEFAULT_RESPONSE_BUFFER_LENGTH 4096
@@ -72,9 +73,7 @@ struct mailexch {
 
   CURL* curl;
 
-  char* response_buffer;
-  size_t response_buffer_length;
-  size_t response_buffer_length_used;
+  MMAPString* response_buffer;
 };
 typedef struct mailexch mailexch;
 

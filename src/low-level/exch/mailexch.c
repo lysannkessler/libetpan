@@ -70,6 +70,8 @@ mailexch* mailexch_new(size_t progr_rate, progress_function* progr_fun)
   exch->exch_progr_rate = progr_rate;
   exch->exch_progr_fun = progr_fun;
 
+  exch->response_buffer = mmap_string_sized_new(MAILEXCH_DEFAULT_RESPONSE_BUFFER_LENGTH);
+
   return exch;
 }
 
@@ -86,7 +88,7 @@ void mailexch_free(mailexch* exch) {
     exch->curl = NULL;
   }
 
-  mailexch_free_response_buffer(exch);
+  mmap_string_free(exch->response_buffer);
 }
 
 #define MAILEXCH_COPY_STRING(result, dest, source) \
@@ -242,7 +244,7 @@ int mailexch_list(mailexch* exch, const char* folder_name, int count, carray** l
     if(http_response != 200) {
       result = MAILEXCH_ERROR_CANT_LIST;
     } else {
-      puts(exch->response_buffer);
+      puts(exch->response_buffer->str);
     }
   }
 

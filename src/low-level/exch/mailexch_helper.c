@@ -80,84 +80,19 @@ int mailexch_set_credentials(mailexch* exch, const char* username, const char* p
   return MAILEXCH_NO_ERROR;
 }
 
-int mailexch_allocate_response_buffer(mailexch* exch, size_t min_size) {
-  if(min_size == 0) {
-    /* free */
-    if(exch->response_buffer) free(exch->response_buffer);
-    exch->response_buffer = NULL;
-    exch->response_buffer_length = 0;
-    exch->response_buffer_length_used = 0;
-    return MAILEXCH_NO_ERROR;
-
-  } else if(exch->response_buffer == NULL || exch->response_buffer_length < min_size) {
-    /* allocate new or reallocate */
-    void* new_buffer = realloc(exch->response_buffer, min_size);
-    if(new_buffer) {
-      /* success */
-      exch->response_buffer = new_buffer;
-      exch->response_buffer_length = min_size;
-      if(exch->response_buffer_length < exch->response_buffer_length_used)
-        exch->response_buffer_length_used = exch->response_buffer_length;
-      return MAILEXCH_NO_ERROR;
-    } else {
-      /* failure */
-      mailexch_free_response_buffer(exch);
-      return MAILEXCH_ERROR_INTERNAL;
-    }
-
-  } else {
-    /* keep existing buffer */
-    return MAILEXCH_NO_ERROR;
-  }
-}
-
-int mailexch_allocate_more_in_response_buffer(mailexch* exch, size_t size_to_add) {
-  size_t new_length = exch->response_buffer_length_used;
-  if(new_length == 0) new_length += 1; /* add space for \0 */
-  new_length += size_to_add;
-  return mailexch_allocate_response_buffer(exch, new_length);
-}
-
-int mailexch_append_to_response_buffer(mailexch* exch, char* data, size_t length) {
-  /* allocate memory */
-  int result = mailexch_allocate_more_in_response_buffer(exch, length);
-  if(result != MAILEXCH_NO_ERROR) return result;
-
-  /* remove zero-termination */
-  char* buffer_end = exch->response_buffer;
-  if(exch->response_buffer_length_used > 0)
-    buffer_end += exch->response_buffer_length_used - 1;
-
-  /* copy data and update length */
-  memcpy(buffer_end, data, length);
-  exch->response_buffer_length_used += length;
-
-  /* add zero-termination */
-  buffer_end += length + 1;
-  *buffer_end = 0;
-
-  return MAILEXCH_NO_ERROR;
-}
-
-int mailexch_free_response_buffer(mailexch* exch) {
-  return mailexch_allocate_response_buffer(exch, 0);
-}
 
 int mailexch_write_response_to_buffer(mailexch* exch, size_t buffer_size_hint) {
   curl_easy_setopt(exch->curl, CURLOPT_WRITEFUNCTION, mailexch_default_write_callback);
   curl_easy_setopt(exch->curl, CURLOPT_WRITEDATA, exch);
-  int result = mailexch_allocate_response_buffer(exch, buffer_size_hint);
-  if(result == MAILEXCH_NO_ERROR)
-    exch->response_buffer_length_used = 0;
-  return result;
+  mmap_string_set_size(exch->response_buffer, buffer_size_hint);
+  mmap_string_truncate(exch->response_buffer, 0);
+  return MAILEXCH_NO_ERROR;
 }
 
 size_t mailexch_default_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
   size_t length = size*nmemb < 1 ? 0 : size*nmemb;
   mailexch* exch = (mailexch*) userdata;
 
-  if(mailexch_append_to_response_buffer(exch, ptr, length) == MAILEXCH_NO_ERROR)
-    return length;
-  else
-    return 0;
+  mmap_string_append_len(exch->response_buffer, ptr, length);
+  return length;
 }

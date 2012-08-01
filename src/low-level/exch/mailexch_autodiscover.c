@@ -121,7 +121,7 @@ int mailexch_autodiscover(mailexch* exch, const char* email_address, const char*
   /*   allocate buffer */
   char* url = malloc(MAILEXCH_AUTODISCOVER_URL_LENGTH + strlen(host) + 1);
   if(!url) {
-    mailexch_free_response_buffer(exch);
+    mmap_string_set_size(exch->response_buffer, 0);
     curl_easy_setopt(exch->curl, CURLOPT_FOLLOWLOCATION, 0L);
     curl_slist_free_all(headers);
     free(request);
@@ -137,7 +137,7 @@ int mailexch_autodiscover(mailexch* exch, const char* email_address, const char*
 
   /* clean up */
   free(url);
-  mailexch_free_response_buffer(exch);
+  mmap_string_set_size(exch->response_buffer, 0);
   curl_easy_setopt(exch->curl, CURLOPT_FOLLOWLOCATION, 0L);
   curl_slist_free_all(headers);
   curl_easy_setopt(exch->curl, CURLOPT_HTTPHEADER, NULL);
@@ -157,7 +157,7 @@ int mailexch_autodiscover_try_url(mailexch* exch, const char* url, mailexch_conn
       result = MAILEXCH_ERROR_AUTODISCOVER_UNAVAILABLE;
 
       /* parse ASUrl */
-      char* as_url = strstr(exch->response_buffer, "<ASUrl>");
+      char* as_url = strstr(exch->response_buffer->str, "<ASUrl>");
       if(as_url != NULL) {
         as_url += 7;
         char* as_url_end = strstr(as_url, "</ASUrl>");
