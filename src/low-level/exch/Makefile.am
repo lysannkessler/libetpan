@@ -30,7 +30,8 @@
 include $(top_srcdir)/rules.mk
 
 etpaninclude_HEADERS = \
-  mailexch.h mailexch_types.h mailexch_helper.h
+  mailexch.h mailexch_types.h mailexch_helper.h \
+  mailexch_autodiscover.h
 
 AM_CPPFLAGS = -I$(top_builddir)/include \
   -I$(top_srcdir)/src/data-types \
@@ -41,4 +42,4 @@ AM_LDFLAGS = $(LIBCURL)
 noinst_LTLIBRARIES = libexch.la
 
 libexch_la_SOURCES = \
-  mailexch.c mailexch_autodiscover.c mailexch_helper.c
+  mailexch.c mailexch_helper.c mailexch_autodiscover.c

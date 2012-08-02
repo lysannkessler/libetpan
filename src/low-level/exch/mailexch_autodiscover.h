@@ -29,34 +29,21 @@
  * SUCH DAMAGE.
  */
 
-#ifndef MAILEXCH_HELPER_H
-#define MAILEXCH_HELPER_H
+#ifndef MAILEXCH_AUTODISCOVER_H
+#define MAILEXCH_AUTODISCOVER_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-#include <curl/curl.h>
-
 #include <libetpan/mailexch_types.h>
 
 
-#define MAILEXCH_FREE(obj) \
-  if(obj) { \
-    free(obj); \
-    obj = NULL; \
-  }
-
-
-int mailexch_prepare_curl(mailexch* exch, const char* username, const char* password, const char* domain);
-
-int mailexch_set_credentials(mailexch* exch, const char* username, const char* password, const char* domain);
-
-
-int mailexch_write_response_to_buffer(mailexch* exch, size_t buffer_size_hint);
-
-size_t mailexch_default_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
+LIBETPAN_EXPORT
+int mailexch_autodiscover(mailexch* exch, const char* email_address, const char* host,
+                          const char* username, const char* password, const char* domain,
+                          mailexch_connection_settings* settings);
 
 
 #ifdef __cplusplus

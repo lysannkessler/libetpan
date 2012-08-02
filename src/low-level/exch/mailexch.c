@@ -35,22 +35,11 @@
 
 #include <libetpan/mailexch.h>
 #include <libetpan/mailexch_helper.h>
+#include <libetpan/mailexch_autodiscover.h>
 
 #include <stdlib.h>
 #include <string.h>
 
-
-#define MAILEXCH_FREE(obj) \
-  if(obj) { \
-    free(obj); \
-    obj = NULL; \
-  }
-
-
-/* see mailexch_autodiscover.c */
-int mailexch_autodiscover(mailexch* exch, const char* email_address, const char* host,
-    const char* username, const char* password, const char* domain,
-    mailexch_connection_settings* settings);
 
 size_t mailexch_test_connection_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
 
