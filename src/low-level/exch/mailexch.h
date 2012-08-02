@@ -42,26 +42,129 @@ extern "C" {
 #include <libetpan/carray.h>
 
 
+/*
+  mailexch_new()
+
+  Creates a new MS Exchange session object.
+
+  @param progr_rate  When downloading messages, a function will be called
+    each time the amount of bytes downloaded reaches a multiple of this
+    value, this can be 0.
+  @param progr_fun   This is the function to call to notify the progress,
+    this can be NULL.
+
+  @note The object should be freed with mailexch_free().
+  @note TODO Progress rate and function are not implemented yet.
+
+  @return Upon succes, an MS Exchange session is returned.
+          Returns NULL if an error occurs.
+
+  @see mailexch_free()
+ */
 LIBETPAN_EXPORT
 mailexch* mailexch_new(size_t progr_rate, progress_function* progr_fun);
 
+/*
+  mailexch_free()
+
+  Free the data structures associated with the Exchange session.
+
+  @param exch   Exchange session created with mailexch_new().
+
+  @see mailexch_new()
+ */
 LIBETPAN_EXPORT
 void mailexch_free(mailexch* exch);
 
 
+/*
+  mailexch_set_connection_settings()
+
+  Sets the session's connection settings.
+
+  @param exch       Exchange object to update.
+  @param settings   New connection settings for the object.
+
+  @return   - MAILEXCH_NO_ERROR upon success
+            - MAILEXCH_ERROR_INTERNAL indicates failure of the operation.
+              The state of the connection settings of the given session is
+              undefined in case of an error.
+
+  @see mailexch_autodiscover_connection_settings()
+  @see mailexch_connect()
+*/
 LIBETPAN_EXPORT
-int mailexch_set_connection_settings(mailexch* exch, mailexch_connection_settings* settings);
+int mailexch_set_connection_settings(mailexch* exch,
+        mailexch_connection_settings* settings);
 
+/*
+  mailexch_autodiscover_connection_settings()
+
+  Update the session's connection settings with autodiscovered attributes.
+
+  @param exch             Exchange object to update. It's curl object will be
+                          used to perform HTTP requests.
+  @param email_address    (see mailexch_autodiscover())
+  @param host             (see mailexch_autodiscover())
+  @param username         (see mailexch_autodiscover())
+  @param password         (see mailexch_autodiscover())
+  @param domain           (see mailexch_autodiscover())
+
+  @return (see mailexch_autodiscover())
+
+  @note This is identical to (omitted error handling):
+        {@code mailexch_autodiscover(exch, email_address, host, username,
+        password, domain, &exch->connection_settings)}</pre>
+
+  @see mailexch_set_connection_settings()
+  @see mailexch_autodiscover()
+  @see mailexch_connect()
+*/
 LIBETPAN_EXPORT
-int mailexch_autodiscover_connection_settings(mailexch* exch, const char* email_address, const char* host, const char* username, const char* password, const char* domain);
+int mailexch_autodiscover_connection_settings(mailexch* exch,
+        const char* email_address, const char* host, const char* username,
+        const char* password, const char* domain);
 
+/*
+  mailexch_connect()
 
+  Setup connection with configured connection settings, and test connection.
+
+  @param exch       Exchange session object
+  @param username   username required for authentication to Exchange service
+  @param password   password required for authentication to Exchange service
+  @param domain     domain name required for authentication to Exchange service
+
+  @return - MAILEXCH_NO_ERROR indicates success
+          - MAILEXCH_ERROR_CONNECT: cannot connect to Exchange service
+          - MAILEXCH_ERROR_NO_EWS: the configured as_url dows not seem to refer
+            to a Exchange Web Services 2007 service
+          - MAILEXCH_ERROR_INTERNAL indicates an arbitrary failure
+
+  @see mailexch_set_connection_settings()
+*/
 LIBETPAN_EXPORT
-int mailexch_connect(mailexch* exch, const char* username, const char* password, const char* domain);
+int mailexch_connect(mailexch* exch, const char* username, const char* password,
+        const char* domain);
 
 
+/*
+  mailexch_list()
+
+  Fetch most recent 'count' items from the folder identified by given name.
+
+  @param exch         Exchange session object
+  @param folder_name  name of folder whose items to list
+  @param count        number of items to list
+  @param list         result list of (TODO: TBD)
+
+  @return TODO: TBD
+
+  @note TODO not fully implemented yet
+*/
 LIBETPAN_EXPORT
-int mailexch_list(mailexch* exch, const char* folder_name, int count, carray** list);
+int mailexch_list(mailexch* exch, const char* folder_name, int count,
+        carray** list);
 
 
 #ifdef __cplusplus

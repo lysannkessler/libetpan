@@ -41,7 +41,8 @@
 #include <string.h>
 
 
-size_t mailexch_test_connection_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
+size_t mailexch_test_connection_write_callback(char *ptr, size_t size,
+        size_t nmemb, void *userdata);
 
 
 /*
@@ -59,7 +60,8 @@ mailexch* mailexch_new(size_t progr_rate, progress_function* progr_fun)
   exch->exch_progr_rate = progr_rate;
   exch->exch_progr_fun = progr_fun;
 
-  exch->response_buffer = mmap_string_sized_new(MAILEXCH_DEFAULT_RESPONSE_BUFFER_LENGTH);
+  exch->response_buffer =
+    mmap_string_sized_new(MAILEXCH_DEFAULT_RESPONSE_BUFFER_LENGTH);
 
   return exch;
 }
@@ -80,6 +82,26 @@ void mailexch_free(mailexch* exch) {
   mmap_string_free(exch->response_buffer);
 }
 
+/*
+  MAILEXCH_COPY_STRING()
+
+  Copy a string from source to dest, using result to indicate success or
+  failure. Will (re)allocate dest to fit the source string, and will free dest
+  and set it to NULL upon failure or if source is NULL.
+  the function will only attempt to copy if result is MAILEXCH_NO_ERROR in the
+  beginning.
+
+  @param result   an int set to either MAILEXCH_NO_ERROR or MAILEXCH_ERROR_*.
+                  Copying is attempted only attempted if it's MAILEXCH_NO_ERROR.
+                  It will be set to MAILEXCH_ERROR_INTERNAL if memory
+                  reallocation of dest fails.
+                  If it is not MAILEXCH_NO_ERROR in the end, dest is freed and
+                  set to NULL.
+  @param dest     copy destination; can be anything that can be passed to
+                  realloc() and (if not NULL) free()
+  @param source   Copy source; NULL indicates to free and clear the destination
+
+*/
 #define MAILEXCH_COPY_STRING(result, dest, source) \
   if(result == MAILEXCH_NO_ERROR && source) { \
     (dest) = realloc((dest), strlen(source) + 1); \
@@ -94,23 +116,32 @@ void mailexch_free(mailexch* exch) {
     (dest) = NULL; \
   }
 
-int mailexch_set_connection_settings(mailexch* exch, mailexch_connection_settings* settings) {
+int mailexch_set_connection_settings(mailexch* exch,
+        mailexch_connection_settings* settings) {
+
   int result = MAILEXCH_NO_ERROR;
-  MAILEXCH_COPY_STRING(result, exch->connection_settings.as_url,  settings->as_url);
-  MAILEXCH_COPY_STRING(result, exch->connection_settings.oof_url, settings->oof_url);
-  MAILEXCH_COPY_STRING(result, exch->connection_settings.um_url,  settings->um_url);
-  MAILEXCH_COPY_STRING(result, exch->connection_settings.oab_url, settings->oab_url);
+  MAILEXCH_COPY_STRING(result, exch->connection_settings.as_url,
+                       settings->as_url);
+  MAILEXCH_COPY_STRING(result, exch->connection_settings.oof_url,
+                       settings->oof_url);
+  MAILEXCH_COPY_STRING(result, exch->connection_settings.um_url,
+                       settings->um_url);
+  MAILEXCH_COPY_STRING(result, exch->connection_settings.oab_url,
+                       settings->oab_url);
   return result;
 }
 
-int mailexch_autodiscover_connection_settings(mailexch* exch, const char* email_address,
-    const char* host, const char* username, const char* password, const char* domain) {
+int mailexch_autodiscover_connection_settings(mailexch* exch,
+        const char* email_address, const char* host, const char* username,
+        const char* password, const char* domain) {
 
-  return mailexch_autodiscover(exch, email_address, host, username, password, domain, &exch->connection_settings);
+  return mailexch_autodiscover(exch, email_address, host, username, password,
+                               domain, &exch->connection_settings);
 }
 
 
-int mailexch_connect(mailexch* exch, const char* username, const char* password, const char* domain) {
+int mailexch_connect(mailexch* exch, const char* username, const char* password,
+        const char* domain) {
 
   /* We just do a GET on the given URL to test the connection.
      It should give us a response with code 200, and a WSDL in the body. */
@@ -131,7 +162,8 @@ int mailexch_connect(mailexch* exch, const char* username, const char* password,
 
   /* result */
   uint8_t found_wsdl = 0;
-  curl_easy_setopt(exch->curl, CURLOPT_WRITEFUNCTION, mailexch_test_connection_write_callback);
+  curl_easy_setopt(exch->curl, CURLOPT_WRITEFUNCTION,
+                   mailexch_test_connection_write_callback);
   curl_easy_setopt(exch->curl, CURLOPT_WRITEDATA, &found_wsdl);
 
   /* perform request */
@@ -162,7 +194,9 @@ int mailexch_connect(mailexch* exch, const char* username, const char* password,
 }
 
 
-int mailexch_list(mailexch* exch, const char* folder_name, int count, carray** list) {
+int mailexch_list(mailexch* exch, const char* folder_name, int count,
+        carray** list) {
+
   CURLcode curl_code;
   long http_response = 0;
   int result = MAILEXCH_NO_ERROR;
@@ -187,7 +221,7 @@ int mailexch_list(mailexch* exch, const char* folder_name, int count, carray** l
     "    </FindItem>\n"
     "  </soap:Body>\n"
     "</soap:Envelope>";
-  size_t request_length = strlen(request_format) - 2; /* without format arguments */
+  size_t request_length = strlen(request_format) - 2; /* without format chars */
   const char* max_entries_returned_format = "MaxEntriesReturned=\"%d\"";
   char* request, *max_entries_returned = NULL;
 
@@ -218,7 +252,9 @@ int mailexch_list(mailexch* exch, const char* folder_name, int count, carray** l
   curl_easy_setopt(exch->curl, CURLOPT_POSTFIELDS, request);
 
   /* result */
-  if(mailexch_write_response_to_buffer(exch, MAILEXCH_DEFAULT_RESPONSE_BUFFER_LENGTH) != MAILEXCH_NO_ERROR) {
+  if(mailexch_write_response_to_buffer(exch,
+        MAILEXCH_DEFAULT_RESPONSE_BUFFER_LENGTH) != MAILEXCH_NO_ERROR) {
+
     curl_slist_free_all(headers);
     free(request);
     return MAILEXCH_ERROR_INTERNAL;
@@ -247,23 +283,55 @@ int mailexch_list(mailexch* exch, const char* folder_name, int count, carray** l
   mailexch structure callbacks
 */
 
-const char* mailexch_strnstr(const char* str, const char* substr, size_t length) {
+/*
+  mailexch_strnstr()
+
+  Find first occurrence of substring in a string's first few bytes.
+
+  @param str      string to search for substr
+  @param substr   string to find in str
+  @param length   number of bytes to search in str
+
+  @return NULL if substr does not occur in the first 'length' bytes of str;
+          the beginning of the first occurrence of substr in str otherwise.
+
+  @note The search will not stop on a 0-byte, with i.e. mailexch_strnstr() you
+        can search in strings that are note zero-terminated.
+*/
+const char* mailexch_strnstr(const char* str, const char* substr,
+        size_t length) {
+
   size_t substr_length = strlen(substr);
   unsigned int i;
   for(i = 0; i <= length - substr_length; i++) {
-    if(str[i] == 0) return NULL;
     if(memcmp(str + i, substr, substr_length) == 0)
       return str + i;
   }
   return NULL;
 }
 
-size_t mailexch_test_connection_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
+/*
+  mailexch_test_connection_write_callback()
+
+  A CURL write callback, set via the CURLOPT_WRITEFUNCTION option, that searches
+  for WSDL definitions in the HTTP response.
+
+  @param userdata   Must be a pointer to a uint8_t that will receive the search
+                    result. You must set the CURLOPT_WRITEDATA option to such a
+                    pointer so that this callback is called with it as
+                    parameter.
+*/
+size_t mailexch_test_connection_write_callback(char *ptr, size_t size,
+        size_t nmemb, void *userdata) {
+
   size_t response_length = size*nmemb < 1 ? 0 : size*nmemb;
   uint8_t* found_wsdl = ((uint8_t*)userdata);
 
-  if(!*found_wsdl && mailexch_strnstr(ptr, "wsdl:definitions", response_length) == NULL)
+  if(!*found_wsdl &&
+     mailexch_strnstr(ptr, "wsdl:definitions", response_length) != NULL) {
+
     *found_wsdl = 1;
+  }
 
   return response_length;
 }

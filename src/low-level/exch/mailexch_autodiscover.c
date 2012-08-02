@@ -51,9 +51,12 @@
 
 #define MAILEXCH_AUTODISCOVER_MIN_RESPONSE_BUFFER_LENGTH 3000
 
-#define MAILEXCH_AUTODISCOVER_STEP1_URL_FORMAT "https://%s/autodiscover/autodiscover.xml"
-#define MAILEXCH_AUTODISCOVER_STEP2_URL_FORMAT "https://autodiscover.%s/autodiscover/autodiscover.xml"
-#define MAILEXCH_AUTODISCOVER_URL_LENGTH strlen(MAILEXCH_AUTODISCOVER_STEP2_URL_FORMAT - 2) /* longer */
+#define MAILEXCH_AUTODISCOVER_STEP1_URL_FORMAT \
+        "https://%s/autodiscover/autodiscover.xml"
+#define MAILEXCH_AUTODISCOVER_STEP2_URL_FORMAT \
+        "https://autodiscover.%s/autodiscover/autodiscover.xml"
+#define MAILEXCH_AUTODISCOVER_URL_LENGTH \
+        strlen(MAILEXCH_AUTODISCOVER_STEP2_URL_FORMAT-2) /*the longer of them*/
 
 
 #define MAILEXCH_AUTODISCOVER_TRY_STEP_LONG(step, exch, url_buffer, settings, host, result) \
@@ -62,24 +65,29 @@
     result = mailexch_autodiscover_try_url(exch, url_buffer, settings); \
   } while(0);
 
-#define MAILEXCH_AUTODISCOVER_TRY_STEP(step) MAILEXCH_AUTODISCOVER_TRY_STEP_LONG(step, exch, url, settings, host, result)
+#define MAILEXCH_AUTODISCOVER_TRY_STEP(step) \
+    MAILEXCH_AUTODISCOVER_TRY_STEP_LONG(step, exch, url, settings, host, result)
 
 
-int mailexch_autodiscover_try_url(mailexch* exch, const char* url, mailexch_connection_settings* settings);
-size_t mailexch_autodiscover_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
+int mailexch_autodiscover_try_url(mailexch* exch, const char* url,
+        mailexch_connection_settings* settings);
 
 
-int mailexch_autodiscover(mailexch* exch, const char* email_address, const char* host,
-                          const char* username, const char* password, const char* domain,
-                          mailexch_connection_settings* settings) {
+int mailexch_autodiscover(mailexch* exch, const char* email_address,
+        const char* host, const char* username, const char* password,
+        const char* domain, mailexch_connection_settings* settings) {
   /* http://msdn.microsoft.com/en-us/library/exchange/ee332364(v=exchg.140).aspx */
 
   /* get host name */
   if(host == NULL) {
     host = strstr(email_address, "@");
-    if(host == NULL) return MAILEXCH_ERROR_INVALID_PARAMETER;
+    if(host == NULL)
+      return MAILEXCH_ERROR_INVALID_PARAMETER;
     host += 1;
-    if(*host == 0) return MAILEXCH_ERROR_INVALID_PARAMETER; /* end of string after @ */
+    if(*host == 0) {
+      /* end of string after @ */
+      return MAILEXCH_ERROR_INVALID_PARAMETER;
+    }
   }
 
   /* prepare curl: curl object + credentials */
@@ -99,8 +107,8 @@ int mailexch_autodiscover(mailexch* exch, const char* email_address, const char*
 
   /* content */
   char* request = (char*) malloc(
-    strlen(MAILEXCH_AUTODISCOVER_REQUEST_FORMAT) - 2 + /* remove format characters */
-    strlen(email_address) + 1);                        /* add email address and null terminator */
+    strlen(MAILEXCH_AUTODISCOVER_REQUEST_FORMAT) - 2 + /* remove format chars */
+    strlen(email_address) + 1);      /* add email address and null terminator */
   if(!request) {
     curl_easy_setopt(exch->curl, CURLOPT_FOLLOWLOCATION, 0L);
     curl_slist_free_all(headers);
@@ -110,7 +118,9 @@ int mailexch_autodiscover(mailexch* exch, const char* email_address, const char*
   curl_easy_setopt(exch->curl, CURLOPT_POSTFIELDS, request);
 
   /* result */
-  if(mailexch_write_response_to_buffer(exch, MAILEXCH_AUTODISCOVER_MIN_RESPONSE_BUFFER_LENGTH) != MAILEXCH_NO_ERROR) {
+  if(mailexch_write_response_to_buffer(exch,
+     MAILEXCH_AUTODISCOVER_MIN_RESPONSE_BUFFER_LENGTH) != MAILEXCH_NO_ERROR) {
+
     curl_easy_setopt(exch->curl, CURLOPT_FOLLOWLOCATION, 0L);
     curl_slist_free_all(headers);
     free(request);
@@ -145,7 +155,26 @@ int mailexch_autodiscover(mailexch* exch, const char* email_address, const char*
   return result;
 }
 
-int mailexch_autodiscover_try_url(mailexch* exch, const char* url, mailexch_connection_settings* settings) {
+/*
+  mailexch_autodiscover_try_url()
+
+  Try to extract autodiscover information from given URL, and save them in the
+  given settings structure.
+
+  @param exch     Exchange session object. Its curl object will be used to
+                  perform HTTP requests.
+  @param url      URL to try
+  @param settings Upon success, the connection settings are stored in the
+                  structure ponited at by this parameter.
+
+  @return - MAILEXCH_NO_ERROR indicated success
+          - MAILEXCH_ERROR_CONNECT: cannot connect to given URL
+          - MAILEXCH_ERROR_AUTODISCOVER_UNAVAILABLE: given URL does not seem to
+            point to a Exchange autodiscover service
+*/
+int mailexch_autodiscover_try_url(mailexch* exch, const char* url,
+        mailexch_connection_settings* settings) {
+
   curl_easy_setopt(exch->curl, CURLOPT_URL, url);
   CURLcode curl_code = curl_easy_perform(exch->curl);
 
@@ -179,4 +208,3 @@ int mailexch_autodiscover_try_url(mailexch* exch, const char* url, mailexch_conn
 
   return result;
 }
-

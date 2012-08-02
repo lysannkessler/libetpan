@@ -39,7 +39,9 @@
 #include <string.h>
 
 
-int mailexch_prepare_curl(mailexch* exch, const char* username, const char* password, const char* domain) {
+int mailexch_prepare_curl(mailexch* exch, const char* username,
+        const char* password, const char* domain) {
+
   exch->curl = curl_easy_init();
   if(!exch->curl) return MAILEXCH_ERROR_INTERNAL;
 #if 0
@@ -54,7 +56,9 @@ int mailexch_prepare_curl(mailexch* exch, const char* username, const char* pass
   return result;
 }
 
-int mailexch_set_credentials(mailexch* exch, const char* username, const char* password, const char* domain) {
+int mailexch_set_credentials(mailexch* exch, const char* username,
+        const char* password, const char* domain) {
+
   /* set userpwd */
   size_t username_length = username ? strlen(username) : 0;
   size_t password_length = password ? strlen(password) : 0;
@@ -62,11 +66,12 @@ int mailexch_set_credentials(mailexch* exch, const char* username, const char* p
   char* userpwd = NULL;
 
   if(domain_length > 0) {
-    userpwd = (char*) malloc(domain_length + 1 + username_length + 1 + password_length + 1); /* last +1 for \0 */
+    userpwd = (char*) malloc(domain_length + 1 + username_length + 1 +
+                             password_length + 1);
     if(!userpwd) return MAILEXCH_ERROR_INTERNAL;
     sprintf(userpwd, "%s\\%s:%s", domain, username, password);
   } else {
-    userpwd = (char*) malloc(username_length + 1 + password_length + 1); /* last +1 for \0 */
+    userpwd = (char*) malloc(username_length + 1 + password_length + 1);
     if(!userpwd) return MAILEXCH_ERROR_INTERNAL;
     sprintf(userpwd, "%s:%s", username, password);
   }
@@ -82,14 +87,17 @@ int mailexch_set_credentials(mailexch* exch, const char* username, const char* p
 
 
 int mailexch_write_response_to_buffer(mailexch* exch, size_t buffer_size_hint) {
-  curl_easy_setopt(exch->curl, CURLOPT_WRITEFUNCTION, mailexch_default_write_callback);
+  curl_easy_setopt(exch->curl, CURLOPT_WRITEFUNCTION,
+                   mailexch_default_write_callback);
   curl_easy_setopt(exch->curl, CURLOPT_WRITEDATA, exch);
   mmap_string_set_size(exch->response_buffer, buffer_size_hint);
   mmap_string_truncate(exch->response_buffer, 0);
   return MAILEXCH_NO_ERROR;
 }
 
-size_t mailexch_default_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
+size_t mailexch_default_write_callback(char *ptr, size_t size, size_t nmemb,
+        void *userdata) {
+
   size_t length = size*nmemb < 1 ? 0 : size*nmemb;
   mailexch* exch = (mailexch*) userdata;
 

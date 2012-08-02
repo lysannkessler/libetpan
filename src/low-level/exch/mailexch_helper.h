@@ -42,6 +42,13 @@ extern "C" {
 #include <libetpan/mailexch_types.h>
 
 
+/*
+  MAILEXCH_FREE()
+
+  Free memory fo given object, and set the pointer to NULL.
+
+  @param obj  value to free and clear
+*/
 #define MAILEXCH_FREE(obj) \
   if(obj) { \
     free(obj); \
@@ -49,14 +56,74 @@ extern "C" {
   }
 
 
-int mailexch_prepare_curl(mailexch* exch, const char* username, const char* password, const char* domain);
+/*
+  mailexch_prepare_curl()
 
-int mailexch_set_credentials(mailexch* exch, const char* username, const char* password, const char* domain);
+  Create CURL instance for Exchange session and fill it with given user
+  credentials.
+
+  @param exch     Exchange session object to configure
+  @param username (see mailexch_set_credentials())
+  @param password (see mailexch_set_credentials())
+  @param domain   (see mailexch_set_credentials())
+
+  @return (see mailexch_set_credentials()).
+          If an error occurs, the CURL object is freed and set to NULL.
+*/
+int mailexch_prepare_curl(mailexch* exch, const char* username,
+        const char* password, const char* domain);
+
+/*
+  mailexch_set_credentials()
+
+  Update credentials of Exchange session's CURL object.
+
+  @param exch     Exchange session object whose CURL object to configure
+  @param username username to use for all further HTTP authentication actions
+  @param password password to use for all further HTTP authentication actions
+  @param domain   domain to use for all further HTTP authentication actions
+
+  @return - MAILEXCH_NO_ERROR indicates success
+          - MAILEXCH_ERROR_INTERNAL indicates an arbitrary failure
+*/
+int mailexch_set_credentials(mailexch* exch, const char* username,
+        const char* password, const char* domain);
 
 
+/*
+  mailexch_write_response_to_buffer()
+
+  Configure given Exchange session to write the response of it's next HTTP
+  request to the session's response buffer.
+  Clears the response buffer.
+  To reduce the number of buffer reallocations when the response length can be
+  estimated, the given size hint will preallocate the response buffer to the
+  given size.
+
+  @param exch             Exchange session object to configure
+  @param buffer_size_hint preallocate response buffer to this size
+
+  @return MAILEXCH_NO_ERROR
+
+  @see mailexch_default_write_callback()
+*/
 int mailexch_write_response_to_buffer(mailexch* exch, size_t buffer_size_hint);
 
-size_t mailexch_default_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
+/*
+  mailexch_default_write_callback()
+
+  CURL write callback that writes the received response text into the Exchange
+  session's response buffer.
+
+  @param userdata pointer to a mailexch structure whose response buffer to
+                  update. You must set the CURLOPT_WRITEDATA option to a pointer
+                  to the desired session, so it gets passed into this callback
+                  by CURL.
+
+  @see mailexch_default_write_callback()
+*/
+size_t mailexch_default_write_callback(char *ptr, size_t size, size_t nmemb,
+        void *userdata);
 
 
 #ifdef __cplusplus

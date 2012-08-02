@@ -47,32 +47,69 @@ extern "C" {
 #define MAILEXCH_DEFAULT_RESPONSE_BUFFER_LENGTH 4096
 
 
+/*
+  Return codes for most of the mailexch* functions
+*/
 enum {
+  /* indicates success */
   MAILEXCH_NO_ERROR = 0,
+  /* function called with invalid parameter */
   MAILEXCH_ERROR_INVALID_PARAMETER,
+  /* an arbitrary internal error occurred, e.g. memory allocation failed */
   MAILEXCH_ERROR_INTERNAL,
+  /* cannot connect to host or service, or its response does not indicate
+     success */
   MAILEXCH_ERROR_CONNECT,
+  /* the configured URL does not point to a supported Exchange Web Services 2007
+     service */
   MAILEXCH_ERROR_NO_EWS,
+  /* Exchange autodiscover failed */
   MAILEXCH_ERROR_AUTODISCOVER_UNAVAILABLE,
+  /* item listing was not successful */
   MAILEXCH_ERROR_CANT_LIST,
 };
 
+/*
+  struct mailexch_connection_settings
+
+  Holds several URLs that define the location of the Exchange Web Services of a
+  Exchange session.
+*/
 struct mailexch_connection_settings {
+  /* the URL of the best endpoint instance of Exchange Web Services for a
+     mail-enabled user */
   char* as_url;
+  /* the URL of the best instance of the Availability service for a mail-enabled
+     user */
   char* oof_url;
+  /* the URL of the best instance of the Unified Messaging Web service for a
+     mail-enabled user */
   char* um_url;
+  /* the Offline Address Book configuration server URL for an Exchange topology
+  */
   char* oab_url;
 };
 typedef struct mailexch_connection_settings mailexch_connection_settings;
 
+/*
+  struct mailexch
+
+  A Exchange session object.
+*/
 struct mailexch {
+  /* When downloading messages, a function will be called each time the amount
+     of bytes downloaded reaches a multiple of this value, this can be 0. */
   size_t exch_progr_rate;
+  /* This is the function to call to notify the progress, this can be NULL. */
   progress_function* exch_progr_fun;
 
+  /* connection settings */
   mailexch_connection_settings connection_settings;
 
+  /* the CURL object used to perform HTTP requests to the service */
   CURL* curl;
 
+  /* a buffer that typically stores the body of the last HTTP response */
   MMAPString* response_buffer;
 };
 typedef struct mailexch mailexch;
