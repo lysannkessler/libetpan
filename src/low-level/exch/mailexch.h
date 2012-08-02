@@ -104,16 +104,16 @@ int mailexch_set_connection_settings(mailexch* exch,
 
   @param exch             Exchange object to update. It's curl object will be
                           used to perform HTTP requests.
-  @param email_address    (see mailexch_autodiscover())
   @param host             (see mailexch_autodiscover())
+  @param email_address    (see mailexch_autodiscover())
   @param username         (see mailexch_autodiscover())
   @param password         (see mailexch_autodiscover())
   @param domain           (see mailexch_autodiscover())
 
   @return (see mailexch_autodiscover())
 
-  @note This is identical to (omitted error handling):
-        {@code mailexch_autodiscover(exch, email_address, host, username,
+  @note This is identical to:
+        {@code mailexch_autodiscover(exch, host, email_address, username,
         password, domain, &exch->connection_settings)}</pre>
 
   @see mailexch_set_connection_settings()
@@ -121,8 +121,8 @@ int mailexch_set_connection_settings(mailexch* exch,
   @see mailexch_connect()
 */
 LIBETPAN_EXPORT
-int mailexch_autodiscover_connection_settings(mailexch* exch,
-        const char* email_address, const char* host, const char* username,
+int mailexch_autodiscover_connection_settings(mailexch* exch, const char* host,
+        const char* email_address, const char* username,
         const char* password, const char* domain);
 
 /*

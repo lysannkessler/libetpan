@@ -48,10 +48,10 @@ extern "C" {
 
   @param exch             Exchange session object. Its curl object will be used
                           to perform HTTP requests.
-  @param email_address    email address of user whose connection settings
-                          should be autodiscovered
   @param host             exchange server host name. Can be NULL, in this case
                           the host name is extracted from email_address
+  @param email_address    email address of user whose connection settings
+                          should be autodiscovered
   @param username         username required for authentication to autodiscover
                           service
   @param password         password required for authentication to autodiscover
@@ -72,8 +72,8 @@ extern "C" {
   @seealso http://msdn.microsoft.com/en-us/library/exchange/ee332364(v=exchg.140).aspx
 */
 LIBETPAN_EXPORT
-int mailexch_autodiscover(mailexch* exch, const char* email_address,
-        const char* host, const char* username, const char* password,
+int mailexch_autodiscover(mailexch* exch, const char* host,
+        const char* email_address, const char* username, const char* password,
         const char* domain, mailexch_connection_settings* settings);
 
 

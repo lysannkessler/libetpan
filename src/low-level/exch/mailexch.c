@@ -131,11 +131,11 @@ int mailexch_set_connection_settings(mailexch* exch,
   return result;
 }
 
-int mailexch_autodiscover_connection_settings(mailexch* exch,
-        const char* email_address, const char* host, const char* username,
+int mailexch_autodiscover_connection_settings(mailexch* exch, const char* host,
+        const char* email_address, const char* username,
         const char* password, const char* domain) {
 
-  return mailexch_autodiscover(exch, email_address, host, username, password,
+  return mailexch_autodiscover(exch, host, email_address, username, password,
                                domain, &exch->connection_settings);
 }
 

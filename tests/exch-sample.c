@@ -31,8 +31,8 @@ int main(int argc, char ** argv) {
   settings.as_url = "https://owa2.hpi.uni-potsdam.de/EWS/Exchange.asmx";
   result = mailexch_set_connection_settings(exch, &settings);
 #else
-  result = mailexch_autodiscover_connection_settings(exch, argv[1],
-      "owa2.hpi.uni-potsdam.de", argv[2], argv[3], NULL);
+  result = mailexch_autodiscover_connection_settings(exch,
+      "owa2.hpi.uni-potsdam.de", argv[1], argv[2], argv[3], NULL);
 #endif
   result = mailexch_connect(exch, argv[2], argv[3], NULL);
   check_error(result, "could not connect");

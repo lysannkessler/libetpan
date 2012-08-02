@@ -73,8 +73,8 @@ int mailexch_autodiscover_try_url(mailexch* exch, const char* url,
         mailexch_connection_settings* settings);
 
 
-int mailexch_autodiscover(mailexch* exch, const char* email_address,
-        const char* host, const char* username, const char* password,
+int mailexch_autodiscover(mailexch* exch, const char* host,
+        const char* email_address, const char* username, const char* password,
         const char* domain, mailexch_connection_settings* settings) {
   /* http://msdn.microsoft.com/en-us/library/exchange/ee332364(v=exchg.140).aspx */
 
