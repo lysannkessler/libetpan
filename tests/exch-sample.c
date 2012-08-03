@@ -37,8 +37,13 @@ int main(int argc, char ** argv) {
   result = mailexch_connect(exch, argv[2], argv[3], NULL);
   check_error(result, "could not connect");
 
-  result = mailexch_list(exch, "inbox", 10, NULL);
-  check_error(result, "could not list messages in inbox");
+  puts("INBOX");
+  result = mailexch_list(exch, MAILEXCH_DISTFOLDER_INBOX, NULL, 10, NULL);
+  check_error(result, "could not list items in inbox");
+
+  puts("SENT ITEMS");
+  result = mailexch_list(exch, MAILEXCH_DISTFOLDER_SENTITEMS, NULL, 10, NULL);
+  check_error(result, "could not list sent items");
 
   mailexch_free(exch);
 

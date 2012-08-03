@@ -39,7 +39,7 @@ extern "C" {
 
 #include <libetpan/mailexch_types.h>
 
-#include <libetpan/carray.h>
+/* note: mailexch_requests.h is included at the bottom */
 
 
 /*
@@ -148,23 +148,8 @@ int mailexch_connect(mailexch* exch, const char* username, const char* password,
         const char* domain);
 
 
-/*
-  mailexch_list()
-
-  Fetch most recent 'count' items from the folder identified by given name.
-
-  @param exch         Exchange session object
-  @param folder_name  name of folder whose items to list
-  @param count        number of items to list
-  @param list         result list of (TODO: TBD)
-
-  @return TODO: TBD
-
-  @note TODO not fully implemented yet
-*/
-LIBETPAN_EXPORT
-int mailexch_list(mailexch* exch, const char* folder_name, int count,
-        carray** list);
+/* include all request functions */
+#include <libetpan/mailexch_requests.h>
 
 
 #ifdef __cplusplus

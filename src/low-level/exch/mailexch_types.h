@@ -115,6 +115,31 @@ struct mailexch {
 typedef struct mailexch mailexch;
 
 
+/*
+  identifies the folders that can be accessed by these special keys
+*/
+enum mailexch_distinguished_folder_id {
+  MAILEXCH_DISTFOLDER__NONE = -1, /* meta key to allow passing optional
+                                     distinguished folder id as values */
+
+  MAILEXCH_DISTFOLDER_CALENDAR = 0,
+  MAILEXCH_DISTFOLDER_CONTACTS,
+  MAILEXCH_DISTFOLDER_DELETEDITEMS,
+  MAILEXCH_DISTFOLDER_DRAFTS,
+  MAILEXCH_DISTFOLDER_INBOX,
+  MAILEXCH_DISTFOLDER_JOURNAL,
+  MAILEXCH_DISTFOLDER_NOTES,
+  MAILEXCH_DISTFOLDER_OUTBOX,
+  MAILEXCH_DISTFOLDER_SENTITEMS,
+  MAILEXCH_DISTFOLDER_TASKS,
+  MAILEXCH_DISTFOLDER_MSGFOLDERROOT,
+  MAILEXCH_DISTFOLDER_ROOT,
+  MAILEXCH_DISTFOLDER_JUNKEMAIL,
+  MAILEXCH_DISTFOLDER_SEARCHFOLDERS,
+  MAILEXCH_DISTFOLDER_VOICEMAIL,
+};
+typedef enum  mailexch_distinguished_folder_id mailexch_distinguished_folder_id;
+
 #ifdef __cplusplus
 }
 #endif
