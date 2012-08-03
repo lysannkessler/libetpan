@@ -56,8 +56,15 @@ extern "C" {
   @param list           result list of (TODO: TBD)
 
   @return TODO: TBD
-          - MAILEXCH_ERROR_INVALID_PARAMETER: both, distinguished_folder_id and
-            folder_id are MAILEXCH_DISTFOLDER__NONE or NULL respectively
+          - MAILEXCH_NO_ERROR indicates success
+          - MAILEXCH_ERROR_INVALID_PARAMETER indicates one of the following:
+            * both, distfolder_id is MAILEXCH_DISTFOLDER__NONE and
+              folder_id is NULL
+            * distfolder_id is invalid
+
+  @note If both, distfolder_id and folder_id contain valid folder ids,
+        folder_id is ignored and the folder specified by distfolder_id is used
+        for the request.
 
   @note TODO not fully implemented yet
 

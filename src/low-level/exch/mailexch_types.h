@@ -121,6 +121,7 @@ typedef struct mailexch mailexch;
 enum mailexch_distinguished_folder_id {
   MAILEXCH_DISTFOLDER__NONE = -1, /* meta key to allow passing optional
                                      distinguished folder id as values */
+  MAILEXCH_DISTFOLDER__MIN = 0,   /* meta key to catch invalid ids */
 
   MAILEXCH_DISTFOLDER_CALENDAR = 0,
   MAILEXCH_DISTFOLDER_CONTACTS,
@@ -137,6 +138,10 @@ enum mailexch_distinguished_folder_id {
   MAILEXCH_DISTFOLDER_JUNKEMAIL,
   MAILEXCH_DISTFOLDER_SEARCHFOLDERS,
   MAILEXCH_DISTFOLDER_VOICEMAIL,
+
+  MAILEXCH_DISTFOLDER__MAX = MAILEXCH_DISTFOLDER_VOICEMAIL, /* meta key to catch
+                                                               invalid ids */
+  MAILEXCH_DISTFOLDER__COUNT, /* meta key to iterate all keys */
 };
 typedef enum  mailexch_distinguished_folder_id mailexch_distinguished_folder_id;
 

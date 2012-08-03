@@ -45,6 +45,8 @@ const char* mailexch_distfolder_id_name_map[] = {
   "outbox", "sentitems", "tasks", "msgfolderroot", "root", "junkemail",
   "searchfolders", "voicemail"
 };
+const short mailexch_distfolder_id_name_map_length =
+  sizeof(mailexch_distfolder_id_name_map) / sizeof(const char*);
 
 
 int mailexch_list(mailexch* exch,
@@ -52,6 +54,10 @@ int mailexch_list(mailexch* exch,
         int count, carray** list) {
 
   if(distfolder_id == MAILEXCH_DISTFOLDER__NONE && folder_id == NULL)
+    return MAILEXCH_ERROR_INVALID_PARAMETER;
+  if(distfolder_id != MAILEXCH_DISTFOLDER__NONE &&
+       (distfolder_id < MAILEXCH_DISTFOLDER__MIN ||
+        distfolder_id > MAILEXCH_DISTFOLDER__MAX))
     return MAILEXCH_ERROR_INVALID_PARAMETER;
 
   const char* request_format =
@@ -89,7 +95,8 @@ int mailexch_list(mailexch* exch,
   }
 
   /* folder_distfolder_id */
-  if(distfolder_id != MAILEXCH_DISTFOLDER__NONE) {
+  if(distfolder_id != MAILEXCH_DISTFOLDER__NONE && distfolder_id >= 0 &&
+          distfolder_id < mailexch_distfolder_id_name_map_length) {
     const char* distfolder_id_str =
       mailexch_distfolder_id_name_map[distfolder_id];
     /* <t:DistinguishedFolderId Id=""/> + dist. folder id string + \0 */
