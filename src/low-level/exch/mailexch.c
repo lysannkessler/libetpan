@@ -78,6 +78,10 @@ void mailexch_free(mailexch* exch) {
     curl_easy_cleanup(exch->curl);
     exch->curl = NULL;
   }
+  if(exch->curl_headers) {
+    curl_slist_free_all(exch->curl_headers);
+    exch->curl_headers = NULL;
+  }
 
   mmap_string_free(exch->response_buffer);
   exch->response_buffer = NULL;
@@ -183,11 +187,8 @@ int mailexch_connect(mailexch* exch, const char* username, const char* password,
     }
   }
 
-  /* from now on we use POST to the given url */
-  if(result == MAILEXCH_NO_ERROR) {
-    curl_easy_setopt(exch->curl, CURLOPT_POST, 1L);
-    curl_easy_setopt(exch->curl, CURLOPT_URL, exch->connection_settings.as_url);
-  }
+  if(result == MAILEXCH_NO_ERROR)
+    mailexch_prepare_for_requests(exch); /* TODO: do this at beginning of request dependant on current state; catch errors */
 
   /* clean up */
   curl_easy_setopt(exch->curl, CURLOPT_FOLLOWLOCATION, 0L);

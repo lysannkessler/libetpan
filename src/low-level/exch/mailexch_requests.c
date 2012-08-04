@@ -130,37 +130,83 @@ int mailexch_list(mailexch* exch,
   free(folder_distfolder_id);
   if(max_entries_returned) free(max_entries_returned);
 
-  /* headers */
-  struct curl_slist *headers = NULL;
-  headers = curl_slist_append(headers, "Content-Type: text/xml");
-  curl_easy_setopt(exch->curl, CURLOPT_HTTPHEADER, headers);
+  /* perform request */
+  long http_response_code = 0;
+  const char* response = NULL;
+  int result = mailexch_perform_request(exch, request,
+                                        &http_response_code, &response);
+  if(result == MAILEXCH_NO_ERROR) {
+    puts(response);
+  }
 
-  /* content */
+  /* clean up */
+  free(request);
+  return result;
+}
+
+
+int mailexch_prepare_for_requests(mailexch* exch) {
+  /* paranoia */
+  curl_easy_setopt(exch->curl, CURLOPT_FOLLOWLOCATION, 0L);
+  curl_easy_setopt(exch->curl, CURLOPT_UNRESTRICTED_AUTH, 0L);
+
+  /* post to AsUrl */
+  curl_easy_setopt(exch->curl, CURLOPT_POST, 1L);
+  curl_easy_setopt(exch->curl, CURLOPT_URL, exch->connection_settings.as_url);
+
+  /* Clear headers and set Content-Type to text/xml. */
+  if(exch->curl_headers) {
+    curl_slist_free_all(exch->curl_headers);
+    exch->curl_headers = NULL;
+  }
+  exch->curl_headers = curl_slist_append(exch->curl_headers,
+                                         "Content-Type: text/xml");
+  curl_easy_setopt(exch->curl, CURLOPT_HTTPHEADER, exch->curl_headers);
+
+  /* clear request string for now */
+  curl_easy_setopt(exch->curl, CURLOPT_POSTFIELDS, NULL);
+
+  /* write to response buffer */
+  int result = mailexch_write_response_to_buffer(exch,
+        MAILEXCH_DEFAULT_RESPONSE_BUFFER_LENGTH);
+
+  /* clean up */
+  if(result != MAILEXCH_NO_ERROR) {
+    if(exch->curl_headers) {
+      curl_slist_free_all(exch->curl_headers);
+      exch->curl_headers = NULL;
+      curl_easy_setopt(exch->curl, CURLOPT_HTTPHEADER, NULL);
+    }
+  }
+  return result;
+}
+
+int mailexch_perform_request(mailexch* exch, const char* request,
+        long* http_response_code, const char** response) {
+
+  /* initialize output variables */
+  *http_response_code = 0;
+  *response = NULL;
+
+  /* set body */
   curl_easy_setopt(exch->curl, CURLOPT_POSTFIELDS, request);
 
-  /* result */
-  if(mailexch_write_response_to_buffer(exch,
-        MAILEXCH_DEFAULT_RESPONSE_BUFFER_LENGTH) != MAILEXCH_NO_ERROR) {
-
-    curl_slist_free_all(headers);
-    free(request);
-    return MAILEXCH_ERROR_INTERNAL;
-  }
+  /* clean response buffer */
+  mmap_string_truncate(exch->response_buffer, 0);
 
   /* perform request */
   CURLcode curl_code = curl_easy_perform(exch->curl);
-  int result = MAILEXCH_ERROR_CANT_LIST;
+  int result = MAILEXCH_ERROR_CONNECT;
   if(curl_code == CURLE_OK) {
-    long http_response = 0;
-    curl_easy_getinfo (exch->curl, CURLINFO_RESPONSE_CODE, &http_response);
-    if(http_response == 200) {
+    *response = exch->response_buffer->str;
+
+    result = MAILEXCH_ERROR_REQUEST_FAILED;
+    curl_easy_getinfo (exch->curl, CURLINFO_RESPONSE_CODE, http_response_code);
+    if(*http_response_code == 200)
       result = MAILEXCH_NO_ERROR;
-      puts(exch->response_buffer->str);
-    }
   }
 
-  /* cleanup */
-  curl_slist_free_all(headers);
-  free(request);
+  /* clean up */
+  curl_easy_setopt(exch->curl, CURLOPT_POSTFIELDS, NULL);
   return result;
 }

@@ -65,8 +65,8 @@ enum {
   MAILEXCH_ERROR_NO_EWS,
   /* Exchange autodiscover failed */
   MAILEXCH_ERROR_AUTODISCOVER_UNAVAILABLE,
-  /* item listing was not successful */
-  MAILEXCH_ERROR_CANT_LIST,
+  /* request was not successful (HTTP status code != 200) */
+  MAILEXCH_ERROR_REQUEST_FAILED,
 };
 
 /*
@@ -108,6 +108,7 @@ struct mailexch {
 
   /* the CURL object used to perform HTTP requests to the service */
   CURL* curl;
+  struct curl_slist *curl_headers;
 
   /* a buffer that typically stores the body of the last HTTP response */
   MMAPString* response_buffer;
