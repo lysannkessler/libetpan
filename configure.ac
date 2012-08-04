@@ -617,6 +617,11 @@ if test "x$libexpat" = "xyes" ; then
   AC_DEFINE([HAVE_EXPAT], 1, [Define to use expat])
 fi
 
+dnl libxml2
+PKG_CHECK_MODULES([LIBXML2], [libxml-2.0])
+AC_SUBST([LIBXML2_CFLAGS])
+AC_SUBST([LIBXML2_LIBS])
+
 dnl Version
 VERSION="$VERSION_MAJOR.$VERSION_MINOR"
 test -d .git && VERSION="$VERSION-dev-"`date +'%Y%m%d'`
