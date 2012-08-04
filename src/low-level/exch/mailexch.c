@@ -122,7 +122,7 @@ void mailexch_free(mailexch* exch) {
     (dest) = NULL; \
   }
 
-int mailexch_set_connection_settings(mailexch* exch,
+mailexch_result mailexch_set_connection_settings(mailexch* exch,
         mailexch_connection_settings* settings) {
 
   if(exch->state != MAILEXCH_STATE_NEW) return MAILEXCH_ERROR_BAD_STATE;
@@ -142,8 +142,8 @@ int mailexch_set_connection_settings(mailexch* exch,
   return result;
 }
 
-int mailexch_autodiscover_connection_settings(mailexch* exch, const char* host,
-        const char* email_address, const char* username,
+mailexch_result mailexch_autodiscover_connection_settings(mailexch* exch,
+        const char* host, const char* email_address, const char* username,
         const char* password, const char* domain) {
 
   if(exch->state != MAILEXCH_STATE_NEW) return MAILEXCH_ERROR_BAD_STATE;
@@ -157,8 +157,8 @@ int mailexch_autodiscover_connection_settings(mailexch* exch, const char* host,
 }
 
 
-int mailexch_connect(mailexch* exch, const char* username, const char* password,
-        const char* domain) {
+mailexch_result mailexch_connect(mailexch* exch, const char* username,
+        const char* password, const char* domain) {
 
   if(exch->state != MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED)
     return MAILEXCH_ERROR_BAD_STATE;

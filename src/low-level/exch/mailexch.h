@@ -98,7 +98,7 @@ void mailexch_free(mailexch* exch);
   @see mailexch_connect()
 */
 LIBETPAN_EXPORT
-int mailexch_set_connection_settings(mailexch* exch,
+mailexch_result mailexch_set_connection_settings(mailexch* exch,
         mailexch_connection_settings* settings);
 
 /*
@@ -128,8 +128,8 @@ int mailexch_set_connection_settings(mailexch* exch,
   @see mailexch_connect()
 */
 LIBETPAN_EXPORT
-int mailexch_autodiscover_connection_settings(mailexch* exch, const char* host,
-        const char* email_address, const char* username,
+mailexch_result mailexch_autodiscover_connection_settings(mailexch* exch,
+        const char* host, const char* email_address, const char* username,
         const char* password, const char* domain);
 
 /*
@@ -155,8 +155,8 @@ int mailexch_autodiscover_connection_settings(mailexch* exch, const char* host,
   @see mailexch_set_connection_settings()
 */
 LIBETPAN_EXPORT
-int mailexch_connect(mailexch* exch, const char* username, const char* password,
-        const char* domain);
+mailexch_result mailexch_connect(mailexch* exch, const char* username,
+        const char* password, const char* domain);
 
 
 /* include all request functions */

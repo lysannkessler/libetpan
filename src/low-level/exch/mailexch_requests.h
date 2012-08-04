@@ -83,7 +83,7 @@ extern "C" {
   @note TODO configure returned field list
 */
 LIBETPAN_EXPORT
-int mailexch_list(mailexch* exch,
+mailexch_result mailexch_list(mailexch* exch,
         mailexch_distinguished_folder_id distfolder_id, const char* folder_id,
         int count, carray** list);
 
@@ -110,7 +110,7 @@ int mailexch_list(mailexch* exch,
   @see mailexch_connect()
   @see mailexch_perform_request_xml()
 */
-int mailexch_prepare_for_requests(mailexch* exch);
+mailexch_result mailexch_prepare_for_requests(mailexch* exch);
 
 
 #ifdef __cplusplus

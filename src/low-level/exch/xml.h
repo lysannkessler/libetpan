@@ -51,8 +51,8 @@ extern "C" {
 
 
 /* @note TODO docstring */
-int mailexch_prepare_xml_request_method_node(const char* name, xmlNodePtr* node,
-        xmlNsPtr* ns_exch_messages, xmlNsPtr* ns_exch_types);
+mailexch_result mailexch_prepare_xml_request_method_node(const char* name,
+        xmlNodePtr* node, xmlNsPtr* ns_exch_messages, xmlNsPtr* ns_exch_types);
 
 /*
   mailexch_perform_request_xml()
@@ -90,12 +90,12 @@ int mailexch_prepare_xml_request_method_node(const char* name, xmlNodePtr* node,
 
   @note TODO support SOAP failures
 */
-int mailexch_perform_request_xml(mailexch* exch, xmlNodePtr request,
+mailexch_result mailexch_perform_request_xml(mailexch* exch, xmlNodePtr request,
         xmlDocPtr* response, xmlNodePtr* response_body);
 
 
 /* @note TODO docstring */
-int mailexch_save_response_xml(mailexch* exch);
+mailexch_result mailexch_save_response_xml(mailexch* exch);
 
 /* @note TODO docstring */
 size_t mailexch_save_response_xml_callback(char *ptr, size_t size, size_t nmemb,

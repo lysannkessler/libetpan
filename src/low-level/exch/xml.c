@@ -37,8 +37,8 @@
 #include "xml.h"
 
 
-int mailexch_prepare_xml_request_method_node(const char* name, xmlNodePtr* node,
-        xmlNsPtr* ns_exch_messages, xmlNsPtr* ns_exch_types) {
+mailexch_result mailexch_prepare_xml_request_method_node(const char* name,
+        xmlNodePtr* node, xmlNsPtr* ns_exch_messages, xmlNsPtr* ns_exch_types) {
 
   *node = xmlNewNode(NULL, BAD_CAST name);
   *ns_exch_messages = xmlNewNs(*node, MAILEXCH_XML_NS_EXCH_MESSAGES, NULL);
@@ -48,8 +48,8 @@ int mailexch_prepare_xml_request_method_node(const char* name, xmlNodePtr* node,
   return MAILEXCH_NO_ERROR;
 }
 
-int mailexch_perform_request_xml(mailexch* exch, xmlNodePtr request_body,
-        xmlDocPtr* response, xmlNodePtr* response_body) {
+mailexch_result mailexch_perform_request_xml(mailexch* exch,
+        xmlNodePtr request_body, xmlDocPtr* response, xmlNodePtr* response_body) {
 
   if(exch->state != MAILEXCH_STATE_READY_FOR_REQUESTS)
     return MAILEXCH_ERROR_BAD_STATE;
@@ -111,7 +111,7 @@ int mailexch_perform_request_xml(mailexch* exch, xmlNodePtr request_body,
 }
 
 
-int mailexch_save_response_xml(mailexch* exch) {
+mailexch_result mailexch_save_response_xml(mailexch* exch) {
   mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
 
   curl_easy_setopt(internal->curl, CURLOPT_WRITEFUNCTION,

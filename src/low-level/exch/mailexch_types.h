@@ -45,7 +45,7 @@ extern "C" {
 /*
   Return codes for most of the mailexch* functions
 */
-enum {
+enum mailexch_result {
   /* indicates success */
   MAILEXCH_NO_ERROR = 0,
   /* function called with invalid parameter */
@@ -67,6 +67,7 @@ enum {
   /* no or invalid response received for SOAP request */
   MAILEXCH_ERROR_INVALID_RESPONSE,
 };
+typedef enum mailexch_result mailexch_result;
 
 /*
   struct mailexch_connection_settings

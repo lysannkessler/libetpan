@@ -70,11 +70,31 @@
     MAILEXCH_AUTODISCOVER_TRY_STEP_LONG(step, exch, url, settings, host, result)
 
 
-int mailexch_autodiscover_try_url(mailexch* exch, const char* url,
+/*
+  mailexch_autodiscover_try_url()
+
+  Try to extract autodiscover information from given URL, and save them in the
+  given settings structure.
+  The current state must be MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED.
+
+  @param exch     Exchange session object. Its curl object will be used to
+                  perform HTTP requests.
+  @param url      URL to try
+  @param settings Upon success, the connection settings are stored in the
+                  structure ponited at by this parameter.
+
+  @return - MAILEXCH_NO_ERROR indicated success
+          - MAILEXCH_ERROR_BAD_STATE: state is not
+            MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED
+          - MAILEXCH_ERROR_CONNECT: cannot connect to given URL
+          - MAILEXCH_ERROR_AUTODISCOVER_UNAVAILABLE: given URL does not seem to
+            point to a Exchange autodiscover service
+*/
+mailexch_result mailexch_autodiscover_try_url(mailexch* exch, const char* url,
         mailexch_connection_settings* settings);
 
 
-int mailexch_autodiscover(mailexch* exch, const char* host,
+mailexch_result mailexch_autodiscover(mailexch* exch, const char* host,
         const char* email_address, const char* username, const char* password,
         const char* domain, mailexch_connection_settings* settings) {
   /* http://msdn.microsoft.com/en-us/library/exchange/ee332364(v=exchg.140).aspx */
@@ -164,28 +184,13 @@ int mailexch_autodiscover(mailexch* exch, const char* host,
   return result;
 }
 
-/*
-  mailexch_autodiscover_try_url()
-
-  Try to extract autodiscover information from given URL, and save them in the
-  given settings structure.
-
-  @param exch     Exchange session object. Its curl object will be used to
-                  perform HTTP requests.
-  @param url      URL to try
-  @param settings Upon success, the connection settings are stored in the
-                  structure ponited at by this parameter.
-
-  @return - MAILEXCH_NO_ERROR indicated success
-          - MAILEXCH_ERROR_CONNECT: cannot connect to given URL
-          - MAILEXCH_ERROR_AUTODISCOVER_UNAVAILABLE: given URL does not seem to
-            point to a Exchange autodiscover service
-*/
-int mailexch_autodiscover_try_url(mailexch* exch, const char* url,
+mailexch_result mailexch_autodiscover_try_url(mailexch* exch, const char* url,
         mailexch_connection_settings* settings) {
 
-  mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
+  if(exch->state != MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED)
+    return MAILEXCH_ERROR_BAD_STATE;
 
+  mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
   curl_easy_setopt(internal->curl, CURLOPT_URL, url);
   CURLcode curl_code = curl_easy_perform(internal->curl);
 

@@ -40,7 +40,7 @@
 #include <string.h>
 
 
-int mailexch_prepare_curl(mailexch* exch, const char* username,
+mailexch_result mailexch_prepare_curl(mailexch* exch, const char* username,
         const char* password, const char* domain) {
 
   /* do this only once */
@@ -66,7 +66,7 @@ int mailexch_prepare_curl(mailexch* exch, const char* username,
   return result;
 }
 
-int mailexch_set_credentials(mailexch* exch, const char* username,
+mailexch_result mailexch_set_credentials(mailexch* exch, const char* username,
         const char* password, const char* domain) {
 
   if(exch->state != MAILEXCH_STATE_NEW &&
@@ -100,7 +100,9 @@ int mailexch_set_credentials(mailexch* exch, const char* username,
 }
 
 
-int mailexch_write_response_to_buffer(mailexch* exch, size_t buffer_size_hint) {
+mailexch_result mailexch_write_response_to_buffer(mailexch* exch,
+        size_t buffer_size_hint) {
+
   mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
 
   curl_easy_setopt(internal->curl, CURLOPT_WRITEFUNCTION,

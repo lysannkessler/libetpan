@@ -60,7 +60,7 @@ extern "C" {
           - (see mailexch_set_credentials() for other return codes).
           If an error occurs, the CURL object is freed and set to NULL.
 */
-int mailexch_prepare_curl(mailexch* exch, const char* username,
+mailexch_result mailexch_prepare_curl(mailexch* exch, const char* username,
         const char* password, const char* domain);
 
 /*
@@ -80,7 +80,7 @@ int mailexch_prepare_curl(mailexch* exch, const char* username,
             MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED
           - MAILEXCH_ERROR_INTERNAL indicates an arbitrary failure
 */
-int mailexch_set_credentials(mailexch* exch, const char* username,
+mailexch_result mailexch_set_credentials(mailexch* exch, const char* username,
         const char* password, const char* domain);
 
 
@@ -101,7 +101,8 @@ int mailexch_set_credentials(mailexch* exch, const char* username,
 
   @see mailexch_write_response_to_buffer_callback()
 */
-int mailexch_write_response_to_buffer(mailexch* exch, size_t buffer_size_hint);
+mailexch_result mailexch_write_response_to_buffer(mailexch* exch,
+        size_t buffer_size_hint);
 
 /*
   mailexch_write_response_to_buffer_callback()

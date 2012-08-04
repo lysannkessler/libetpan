@@ -54,7 +54,7 @@ const short mailexch_distfolder_id_name_map_length =
   sizeof(mailexch_distfolder_id_name_map) / sizeof(const char*);
 
 
-int mailexch_list(mailexch* exch,
+mailexch_result mailexch_list(mailexch* exch,
         mailexch_distinguished_folder_id distfolder_id, const char* folder_id,
         int count, carray** list) {
 
@@ -155,7 +155,7 @@ int mailexch_list(mailexch* exch,
 }
 
 
-int mailexch_prepare_for_requests(mailexch* exch) {
+mailexch_result mailexch_prepare_for_requests(mailexch* exch) {
   mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
 
   if(exch->state != MAILEXCH_STATE_CONNECTED) return MAILEXCH_NO_ERROR;
