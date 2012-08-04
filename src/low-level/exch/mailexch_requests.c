@@ -39,6 +39,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <libxml/tree.h>
+#include <libxml/parser.h>
+
 
 /* maps from mailexch_distinguished_folder_id to string */
 const char* mailexch_distfolder_id_name_map[] = {
@@ -54,81 +57,87 @@ int mailexch_list(mailexch* exch,
         mailexch_distinguished_folder_id distfolder_id, const char* folder_id,
         int count, carray** list) {
 
+  /* check parameters */
   if(distfolder_id == MAILEXCH_DISTFOLDER__NONE && folder_id == NULL)
     return MAILEXCH_ERROR_INVALID_PARAMETER;
   if(distfolder_id != MAILEXCH_DISTFOLDER__NONE &&
-       (distfolder_id < MAILEXCH_DISTFOLDER__MIN ||
-        distfolder_id > MAILEXCH_DISTFOLDER__MAX))
-    return MAILEXCH_ERROR_INVALID_PARAMETER;
+    (distfolder_id < MAILEXCH_DISTFOLDER__MIN ||
+     distfolder_id > MAILEXCH_DISTFOLDER__MAX)) {
+      return MAILEXCH_ERROR_INVALID_PARAMETER;
+  }
 
-  const char* request_format =
-    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
-    "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n"
-    "  <soap:Body>\n"
-    "    <FindItem xmlns=\"http://schemas.microsoft.com/exchange/services/2006/messages\"\n"
-    "              xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"\n"
-    "              Traversal=\"Shallow\">\n"
-    "      <ItemShape>\n"
-    "        <t:BaseShape>IdOnly</t:BaseShape>\n"
-    "        <t:AdditionalProperties>\n"
-    "          <t:FieldURI FieldURI=\"item:Subject\"/>\n"
-    "        </t:AdditionalProperties>\n"
-    "      </ItemShape>\n"
-    "      <IndexedPageItemView%s BasePoint=\"Beginning\" Offset=\"0\" />\n"
-    "      <ParentFolderIds>%s</ParentFolderIds>\n"
-    "    </FindItem>\n"
-    "  </soap:Body>\n"
-    "</soap:Envelope>";
-  size_t request_length = strlen(request_format) - 4; /* without format chars */
-  const char* max_entries_returned_format = " MaxEntriesReturned=\"%d\"";
-  const char* distfolder_id_format = "<t:DistinguishedFolderId Id=\"%s\"/>";
-  const char* folder_id_format = "<t:FolderId Id=\"%s\"/>";
+  /* build request document */
+  /*
+    <?xml version="1.0"?>
+    <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+      <soap:Body>
+        <FindItem xmlns="http://schemas.microsoft.com/exchange/services/2006/messages"
+                  xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"
+                  Traversal="Shallow">
+          <ItemShape>
+            <t:BaseShape>IdOnly</t:BaseShape>
+            <t:AdditionalProperties>
+              <t:FieldURI FieldURI="item:Subject"/>
+            </t:AdditionalProperties>
+          </ItemShape>
+          <IndexedPageItemView BasePoint="Beginning" Offset="0"
+                               MaxEntriesReturned="[count]"/> <!-- if count >= 0 -->
+          <ParentFolderIds>
+            <t:DistinguishedFolderId Id="[distfolder_id]"/> <!-- or -->
+            <t:FolderId Id="[folder_id]"/>
+          </ParentFolderIds>
+        </FindItem>
+      </soap:Body>
+    </soap:Envelope>
+  */
 
-  char* request, *max_entries_returned = NULL, *folder_distfolder_id = NULL;
+  xmlDocPtr doc = xmlNewDoc(BAD_CAST "1.0");
+  xmlNodePtr node_envelope = xmlNewNode(NULL, BAD_CAST "Envelope");
+  xmlNsPtr ns_soap = xmlNewNs(node_envelope, BAD_CAST "http://schemas.xmlsoap.org/soap/envelope/", BAD_CAST "soap");
+  xmlSetNs(node_envelope, ns_soap);
+  xmlDocSetRootElement(doc, node_envelope);
 
-  /* max_entries_returned */
+  xmlNodePtr node_body = xmlNewChild(node_envelope, ns_soap, BAD_CAST "Body", NULL);
+  xmlNodePtr node_findItem = xmlNewChild(node_body, NULL, BAD_CAST "FindItem", NULL);
+  xmlNsPtr ns_exch_messages = xmlNewNs(node_findItem, BAD_CAST "http://schemas.microsoft.com/exchange/services/2006/messages", NULL);
+  xmlNsPtr ns_exch_types = xmlNewNs(node_findItem, BAD_CAST "http://schemas.microsoft.com/exchange/services/2006/types", BAD_CAST "t");
+  xmlSetNs(node_findItem, ns_exch_messages);
+  xmlNewProp(node_findItem, BAD_CAST "Traversal", BAD_CAST "Shallow");
+
+  xmlNodePtr node_itemShape = xmlNewChild(node_findItem, ns_exch_messages, BAD_CAST "ItemShape", NULL);
+  xmlNewChild(node_itemShape, ns_exch_types, BAD_CAST "BaseShape", BAD_CAST "IdOnly");
+  xmlNodePtr node_props = xmlNewChild(node_itemShape, ns_exch_types, BAD_CAST "AdditionalProperties", NULL);
+  xmlNodePtr node_fieldUri = xmlNewChild(node_props, ns_exch_types, BAD_CAST "FieldURI", NULL);
+  xmlNewProp(node_fieldUri, BAD_CAST "FieldURI", BAD_CAST "item:Subject");
+
+  xmlNodePtr node_indexedPageItemView = xmlNewChild(node_findItem, ns_exch_messages, BAD_CAST "IndexedPageItemView", NULL);
+  xmlNewProp(node_indexedPageItemView, BAD_CAST "BasePoint", BAD_CAST "Beginning");
+  xmlNewProp(node_indexedPageItemView, BAD_CAST "Offset", BAD_CAST "0");
   if(count >= 0) {
-    /* MaxEntriesReturned="" + max uint length when printed + \0 */
-    max_entries_returned = (char*) malloc(21 + 10 + 1);
-    if(!max_entries_returned) return MAILEXCH_ERROR_INTERNAL;
-    sprintf(max_entries_returned, max_entries_returned_format, count);
-    request_length += strlen(max_entries_returned);
+    /* max uint length when printed + \0 */
+    char* max_entries_returned = (char*) malloc(10 + 1);
+    if(!max_entries_returned) {
+      xmlFreeDoc(doc);
+      return MAILEXCH_ERROR_INTERNAL;
+    }
+    sprintf(max_entries_returned, "%d", count);
+    xmlNewProp(node_indexedPageItemView, BAD_CAST "MaxEntriesReturned", BAD_CAST max_entries_returned);
+    free(max_entries_returned);
   }
 
-  /* folder_distfolder_id */
-  if(distfolder_id != MAILEXCH_DISTFOLDER__NONE && distfolder_id >= 0 &&
-          distfolder_id < mailexch_distfolder_id_name_map_length) {
-    const char* distfolder_id_str =
-      mailexch_distfolder_id_name_map[distfolder_id];
-    /* <t:DistinguishedFolderId Id=""/> + dist. folder id string + \0 */
-    folder_distfolder_id = (char*) malloc(32 + strlen(distfolder_id_str) + 1);
-    if(folder_distfolder_id)
-      sprintf(folder_distfolder_id, distfolder_id_format, distfolder_id_str);
+  xmlNodePtr node_parentFolderIds = xmlNewChild(node_findItem, ns_exch_messages, BAD_CAST "ParentFolderIds", NULL);
+  if(distfolder_id != MAILEXCH_DISTFOLDER__NONE && distfolder_id >= 0 && distfolder_id < mailexch_distfolder_id_name_map_length) {
+    xmlNodePtr node_distinguishedFolderId = xmlNewChild(node_parentFolderIds, ns_exch_types, BAD_CAST "DistinguishedFolderId", NULL);
+    xmlNewProp(node_distinguishedFolderId, BAD_CAST "Id", BAD_CAST mailexch_distfolder_id_name_map[distfolder_id]);
   } else if(folder_id != NULL) {
-    /* <t:FolderId Id=""/> + folder id string + \0 */
-    folder_distfolder_id = (char*) malloc(19 + strlen(folder_id) + 1);
-    if(folder_distfolder_id)
-      sprintf(folder_distfolder_id, folder_id_format, folder_id);
+    xmlNodePtr node_folderId = xmlNewChild(node_parentFolderIds, ns_exch_types, BAD_CAST "FolderId", NULL);
+    xmlNewProp(node_folderId, BAD_CAST "Id", BAD_CAST folder_id);
   }
-  if(!folder_distfolder_id) {
-    if(max_entries_returned) free(max_entries_returned);
-    return MAILEXCH_ERROR_INTERNAL;
-  }
-  request_length += strlen(folder_distfolder_id);
 
-  /* request */
-  request = (char*) malloc(request_length + 1);
-  if(!request) {
-    free(folder_distfolder_id);
-    if(max_entries_returned) free(max_entries_returned);
-    return MAILEXCH_ERROR_INTERNAL;
-  }
-  sprintf(request, request_format,
-          max_entries_returned ? max_entries_returned : "",
-          folder_distfolder_id);
-
-  free(folder_distfolder_id);
-  if(max_entries_returned) free(max_entries_returned);
+  /* dump request to buffer */
+  xmlChar* request = NULL;
+  xmlDocDumpFormatMemory(doc, &request, NULL, 0);
+  xmlFreeDoc(doc);
 
   /* perform request */
   long http_response_code = 0;
@@ -140,7 +149,7 @@ int mailexch_list(mailexch* exch,
   }
 
   /* clean up */
-  free(request);
+  xmlFree(request);
   return result;
 }
 
