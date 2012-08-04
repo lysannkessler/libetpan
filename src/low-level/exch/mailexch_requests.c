@@ -86,12 +86,10 @@ int mailexch_list(mailexch* exch,
     </FindItem>
   */
 
-  xmlNodePtr node_findItem = xmlNewNode(NULL, BAD_CAST "FindItem");
-  xmlNsPtr ns_exch_messages = xmlNewNs(node_findItem,
-          MAILEXCH_XML_NS_EXCH_MESSAGES, NULL);
-  xmlNsPtr ns_exch_types = xmlNewNs(node_findItem,
-          MAILEXCH_XML_NS_EXCH_TYPES, BAD_CAST "t");
-  xmlSetNs(node_findItem, ns_exch_messages);
+  xmlNodePtr node_findItem = NULL;
+  xmlNsPtr ns_exch_messages = NULL, ns_exch_types = NULL;
+  mailexch_prepare_xml_request_method_node("FindItem", &node_findItem,
+          &ns_exch_messages, &ns_exch_types);
   xmlNewProp(node_findItem, BAD_CAST "Traversal", BAD_CAST "Shallow");
 
   xmlNodePtr node_itemShape = xmlNewChild(node_findItem, ns_exch_messages,
@@ -135,10 +133,9 @@ int mailexch_list(mailexch* exch,
   }
 
   /* perform request */
-  xmlDocPtr response;
-  xmlNodePtr response_body;
+  xmlDocPtr response; xmlNodePtr response_body;
   int result = mailexch_perform_request_xml(exch, node_findItem, &response,
-                                            &response_body);
+          &response_body);
 
   if(result == MAILEXCH_NO_ERROR && response != NULL) {
     xmlChar* response_str = NULL;
@@ -162,7 +159,8 @@ int mailexch_prepare_for_requests(mailexch* exch) {
 
   /* post to AsUrl */
   curl_easy_setopt(internal->curl, CURLOPT_POST, 1L);
-  curl_easy_setopt(internal->curl, CURLOPT_URL, exch->connection_settings.as_url);
+  curl_easy_setopt(internal->curl, CURLOPT_URL,
+          exch->connection_settings.as_url);
 
   /* Clear headers and set Content-Type to text/xml. */
   if(internal->curl_headers) {
@@ -170,7 +168,7 @@ int mailexch_prepare_for_requests(mailexch* exch) {
     internal->curl_headers = NULL;
   }
   internal->curl_headers = curl_slist_append(internal->curl_headers,
-                                             "Content-Type: text/xml");
+          "Content-Type: text/xml");
   curl_easy_setopt(internal->curl, CURLOPT_HTTPHEADER, internal->curl_headers);
 
   /* clear request string for now */

@@ -50,6 +50,10 @@ extern "C" {
   (BAD_CAST "http://schemas.microsoft.com/exchange/services/2006/types")
 
 
+/* @note TODO docstring */
+int mailexch_prepare_xml_request_method_node(const char* name, xmlNodePtr* node,
+        xmlNsPtr* ns_exch_messages, xmlNsPtr* ns_exch_types);
+
 /*
   mailexch_perform_request_xml()
 

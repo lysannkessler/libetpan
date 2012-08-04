@@ -37,6 +37,17 @@
 #include "xml.h"
 
 
+int mailexch_prepare_xml_request_method_node(const char* name, xmlNodePtr* node,
+        xmlNsPtr* ns_exch_messages, xmlNsPtr* ns_exch_types) {
+
+  *node = xmlNewNode(NULL, BAD_CAST name);
+  *ns_exch_messages = xmlNewNs(*node, MAILEXCH_XML_NS_EXCH_MESSAGES, NULL);
+  *ns_exch_types = xmlNewNs(*node, MAILEXCH_XML_NS_EXCH_TYPES, BAD_CAST "t");
+  xmlSetNs(*node, *ns_exch_messages);
+
+  return MAILEXCH_NO_ERROR;
+}
+
 int mailexch_perform_request_xml(mailexch* exch, xmlNodePtr request_body,
         xmlDocPtr* response, xmlNodePtr* response_body) {
 
