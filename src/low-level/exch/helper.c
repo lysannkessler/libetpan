@@ -33,7 +33,8 @@
 # include <config.h>
 #endif
 
-#include <libetpan/mailexch_helper.h>
+#include "helper.h"
+#include "types_internal.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -42,17 +43,19 @@
 int mailexch_prepare_curl(mailexch* exch, const char* username,
         const char* password, const char* domain) {
 
-  exch->curl = curl_easy_init();
-  if(!exch->curl) return MAILEXCH_ERROR_INTERNAL;
+  CURL* curl = curl_easy_init();
+  if(!curl) return MAILEXCH_ERROR_INTERNAL;
+  MAILEXCH_INTERNAL(exch)->curl = curl;
 #if 0
-  curl_easy_setopt(exch->curl, CURLOPT_VERBOSE, 1L);
+  curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 #endif
 
   int result = mailexch_set_credentials(exch, username, password, domain);
   if(result != MAILEXCH_NO_ERROR) {
-    curl_easy_cleanup(exch->curl);
-    exch->curl = NULL;
+    curl_easy_cleanup(curl);
+    MAILEXCH_INTERNAL(exch)->curl = NULL;
   }
+
   return result;
 }
 
@@ -76,31 +79,35 @@ int mailexch_set_credentials(mailexch* exch, const char* username,
     sprintf(userpwd, "%s:%s", username, password);
   }
 
-  curl_easy_setopt(exch->curl, CURLOPT_USERPWD, userpwd);
+  curl_easy_setopt(MAILEXCH_INTERNAL(exch)->curl, CURLOPT_USERPWD, userpwd);
   free(userpwd);
 
   /* allow any authentication protocol */
-  curl_easy_setopt(exch->curl, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+  curl_easy_setopt(MAILEXCH_INTERNAL(exch)->curl, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
 
   return MAILEXCH_NO_ERROR;
 }
 
 
 int mailexch_write_response_to_buffer(mailexch* exch, size_t buffer_size_hint) {
-  curl_easy_setopt(exch->curl, CURLOPT_WRITEFUNCTION,
-                   mailexch_default_write_callback);
-  curl_easy_setopt(exch->curl, CURLOPT_WRITEDATA, exch);
-  mmap_string_set_size(exch->response_buffer, buffer_size_hint);
-  mmap_string_truncate(exch->response_buffer, 0);
+  mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
+
+  curl_easy_setopt(internal->curl, CURLOPT_WRITEFUNCTION,
+                   mailexch_write_response_to_buffer_callback);
+  curl_easy_setopt(internal->curl, CURLOPT_WRITEDATA, internal);
+
+  mmap_string_set_size(internal->response_buffer, buffer_size_hint);
+  mmap_string_truncate(internal->response_buffer, 0);
+
   return MAILEXCH_NO_ERROR;
 }
 
-size_t mailexch_default_write_callback(char *ptr, size_t size, size_t nmemb,
-        void *userdata) {
+size_t mailexch_write_response_to_buffer_callback(char *ptr, size_t size,
+        size_t nmemb, void *userdata) {
 
   size_t length = size*nmemb < 1 ? 0 : size*nmemb;
-  mailexch* exch = (mailexch*) userdata;
+  mailexch_internal* internal = (mailexch_internal*) userdata;
 
-  mmap_string_append_len(exch->response_buffer, ptr, length);
+  mmap_string_append_len(internal->response_buffer, ptr, length);
   return length;
 }

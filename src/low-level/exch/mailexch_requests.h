@@ -38,7 +38,6 @@ extern "C" {
 
 
 #include <libetpan/mailexch_types.h>
-
 #include <libetpan/carray.h>
 
 
@@ -93,44 +92,17 @@ int mailexch_list(mailexch* exch,
   - clears all headers and sets Content-Type header to text/xml
   - clears request body
   - allocates default size response buffer and clears it
+  - reponses are parsed as XML, chunk by chunk
 
   @param exch   the connected Exchange session object to configure
 
   @return - MAILEXCH_NO_ERROR indicates success
-          - (see mailexch_write_response_to_buffer() for return codes)
+          - (see mailexch_save_response_xml() for return codes)
 
   @see mailexch_connect()
-  @see mailexch_perform_request()
+  @see mailexch_perform_request_xml()
 */
 int mailexch_prepare_for_requests(mailexch* exch);
-
-/*
-  mailexch_perform_request()
-
-  Perform SOAP request given by string, and return its HTTP status code and the
-  SOAP response string.
-
-  @param exch       Exchange session object whose connection to use for the
-                    request
-  @param request    request string
-  @param http_response_code pointer to long that will receive the HTTP response
-                            code
-  @param response   pointer to char* that will be assigned the response string.
-                    This string is only valid until the next request is
-                    performed or the exchange session is freed. The caller must
-                    not free the reponse.
-
-  @return - MAILEXCH_NO_ERROR indicates success. http_response_code and response
-            are filled with meaningful output values.
-          - MAILEXCH_ERROR_CONNECT: could not connect to service.
-            http_response_code and response are not filled with meaningful
-            output values.
-          - MAILEXCH_ERROR_REQUEST_FAILED: HTTP response was not 200.
-            http_response_code and response are filled with meaningful output
-            values and can be inspected for error treatment.
-*/
-int mailexch_perform_request(mailexch* exch, const char* request,
-        long* http_response_code, const char** response);
 
 
 #ifdef __cplusplus

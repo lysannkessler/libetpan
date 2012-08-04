@@ -43,20 +43,6 @@ extern "C" {
 
 
 /*
-  MAILEXCH_FREE()
-
-  Free memory fo given object, and set the pointer to NULL.
-
-  @param obj  value to free and clear
-*/
-#define MAILEXCH_FREE(obj) \
-  if(obj) { \
-    free(obj); \
-    obj = NULL; \
-  }
-
-
-/*
   mailexch_prepare_curl()
 
   Create CURL instance for Exchange session and fill it with given user
@@ -105,12 +91,12 @@ int mailexch_set_credentials(mailexch* exch, const char* username,
 
   @return MAILEXCH_NO_ERROR
 
-  @see mailexch_default_write_callback()
+  @see mailexch_write_response_to_buffer_callback()
 */
 int mailexch_write_response_to_buffer(mailexch* exch, size_t buffer_size_hint);
 
 /*
-  mailexch_default_write_callback()
+  mailexch_write_response_to_buffer_callback()
 
   CURL write callback that writes the received response text into the Exchange
   session's response buffer.
@@ -120,10 +106,10 @@ int mailexch_write_response_to_buffer(mailexch* exch, size_t buffer_size_hint);
                   to the desired session, so it gets passed into this callback
                   by CURL.
 
-  @see mailexch_default_write_callback()
+  @see mailexch_write_response_to_buffer()
 */
-size_t mailexch_default_write_callback(char *ptr, size_t size, size_t nmemb,
-        void *userdata);
+size_t mailexch_write_response_to_buffer_callback(char *ptr, size_t size,
+        size_t nmemb, void *userdata);
 
 
 #ifdef __cplusplus

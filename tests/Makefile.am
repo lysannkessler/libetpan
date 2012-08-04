@@ -60,6 +60,3 @@ readmsg_simple_SOURCES = $(READMSGCOMMON) readmsg-simple.c
 readmsg_uid_SOURCES = $(READMSGCOMMON) readmsg-uid.c
 
 fetch_attachment_SOURCES = $(READMSGCOMMON) fetch-attachment.c
-
-exch_sample_CPPFLAGS = $(AM_CPPFLAGS) $(LIBCURL_CPPFLAGS)
-exch_sample_LDFLAGS = $(AM_LDFLAGS) $(LIBCURL)

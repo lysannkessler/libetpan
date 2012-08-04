@@ -38,7 +38,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <libetpan/mailexch_helper.h>
+#include "helper.h"
+#include "types_internal.h"
 
 
 #define MAILEXCH_AUTODISCOVER_REQUEST_FORMAT ( \
@@ -93,38 +94,39 @@ int mailexch_autodiscover(mailexch* exch, const char* host,
   /* prepare curl: curl object + credentials */
   int result = mailexch_prepare_curl(exch, username, password, domain);
   if(result != MAILEXCH_NO_ERROR) return result;
+  CURL* curl = MAILEXCH_INTERNAL(exch)->curl;
 
   /* headers */
   struct curl_slist *headers = NULL;
   headers = curl_slist_append(headers, "Content-Type: text/xml");
-  curl_easy_setopt(exch->curl, CURLOPT_HTTPHEADER, headers);
+  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 
   /* Follow redirects, but only to HTTPS. */
-  curl_easy_setopt(exch->curl, CURLOPT_FOLLOWLOCATION, 1L);
-  curl_easy_setopt(exch->curl, CURLOPT_MAXREDIRS, 10L);
-  curl_easy_setopt(exch->curl, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTPS);
-  curl_easy_setopt(exch->curl, CURLOPT_UNRESTRICTED_AUTH, 0L);
+  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+  curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 10L);
+  curl_easy_setopt(curl, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTPS);
+  curl_easy_setopt(curl, CURLOPT_UNRESTRICTED_AUTH, 0L);
 
   /* content */
   char* request = (char*) malloc(
     strlen(MAILEXCH_AUTODISCOVER_REQUEST_FORMAT) - 2 + /* remove format chars */
     strlen(email_address) + 1);      /* add email address and null terminator */
   if(!request) {
-    curl_easy_setopt(exch->curl, CURLOPT_FOLLOWLOCATION, 0L);
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
     curl_slist_free_all(headers);
-    curl_easy_setopt(exch->curl, CURLOPT_HTTPHEADER, NULL);
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, NULL);
     return MAILEXCH_ERROR_INTERNAL;
   }
   sprintf(request, MAILEXCH_AUTODISCOVER_REQUEST_FORMAT, email_address);
-  curl_easy_setopt(exch->curl, CURLOPT_POSTFIELDS, request);
+  curl_easy_setopt(curl, CURLOPT_POSTFIELDS, request);
 
   /* result */
   if(mailexch_write_response_to_buffer(exch,
      MAILEXCH_AUTODISCOVER_MIN_RESPONSE_BUFFER_LENGTH) != MAILEXCH_NO_ERROR) {
 
-    curl_easy_setopt(exch->curl, CURLOPT_FOLLOWLOCATION, 0L);
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
     curl_slist_free_all(headers);
-    curl_easy_setopt(exch->curl, CURLOPT_HTTPHEADER, NULL);
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, NULL);
     free(request);
     return MAILEXCH_ERROR_INTERNAL;
   }
@@ -133,10 +135,10 @@ int mailexch_autodiscover(mailexch* exch, const char* host,
   /*   allocate buffer */
   char* url = malloc(MAILEXCH_AUTODISCOVER_URL_LENGTH + strlen(host) + 1);
   if(!url) {
-    mmap_string_set_size(exch->response_buffer, 0);
-    curl_easy_setopt(exch->curl, CURLOPT_FOLLOWLOCATION, 0L);
+    mmap_string_set_size(MAILEXCH_INTERNAL(exch)->response_buffer, 0);
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
     curl_slist_free_all(headers);
-    curl_easy_setopt(exch->curl, CURLOPT_HTTPHEADER, NULL);
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, NULL);
     free(request);
     return MAILEXCH_ERROR_INTERNAL;
   }
@@ -150,10 +152,10 @@ int mailexch_autodiscover(mailexch* exch, const char* host,
 
   /* clean up */
   free(url);
-  mmap_string_set_size(exch->response_buffer, 0);
-  curl_easy_setopt(exch->curl, CURLOPT_FOLLOWLOCATION, 0L);
+  mmap_string_set_size(MAILEXCH_INTERNAL(exch)->response_buffer, 0);
+  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
   curl_slist_free_all(headers);
-  curl_easy_setopt(exch->curl, CURLOPT_HTTPHEADER, NULL);
+  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, NULL);
   free(request);
   return result;
 }
@@ -178,18 +180,20 @@ int mailexch_autodiscover(mailexch* exch, const char* host,
 int mailexch_autodiscover_try_url(mailexch* exch, const char* url,
         mailexch_connection_settings* settings) {
 
-  curl_easy_setopt(exch->curl, CURLOPT_URL, url);
-  CURLcode curl_code = curl_easy_perform(exch->curl);
+  mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
+
+  curl_easy_setopt(internal->curl, CURLOPT_URL, url);
+  CURLcode curl_code = curl_easy_perform(internal->curl);
 
   int result = MAILEXCH_ERROR_CONNECT;
   if(curl_code == CURLE_OK) {
     long http_response = 0;
-    curl_easy_getinfo (exch->curl, CURLINFO_RESPONSE_CODE, &http_response);
+    curl_easy_getinfo (internal->curl, CURLINFO_RESPONSE_CODE, &http_response);
     if(http_response == 200) {
       result = MAILEXCH_ERROR_AUTODISCOVER_UNAVAILABLE;
 
       /* parse ASUrl */
-      char* as_url = strstr(exch->response_buffer->str, "<ASUrl>");
+      char* as_url = strstr(internal->response_buffer->str, "<ASUrl>");
       if(as_url != NULL) {
         as_url += 7;
         char* as_url_end = strstr(as_url, "</ASUrl>");

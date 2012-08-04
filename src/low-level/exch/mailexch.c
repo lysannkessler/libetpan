@@ -34,8 +34,9 @@
 #endif
 
 #include <libetpan/mailexch.h>
-#include <libetpan/mailexch_helper.h>
 #include <libetpan/mailexch_autodiscover.h>
+#include "helper.h"
+#include "types_internal.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -51,17 +52,18 @@ size_t mailexch_test_connection_write_callback(char *ptr, size_t size,
 
 mailexch* mailexch_new(size_t progr_rate, progress_function* progr_fun)
 {
-  mailexch* exch;
-
-  exch = calloc(1, sizeof(* exch));
+  mailexch* exch = calloc(1, sizeof(* exch));
   if (exch == NULL)
     return NULL;
 
   exch->exch_progr_rate = progr_rate;
   exch->exch_progr_fun = progr_fun;
 
-  exch->response_buffer =
-    mmap_string_sized_new(MAILEXCH_DEFAULT_RESPONSE_BUFFER_LENGTH);
+  exch->internal = mailexch_internal_new();
+  if(exch->internal == NULL) {
+    free(exch);
+    exch = NULL;
+  }
 
   return exch;
 }
@@ -69,22 +71,19 @@ mailexch* mailexch_new(size_t progr_rate, progress_function* progr_fun)
 void mailexch_free(mailexch* exch) {
   if(!exch) return;
 
-  MAILEXCH_FREE(exch->connection_settings.as_url);
-  MAILEXCH_FREE(exch->connection_settings.oof_url);
-  MAILEXCH_FREE(exch->connection_settings.um_url);
-  MAILEXCH_FREE(exch->connection_settings.oab_url);
+  if(exch->connection_settings.as_url)
+    free(exch->connection_settings.as_url);
+  if(exch->connection_settings.oof_url)
+    free(exch->connection_settings.oof_url);
+  if(exch->connection_settings.um_url)
+    free(exch->connection_settings.um_url);
+  if(exch->connection_settings.oab_url)
+    free(exch->connection_settings.oab_url);
 
-  if(exch->curl) {
-    curl_easy_cleanup(exch->curl);
-    exch->curl = NULL;
-  }
-  if(exch->curl_headers) {
-    curl_slist_free_all(exch->curl_headers);
-    exch->curl_headers = NULL;
-  }
+  if(exch->internal)
+    mailexch_internal_free(MAILEXCH_INTERNAL(exch));
 
-  mmap_string_free(exch->response_buffer);
-  exch->response_buffer = NULL;
+  free(exch);
 }
 
 /*
@@ -154,30 +153,31 @@ int mailexch_connect(mailexch* exch, const char* username, const char* password,
   /* prepare curl: curl object + credentials */
   int result = mailexch_prepare_curl(exch, username, password, domain);
   if(result != MAILEXCH_NO_ERROR) return result;
+  CURL* curl = MAILEXCH_INTERNAL(exch)->curl;
 
   /* GET url */
-  curl_easy_setopt(exch->curl, CURLOPT_HTTPGET, 1L);
-  curl_easy_setopt(exch->curl, CURLOPT_URL, exch->connection_settings.as_url);
+  curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+  curl_easy_setopt(curl, CURLOPT_URL, exch->connection_settings.as_url);
 
   /* Follow redirects, but only to HTTPS. */
-  curl_easy_setopt(exch->curl, CURLOPT_FOLLOWLOCATION, 1L);
-  curl_easy_setopt(exch->curl, CURLOPT_MAXREDIRS, 10L);
-  curl_easy_setopt(exch->curl, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTPS);
-  curl_easy_setopt(exch->curl, CURLOPT_UNRESTRICTED_AUTH, 0L); /* paranoia */
+  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+  curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 10L);
+  curl_easy_setopt(curl, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTPS);
+  curl_easy_setopt(curl, CURLOPT_UNRESTRICTED_AUTH, 0L); /* paranoia */
 
   /* result */
   uint8_t found_wsdl = 0;
-  curl_easy_setopt(exch->curl, CURLOPT_WRITEFUNCTION,
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION,
                    mailexch_test_connection_write_callback);
-  curl_easy_setopt(exch->curl, CURLOPT_WRITEDATA, &found_wsdl);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &found_wsdl);
 
   /* perform request */
-  CURLcode curl_code = curl_easy_perform(exch->curl);
+  CURLcode curl_code = curl_easy_perform(curl);
   if(curl_code != CURLE_OK) {
     result = MAILEXCH_ERROR_CONNECT;
   } else {
     long http_response = 0;
-    curl_easy_getinfo (exch->curl, CURLINFO_RESPONSE_CODE, &http_response);
+    curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_response);
     if(http_response != 200) {
       result = MAILEXCH_ERROR_CONNECT;
     } else if(!found_wsdl) {
@@ -191,7 +191,7 @@ int mailexch_connect(mailexch* exch, const char* username, const char* password,
     mailexch_prepare_for_requests(exch); /* TODO: do this at beginning of request dependant on current state; catch errors */
 
   /* clean up */
-  curl_easy_setopt(exch->curl, CURLOPT_FOLLOWLOCATION, 0L);
+  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
   return result;
 }
 

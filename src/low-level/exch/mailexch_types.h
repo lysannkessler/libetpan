@@ -30,7 +30,6 @@
  */
 
 #ifndef MAILEXCH_TYPES_H
-
 #define MAILEXCH_TYPES_H
 
 #ifdef __cplusplus
@@ -38,10 +37,9 @@ extern "C" {
 #endif
 
 
-#include <curl/curl.h>
+#include <stdlib.h>
 
 #include <libetpan/mailstream_types.h>
-#include <libetpan/mmapstring.h>
 
 
 #define MAILEXCH_DEFAULT_RESPONSE_BUFFER_LENGTH 4096
@@ -67,6 +65,8 @@ enum {
   MAILEXCH_ERROR_AUTODISCOVER_UNAVAILABLE,
   /* request was not successful (HTTP status code != 200) */
   MAILEXCH_ERROR_REQUEST_FAILED,
+  /* no or invalid response received for SOAP request */
+  MAILEXCH_ERROR_INVALID_RESPONSE,
 };
 
 /*
@@ -106,12 +106,9 @@ struct mailexch {
   /* connection settings */
   mailexch_connection_settings connection_settings;
 
-  /* the CURL object used to perform HTTP requests to the service */
-  CURL* curl;
-  struct curl_slist *curl_headers;
-
-  /* a buffer that typically stores the body of the last HTTP response */
-  MMAPString* response_buffer;
+  /* A mailexch_internal structure as defined in types_internal.h.
+     The fields are not added directly to avoid includes in client code. */
+  void* internal;
 };
 typedef struct mailexch mailexch;
 
