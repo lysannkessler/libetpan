@@ -58,6 +58,8 @@ mailexch_result mailexch_list(mailexch* exch,
         mailexch_distinguished_folder_id distfolder_id, const char* folder_id,
         int count, carray** list) {
 
+  (void)(list); /* currently unused */
+
   /* check parameters */
   if(distfolder_id == MAILEXCH_DISTFOLDER__NONE && folder_id == NULL)
     return MAILEXCH_ERROR_INVALID_PARAMETER;
