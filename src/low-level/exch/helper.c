@@ -43,6 +43,13 @@
 int mailexch_prepare_curl(mailexch* exch, const char* username,
         const char* password, const char* domain) {
 
+  /* do this only once */
+  if(MAILEXCH_INTERNAL(exch)->curl != NULL)
+    return MAILEXCH_NO_ERROR;
+  else if (exch->state != MAILEXCH_STATE_NEW &&
+           exch->state != MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED)
+    return MAILEXCH_ERROR_BAD_STATE;
+
   CURL* curl = curl_easy_init();
   if(!curl) return MAILEXCH_ERROR_INTERNAL;
   MAILEXCH_INTERNAL(exch)->curl = curl;
@@ -61,6 +68,10 @@ int mailexch_prepare_curl(mailexch* exch, const char* username,
 
 int mailexch_set_credentials(mailexch* exch, const char* username,
         const char* password, const char* domain) {
+
+  if(exch->state != MAILEXCH_STATE_NEW &&
+     exch->state != MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED)
+    return MAILEXCH_ERROR_BAD_STATE;
 
   /* set userpwd */
   size_t username_length = username ? strlen(username) : 0;

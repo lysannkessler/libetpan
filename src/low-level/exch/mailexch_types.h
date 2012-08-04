@@ -50,6 +50,8 @@ enum {
   MAILEXCH_NO_ERROR = 0,
   /* function called with invalid parameter */
   MAILEXCH_ERROR_INVALID_PARAMETER,
+  /* Exchange session obejct is in wrong state to perform the operation */
+  MAILEXCH_ERROR_BAD_STATE,
   /* an arbitrary internal error occurred, e.g. memory allocation failed */
   MAILEXCH_ERROR_INTERNAL,
   /* cannot connect to host or service, or its response does not indicate
@@ -89,6 +91,21 @@ struct mailexch_connection_settings {
 typedef struct mailexch_connection_settings mailexch_connection_settings;
 
 /*
+  Possible states for Exchange session object
+*/
+enum mailexch_state {
+  /* session has just been created, and is not connected yet */
+  MAILEXCH_STATE_NEW,
+  /* connection settings have been set, it is ready to connect */
+  MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED,
+  /* connection successful */
+  MAILEXCH_STATE_CONNECTED,
+  /* Exchange object has been reconfigured to perform SOAP requests */
+  MAILEXCH_STATE_READY_FOR_REQUESTS,
+};
+typedef enum mailexch_state mailexch_state;
+
+/*
   struct mailexch
 
   A Exchange session object.
@@ -99,6 +116,9 @@ struct mailexch {
   size_t exch_progr_rate;
   /* This is the function to call to notify the progress, this can be NULL. */
   progress_function* exch_progr_fun;
+
+  /* current state */
+  mailexch_state state;
 
   /* connection settings */
   mailexch_connection_settings connection_settings;

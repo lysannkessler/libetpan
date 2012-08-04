@@ -67,6 +67,11 @@ int mailexch_list(mailexch* exch,
       return MAILEXCH_ERROR_INVALID_PARAMETER;
   }
 
+  if(mailexch_prepare_for_requests(exch) != MAILEXCH_NO_ERROR)
+    return MAILEXCH_ERROR_INTERNAL;
+  if(exch->state != MAILEXCH_STATE_READY_FOR_REQUESTS)
+    return MAILEXCH_ERROR_BAD_STATE;
+
   /* build request body:
     <FindItem xmlns="http://schemas.microsoft.com/exchange/services/2006/messages"
               xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"
@@ -153,6 +158,8 @@ int mailexch_list(mailexch* exch,
 int mailexch_prepare_for_requests(mailexch* exch) {
   mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
 
+  if(exch->state != MAILEXCH_STATE_CONNECTED) return MAILEXCH_NO_ERROR;
+
   /* paranoia */
   curl_easy_setopt(internal->curl, CURLOPT_FOLLOWLOCATION, 0L);
   curl_easy_setopt(internal->curl, CURLOPT_UNRESTRICTED_AUTH, 0L);
@@ -183,7 +190,9 @@ int mailexch_prepare_for_requests(mailexch* exch) {
   }
 
   /* clean up */
-  if(result != MAILEXCH_NO_ERROR) {
+  if(result == MAILEXCH_NO_ERROR) {
+    exch->state = MAILEXCH_STATE_READY_FOR_REQUESTS;
+  } else {
     if(internal->curl_headers) {
       curl_slist_free_all(internal->curl_headers);
       internal->curl_headers = NULL;

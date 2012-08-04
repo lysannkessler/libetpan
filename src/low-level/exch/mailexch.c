@@ -59,6 +59,8 @@ mailexch* mailexch_new(size_t progr_rate, progress_function* progr_fun)
   exch->exch_progr_rate = progr_rate;
   exch->exch_progr_fun = progr_fun;
 
+  exch->state = MAILEXCH_STATE_NEW;
+
   exch->internal = mailexch_internal_new();
   if(exch->internal == NULL) {
     free(exch);
@@ -123,6 +125,8 @@ void mailexch_free(mailexch* exch) {
 int mailexch_set_connection_settings(mailexch* exch,
         mailexch_connection_settings* settings) {
 
+  if(exch->state != MAILEXCH_STATE_NEW) return MAILEXCH_ERROR_BAD_STATE;
+
   int result = MAILEXCH_NO_ERROR;
   MAILEXCH_COPY_STRING(result, exch->connection_settings.as_url,
                        settings->as_url);
@@ -132,6 +136,9 @@ int mailexch_set_connection_settings(mailexch* exch,
                        settings->um_url);
   MAILEXCH_COPY_STRING(result, exch->connection_settings.oab_url,
                        settings->oab_url);
+
+  if(result == MAILEXCH_NO_ERROR)
+    exch->state = MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED;
   return result;
 }
 
@@ -139,13 +146,22 @@ int mailexch_autodiscover_connection_settings(mailexch* exch, const char* host,
         const char* email_address, const char* username,
         const char* password, const char* domain) {
 
-  return mailexch_autodiscover(exch, host, email_address, username, password,
-                               domain, &exch->connection_settings);
+  if(exch->state != MAILEXCH_STATE_NEW) return MAILEXCH_ERROR_BAD_STATE;
+
+  int result = mailexch_autodiscover(exch, host, email_address, username,
+          password, domain, &exch->connection_settings);
+
+  if(result == MAILEXCH_NO_ERROR)
+    exch->state = MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED;
+  return result;
 }
 
 
 int mailexch_connect(mailexch* exch, const char* username, const char* password,
         const char* domain) {
+
+  if(exch->state != MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED)
+    return MAILEXCH_ERROR_BAD_STATE;
 
   /* We just do a GET on the given URL to test the connection.
      It should give us a response with code 200, and a WSDL in the body. */
@@ -184,11 +200,9 @@ int mailexch_connect(mailexch* exch, const char* username, const char* password,
       result = MAILEXCH_ERROR_NO_EWS;
     } else {
       result = MAILEXCH_NO_ERROR;
+      exch->state = MAILEXCH_STATE_CONNECTED;
     }
   }
-
-  if(result == MAILEXCH_NO_ERROR)
-    mailexch_prepare_for_requests(exch); /* TODO: do this at beginning of request dependant on current state; catch errors */
 
   /* clean up */
   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);

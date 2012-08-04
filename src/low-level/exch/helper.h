@@ -46,14 +46,18 @@ extern "C" {
   mailexch_prepare_curl()
 
   Create CURL instance for Exchange session and fill it with given user
-  credentials.
+  credentials, if not already configured.
+  In this case the current state must be MAILEXCH_STATE_NEW or
+  MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED.
 
   @param exch     Exchange session object to configure
   @param username (see mailexch_set_credentials())
   @param password (see mailexch_set_credentials())
   @param domain   (see mailexch_set_credentials())
 
-  @return (see mailexch_set_credentials()).
+  @return - MAILEXCH_ERROR_BAD_STATE: the state is not MAILEXCH_STATE_NEW or
+            MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED
+          - (see mailexch_set_credentials() for other return codes).
           If an error occurs, the CURL object is freed and set to NULL.
 */
 int mailexch_prepare_curl(mailexch* exch, const char* username,
@@ -63,6 +67,8 @@ int mailexch_prepare_curl(mailexch* exch, const char* username,
   mailexch_set_credentials()
 
   Update credentials of Exchange session's CURL object.
+  The current state must be MAILEXCH_STATE_NEW or
+  MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED.
 
   @param exch     Exchange session object whose CURL object to configure
   @param username username to use for all further HTTP authentication actions
@@ -70,6 +76,8 @@ int mailexch_prepare_curl(mailexch* exch, const char* username,
   @param domain   domain to use for all further HTTP authentication actions
 
   @return - MAILEXCH_NO_ERROR indicates success
+          - MAILEXCH_ERROR_BAD_STATE: the state is not MAILEXCH_STATE_NEW or
+            MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED
           - MAILEXCH_ERROR_INTERNAL indicates an arbitrary failure
 */
 int mailexch_set_credentials(mailexch* exch, const char* username,

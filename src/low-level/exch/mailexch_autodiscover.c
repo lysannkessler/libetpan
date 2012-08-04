@@ -79,6 +79,10 @@ int mailexch_autodiscover(mailexch* exch, const char* host,
         const char* domain, mailexch_connection_settings* settings) {
   /* http://msdn.microsoft.com/en-us/library/exchange/ee332364(v=exchg.140).aspx */
 
+  if(exch->state != MAILEXCH_STATE_NEW &&
+     exch->state != MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED)
+    return MAILEXCH_ERROR_BAD_STATE;
+
   /* get host name */
   if(host == NULL) {
     host = strstr(email_address, "@");

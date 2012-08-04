@@ -46,6 +46,7 @@ extern "C" {
   mailexch_new()
 
   Creates a new MS Exchange session object.
+  The new state is MAILEXCH_STATE_NEW.
 
   @param progr_rate  When downloading messages, a function will be called
     each time the amount of bytes downloaded reaches a multiple of this
@@ -81,14 +82,17 @@ void mailexch_free(mailexch* exch);
   mailexch_set_connection_settings()
 
   Sets the session's connection settings.
+  The state must be MAILEXCH_STATE_NEW. Upon success, the new state is
+  MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED.
 
   @param exch       Exchange object to update.
   @param settings   New connection settings for the object.
 
   @return   - MAILEXCH_NO_ERROR upon success
+            - MAILEXCH_ERROR_BAD_STATE if state is not MAILEXCH_STATE_NEW
             - MAILEXCH_ERROR_INTERNAL indicates failure of the operation.
               The state of the connection settings of the given session is
-              undefined in case of an error.
+              undefined.
 
   @see mailexch_autodiscover_connection_settings()
   @see mailexch_connect()
@@ -101,6 +105,8 @@ int mailexch_set_connection_settings(mailexch* exch,
   mailexch_autodiscover_connection_settings()
 
   Update the session's connection settings with autodiscovered attributes.
+  The state must be MAILEXCH_STATE_NEW. Upon success, the new state is
+  MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED.
 
   @param exch             Exchange object to update. It's curl object will be
                           used to perform HTTP requests.
@@ -110,9 +116,10 @@ int mailexch_set_connection_settings(mailexch* exch,
   @param password         (see mailexch_autodiscover())
   @param domain           (see mailexch_autodiscover())
 
-  @return (see mailexch_autodiscover())
+  @return - MAILEXCH_ERROR_BAD_STATE if state is not MAILEXCH_STATE_NEW
+          - (see mailexch_autodiscover() for other return codes)
 
-  @note This is identical to:
+  @note This is identical to (error handling ommitted):
         {@code mailexch_autodiscover(exch, host, email_address, username,
         password, domain, &exch->connection_settings)}</pre>
 
@@ -129,6 +136,8 @@ int mailexch_autodiscover_connection_settings(mailexch* exch, const char* host,
   mailexch_connect()
 
   Setup connection with configured connection settings, and test connection.
+  The state must be MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED. Upon success,
+  the new state is MAILEXCH_STATE_CONNECTED.
 
   @param exch       Exchange session object
   @param username   username required for authentication to Exchange service
@@ -136,6 +145,8 @@ int mailexch_autodiscover_connection_settings(mailexch* exch, const char* host,
   @param domain     domain name required for authentication to Exchange service
 
   @return - MAILEXCH_NO_ERROR indicates success
+          - MAILEXCH_ERROR_BAD_STATE: state is not
+            MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED
           - MAILEXCH_ERROR_CONNECT: cannot connect to Exchange service
           - MAILEXCH_ERROR_NO_EWS: the configured as_url dows not seem to refer
             to a Exchange Web Services 2007 service

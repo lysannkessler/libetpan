@@ -46,6 +46,9 @@ extern "C" {
 
   Fetch most recent 'count' items from the folder identified by either its
   folder id or its distinguished folder id (if available).
+  The current state must be MAILEXCH_STATE_CONNECTED or
+  MAILEXCH_STATE_READY_FOR_REQUESTS. Upon success, the new state will be
+  MAILEXCH_STATE_READY_FOR_REQUESTS.
 
   @param exch           Exchange session object
   @param distfolder_id  distinguished id of folder whose items to list;
@@ -60,8 +63,11 @@ extern "C" {
             * both, distfolder_id is MAILEXCH_DISTFOLDER__NONE and
               folder_id is NULL
             * distfolder_id is invalid
+          - MAILEXCH_ERROR_BAD_STATE: state is not MAILEXCH_STATE_CONNECTED or
+            MAILEXCH_STATE_READY_FOR_REQUESTS, or the session could not be
+            prepared to perform SOAP requests.
           - MAILEXCH_ERROR_INTERNAL: arbitrary failure
-          - (see mailexch_perform_request() for other return codes)
+          - (see mailexch_perform_request_xml() for other return codes)
 
   @note If both, distfolder_id and folder_id contain valid folder ids,
         folder_id is ignored and the folder specified by distfolder_id is used
@@ -85,14 +91,16 @@ int mailexch_list(mailexch* exch,
 /*
   mailexch_prepare_for_requests()
 
-  Prepare given connected Exchange session to be used for SOAP requests.
-  - disables CURLOPT_FOLLOWLOCATION and CURLOPT_UNRESTRICTED_AUTH
-  - sets CURLOPT_POST
-  - sets CURLOPT_URL to the AsUrl
-  - clears all headers and sets Content-Type header to text/xml
-  - clears request body
-  - allocates default size response buffer and clears it
-  - reponses are parsed as XML, chunk by chunk
+  Prepare given connected Exchange session to be used for SOAP requests, if the
+  current state is MAILEXCH_STATE_CONNECTED.
+    - disables CURLOPT_FOLLOWLOCATION and CURLOPT_UNRESTRICTED_AUTH
+    - sets CURLOPT_POST
+    - sets CURLOPT_URL to the AsUrl
+    - clears all headers and sets Content-Type header to text/xml
+    - clears request body
+    - allocates default size response buffer and clears it
+    - reponses are parsed as XML, chunk by chunk
+  Upon success, the new state is MAILEXCH_STATE_READY_FOR_REQUESTS.
 
   @param exch   the connected Exchange session object to configure
 

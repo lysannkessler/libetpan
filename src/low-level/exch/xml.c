@@ -51,7 +51,8 @@ int mailexch_prepare_xml_request_method_node(const char* name, xmlNodePtr* node,
 int mailexch_perform_request_xml(mailexch* exch, xmlNodePtr request_body,
         xmlDocPtr* response, xmlNodePtr* response_body) {
 
-  CURL* curl = MAILEXCH_INTERNAL(exch)->curl;
+  if(exch->state != MAILEXCH_STATE_READY_FOR_REQUESTS)
+    return MAILEXCH_ERROR_BAD_STATE;
 
   /* initialize output variables */
   *response = NULL;
@@ -79,6 +80,7 @@ int mailexch_perform_request_xml(mailexch* exch, xmlNodePtr request_body,
   xmlChar* request_str = NULL;
   xmlDocDumpFormatMemory(doc, &request_str, NULL, 0);
   xmlFreeDoc(doc);
+  CURL* curl = MAILEXCH_INTERNAL(exch)->curl;
   curl_easy_setopt(curl, CURLOPT_POSTFIELDS, (char*) request_str);
 
   /* perform request */

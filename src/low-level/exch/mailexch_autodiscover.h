@@ -45,6 +45,8 @@ extern "C" {
 
   Autodiscover connection settings for given account and store them in a
   mailexch_connection_settings structure.
+  The current state must be MAILEXCH_STATE_NEW or
+  MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED.
 
   @param exch             Exchange session object. Its curl object will be used
                           to perform HTTP requests.
@@ -60,6 +62,8 @@ extern "C" {
                           autodiscover service. Can be NULL.
 
   @return - MAILEXCH_NO_ERROR indicates success
+          - MAILEXCH_BAD_STATE: state is not MAILEXCH_STATE_NEW or
+            MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED
           - MAILEXCH_ERROR_INVALID_PARAMETER: no host given and host cannot be
             extracted from email_address
           - MAILEXCH_ERROR_AUTODISCOVER_UNAVAILABLE: autodiscovering the

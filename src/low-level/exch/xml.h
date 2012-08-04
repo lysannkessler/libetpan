@@ -59,6 +59,7 @@ int mailexch_prepare_xml_request_method_node(const char* name, xmlNodePtr* node,
 
   Perform SOAP request given by string, and return its HTTP status code and the
   SOAP response string.
+  The current state must be MAILEXCH_STATE_READY_FOR_REQUESTS.
 
   @param exch       Exchange session object whose connection to use for the
                     request
@@ -72,6 +73,9 @@ int mailexch_prepare_xml_request_method_node(const char* name, xmlNodePtr* node,
 
   @return - MAILEXCH_NO_ERROR indicates success. response and response_body are
             filled with meaningful output values.
+          - MAILEXCH_ERROR_BAD_REQUEST: state ist not
+            MAILEXCH_STATE_READY_FOR_REQUESTS. response and response_body are
+            not filled with meaningful output values.
           - MAILEXCH_ERROR_CONNECT: could not connect to service. response and
             response_body are not filled with meaningful output values.
           - MAILEXCH_ERROR_INVALID_RESPONSE: the response was not a valid SOAP
