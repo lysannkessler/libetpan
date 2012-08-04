@@ -40,6 +40,7 @@
 #include <string.h>
 
 
+/* maps from mailexch_distinguished_folder_id to string */
 const char* mailexch_distfolder_id_name_map[] = {
   "calendar", "contacts", "deleteditems", "drafts", "inbox", "journal", "notes",
   "outbox", "sentitems", "tasks", "msgfolderroot", "root", "junkemail",

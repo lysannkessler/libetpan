@@ -80,6 +80,7 @@ void mailexch_free(mailexch* exch) {
   }
 
   mmap_string_free(exch->response_buffer);
+  exch->response_buffer = NULL;
 }
 
 /*
@@ -158,7 +159,7 @@ int mailexch_connect(mailexch* exch, const char* username, const char* password,
   curl_easy_setopt(exch->curl, CURLOPT_FOLLOWLOCATION, 1L);
   curl_easy_setopt(exch->curl, CURLOPT_MAXREDIRS, 10L);
   curl_easy_setopt(exch->curl, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTPS);
-  curl_easy_setopt(exch->curl, CURLOPT_UNRESTRICTED_AUTH, 0L);
+  curl_easy_setopt(exch->curl, CURLOPT_UNRESTRICTED_AUTH, 0L); /* paranoia */
 
   /* result */
   uint8_t found_wsdl = 0;

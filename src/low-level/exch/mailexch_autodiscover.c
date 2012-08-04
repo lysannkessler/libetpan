@@ -112,6 +112,7 @@ int mailexch_autodiscover(mailexch* exch, const char* host,
   if(!request) {
     curl_easy_setopt(exch->curl, CURLOPT_FOLLOWLOCATION, 0L);
     curl_slist_free_all(headers);
+    curl_easy_setopt(exch->curl, CURLOPT_HTTPHEADER, NULL);
     return MAILEXCH_ERROR_INTERNAL;
   }
   sprintf(request, MAILEXCH_AUTODISCOVER_REQUEST_FORMAT, email_address);
@@ -123,6 +124,7 @@ int mailexch_autodiscover(mailexch* exch, const char* host,
 
     curl_easy_setopt(exch->curl, CURLOPT_FOLLOWLOCATION, 0L);
     curl_slist_free_all(headers);
+    curl_easy_setopt(exch->curl, CURLOPT_HTTPHEADER, NULL);
     free(request);
     return MAILEXCH_ERROR_INTERNAL;
   }
@@ -134,6 +136,7 @@ int mailexch_autodiscover(mailexch* exch, const char* host,
     mmap_string_set_size(exch->response_buffer, 0);
     curl_easy_setopt(exch->curl, CURLOPT_FOLLOWLOCATION, 0L);
     curl_slist_free_all(headers);
+    curl_easy_setopt(exch->curl, CURLOPT_HTTPHEADER, NULL);
     free(request);
     return MAILEXCH_ERROR_INTERNAL;
   }
