@@ -42,9 +42,6 @@ extern "C" {
 #include <libetpan/mailstream_types.h>
 
 
-#define MAILEXCH_DEFAULT_RESPONSE_BUFFER_LENGTH 4096
-
-
 /*
   Return codes for most of the mailexch* functions
 */

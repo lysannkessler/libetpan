@@ -43,8 +43,7 @@ mailexch_internal* mailexch_internal_new() {
   if (internal == NULL)
     return NULL;
 
-  internal->response_buffer =
-    mmap_string_sized_new(MAILEXCH_DEFAULT_RESPONSE_BUFFER_LENGTH);
+  internal->response_buffer = mmap_string_sized_new(0);
 }
 
 void mailexch_internal_free(mailexch_internal* internal) {

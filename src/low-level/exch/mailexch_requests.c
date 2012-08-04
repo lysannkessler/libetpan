@@ -176,6 +176,11 @@ int mailexch_prepare_for_requests(mailexch* exch) {
 
   /* parse response XML */
   int result = mailexch_save_response_xml(exch);
+  /* reallocate empty response string buffer */
+  if(internal->response_buffer) {
+    mmap_string_free(internal->response_buffer);
+    internal->response_buffer = mmap_string_sized_new(0);
+  }
 
   /* clean up */
   if(result != MAILEXCH_NO_ERROR) {
