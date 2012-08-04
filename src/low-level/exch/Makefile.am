@@ -33,7 +33,8 @@ etpaninclude_HEADERS = \
   mailexch.h mailexch_types.h \
   mailexch_autodiscover.h mailexch_requests.h
 
-AM_CPPFLAGS = -I$(top_builddir)/include \
+AM_CPPFLAGS = -Werror \
+  -I$(top_builddir)/include \
   -I$(top_srcdir)/src/data-types \
   $(LIBCURL_CPPFLAGS) $(LIBXML2_CFLAGS)
 
