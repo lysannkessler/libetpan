@@ -61,6 +61,8 @@ mailexch_result mailexch_list(mailexch* exch,
   (void)(list); /* currently unused */
 
   /* check parameters */
+  if(list == NULL)
+    return MAILEXCH_ERROR_INVALID_PARAMETER;
   if(distfolder_id == MAILEXCH_DISTFOLDER__NONE && folder_id == NULL)
     return MAILEXCH_ERROR_INVALID_PARAMETER;
   if(distfolder_id != MAILEXCH_DISTFOLDER__NONE &&
@@ -144,11 +146,64 @@ mailexch_result mailexch_list(mailexch* exch,
   int result = mailexch_perform_request_xml(exch, node_findItem, &response,
           &response_body);
 
+  /* TODO use SAX interface instead */
   if(result == MAILEXCH_NO_ERROR && response != NULL) {
-    xmlChar* response_str = NULL;
-    xmlDocDumpFormatMemory(response, &response_str, NULL, 0);
-    puts((char*)response_str);
-    xmlFree(response_str);
+    *list = carray_new(count > 0 ? count : 10);
+    xmlNodePtr child = NULL;
+    for(child = response_body->children; child; child = child->next) {
+      if (child->type == XML_ELEMENT_NODE &&
+          xmlStrcmp(child->name, BAD_CAST "ResponseMessages") == 0 &&
+          xmlStrcmp(child->ns->href, MAILEXCH_XML_NS_EXCH_MESSAGES) == 0) {
+        xmlNodePtr response_message = NULL;
+        for(response_message = child->children; response_message; response_message = response_message->next) {
+          if (response_message->type == XML_ELEMENT_NODE &&
+              xmlStrcmp(response_message->name, BAD_CAST "FindItemResponseMessage") == 0 &&
+              xmlStrcmp(response_message->ns->href, MAILEXCH_XML_NS_EXCH_MESSAGES) == 0) {
+            xmlChar* response_class = xmlGetProp(response_message, BAD_CAST "ResponseClass");
+            if(response_class && xmlStrcmp(response_class, BAD_CAST "Success") == 0) {
+              child = NULL;
+              for(child = response_message->children; child; child = child->next) {
+                if (child->type == XML_ELEMENT_NODE &&
+                    xmlStrcmp(child->name, BAD_CAST "RootFolder") == 0 &&
+                    xmlStrcmp(child->ns->href, MAILEXCH_XML_NS_EXCH_MESSAGES) == 0) {
+                  for(child = child->children; child; child = child->next) {
+                    if (child->type == XML_ELEMENT_NODE &&
+                        xmlStrcmp(child->name, BAD_CAST "Items") == 0 &&
+                        xmlStrcmp(child->ns->href, MAILEXCH_XML_NS_EXCH_TYPES) == 0) {
+                      xmlNodePtr message = NULL;
+                      for(message = child->children; message; message = message->next) {
+                        if (message->type == XML_ELEMENT_NODE &&
+                            xmlStrcmp(message->name, BAD_CAST "Message") == 0 &&
+                            xmlStrcmp(message->ns->href, MAILEXCH_XML_NS_EXCH_TYPES) == 0) {
+                          mailexch_type_message* msg = (mailexch_type_message*) calloc(1, sizeof(mailexch_type_message));
+                          carray_add(*list, msg, NULL);
+                          xmlNodePtr message_attribute = NULL;
+                          for(message_attribute = message->children; message_attribute; message_attribute = message_attribute->next) {
+                            if (message_attribute->type == XML_ELEMENT_NODE &&
+                                xmlStrcmp(message_attribute->ns->href, MAILEXCH_XML_NS_EXCH_TYPES) == 0) {
+                              if(xmlStrcmp(message_attribute->name, BAD_CAST "ItemId") == 0) {
+                                msg->item.item_id = (mailexch_type_item_id*) calloc(1, sizeof(mailexch_type_item_id));
+                                msg->item.item_id->id = (char*) xmlGetProp(message_attribute, BAD_CAST "Id");
+                                msg->item.item_id->change_key = (char*) xmlGetProp(message_attribute, BAD_CAST "ChangeKey");
+                              } else if(xmlStrcmp(message_attribute->name, BAD_CAST "Subject") == 0) {
+                                msg->item.subject = (char*) xmlNodeGetContent(message_attribute);
+                              }
+                            }
+                          }
+                        }
+                      }
+                      break;
+                    }
+                  }
+                  break;
+                }
+              }
+            }
+          }
+        }
+      }
+      break;
+    }
   }
 
   /* clean up */

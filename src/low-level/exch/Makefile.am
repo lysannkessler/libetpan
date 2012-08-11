@@ -30,7 +30,7 @@
 include $(top_srcdir)/rules.mk
 
 etpaninclude_HEADERS = \
-  mailexch.h mailexch_types.h \
+  mailexch.h mailexch_types.h mailexch_types_item.h \
   mailexch_autodiscover.h mailexch_requests.h
 
 AM_CPPFLAGS = -Werror \

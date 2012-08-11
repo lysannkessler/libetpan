@@ -1,6 +1,7 @@
 #include <libetpan/libetpan.h>
 
 #include <stdlib.h>
+#include <string.h>
 
 static void check_error(int result, char* msg) {
   if (result == MAILEXCH_NO_ERROR) return;
@@ -28,6 +29,7 @@ int main(int argc, char ** argv) {
 
 #if 1
   mailexch_connection_settings settings;
+  memset(&settings, 0, sizeof(settings));
   settings.as_url = "https://owa2.hpi.uni-potsdam.de/EWS/Exchange.asmx";
   result = mailexch_set_connection_settings(exch, &settings);
 #else
@@ -38,11 +40,23 @@ int main(int argc, char ** argv) {
   check_error(result, "could not connect");
 
   puts("INBOX");
-  result = mailexch_list(exch, MAILEXCH_DISTFOLDER_INBOX, NULL, 10, NULL);
+  carray* items;
+  result = mailexch_list(exch, MAILEXCH_DISTFOLDER_INBOX, NULL, 10, &items);
+  unsigned int i;
+  for(i = 0; i < items->len; i++) {
+    mailexch_type_item* item = carray_get(items, i);
+    printf("  %s\n", item->subject);
+  }
+  carray_free(items);
   check_error(result, "could not list items in inbox");
 
   puts("SENT ITEMS");
-  result = mailexch_list(exch, MAILEXCH_DISTFOLDER_SENTITEMS, NULL, 10, NULL);
+  result = mailexch_list(exch, MAILEXCH_DISTFOLDER_SENTITEMS, NULL, 10, &items);
+  for(i = 0; i < items->len; i++) {
+    mailexch_type_item* item = carray_get(items, i);
+    printf("  %s\n", item->subject);
+  }
+  carray_free(items);
   check_error(result, "could not list sent items");
 
   mailexch_free(exch);

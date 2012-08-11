@@ -39,6 +39,7 @@ extern "C" {
 
 #include <libetpan/mailexch_types.h>
 #include <libetpan/carray.h>
+#include <libetpan/mailexch_types_item.h>
 
 
 /*
@@ -55,11 +56,12 @@ extern "C" {
                         may be MAILEXCH_DISTFOLDER__NONE
   @param folder_id      folder if of folder whose items to list; may be NULL
   @param count          number of items to list
-  @param list           result list of (TODO: TBD)
+  @param list           result list of mailexch_type_item*
 
   @return TODO: TBD
           - MAILEXCH_NO_ERROR indicates success
           - MAILEXCH_ERROR_INVALID_PARAMETER indicates one of the following:
+            * list is NULL
             * both, distfolder_id is MAILEXCH_DISTFOLDER__NONE and
               folder_id is NULL
             * distfolder_id is invalid

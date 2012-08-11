@@ -161,6 +161,7 @@ enum mailexch_distinguished_folder_id {
 };
 typedef enum  mailexch_distinguished_folder_id mailexch_distinguished_folder_id;
 
+
 #ifdef __cplusplus
 }
 #endif
