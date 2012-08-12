@@ -148,13 +148,8 @@ mailexch_result mailexch_list(mailexch* exch,
 
   /* clean up */
   if(result != MAILEXCH_NO_ERROR) {
-    if(*list) {
-      unsigned int i;
-      for(i = 0; i < (*list)->len; i++)
-        free(carray_get(*list, i));
-      carray_free(*list);
-      *list = NULL;
-    }
+    mailexch_type_item_array_free(*list);
+    *list = NULL;
   }
   mailexch_release_response_xml_parser(exch);
   return result;

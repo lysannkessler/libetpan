@@ -37,13 +37,25 @@ extern "C" {
 #endif
 
 
+#include <stdint.h>
 #include <time.h>
 
+#include <libetpan/carray.h>
+
+
+/* structures */
+
+enum mailexch_type_item_class {
+  MAILEXCH_TYPE_ITEM_CLASS_ITEM,
+  MAILEXCH_TYPE_ITEM_CLASS_MESSAGE,
+};
+typedef enum mailexch_type_item_class mailexch_type_item_class;
 
 struct mailexch_type_item_or_folder_id {
   char* id;
   char* change_key;
 };
+typedef struct mailexch_type_item_or_folder_id mailexch_type_item_or_folder_id;
 typedef struct mailexch_type_item_or_folder_id mailexch_type_item_id;
 typedef struct mailexch_type_item_or_folder_id mailexch_type_folder_id;
 
@@ -97,6 +109,8 @@ typedef enum mailexch_type_optional_boolean mailexch_type_optional_boolean;
   @note TODO incomplete
 */
 struct mailexch_type_item {
+  mailexch_type_item_class item_class;
+
   /* missing: MimeContent */
   mailexch_type_item_id* item_id;
   mailexch_type_folder_id* parent_folder_id;
@@ -158,6 +172,18 @@ struct mailexch_type_message {
   /* missing: ReceivedRepresenting */
 };
 typedef struct mailexch_type_message mailexch_type_message;
+
+
+/* functions */
+
+void mailexch_type_item_id_free(mailexch_type_item_id* id);
+void mailexch_type_folder_id_free(mailexch_type_folder_id* id);
+
+void mailexch_type_email_address_free(mailexch_type_email_address* address);
+void mailexch_type_email_address_array_free(carray* array);
+
+void mailexch_type_item_free(mailexch_type_item* item);
+void mailexch_type_item_array_free(carray* array);
 
 
 #ifdef __cplusplus

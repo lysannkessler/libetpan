@@ -40,14 +40,14 @@ int main(int argc, char ** argv) {
   check_error(result, "could not connect");
 
   puts("INBOX");
-  carray* items;
+  carray* items = NULL;
   result = mailexch_list(exch, MAILEXCH_DISTFOLDER_INBOX, NULL, 10, &items);
   unsigned int i;
   for(i = 0; i < items->len; i++) {
     mailexch_type_item* item = carray_get(items, i);
     printf("  %s\n", item->subject);
   }
-  carray_free(items);
+  mailexch_type_item_array_free(items); items = NULL;
   check_error(result, "could not list items in inbox");
 
   puts("SENT ITEMS");
@@ -56,7 +56,7 @@ int main(int argc, char ** argv) {
     mailexch_type_item* item = carray_get(items, i);
     printf("  %s\n", item->subject);
   }
-  carray_free(items);
+  mailexch_type_item_array_free(items); items = NULL;
   check_error(result, "could not list sent items");
 
   mailexch_free(exch);

@@ -43,5 +43,6 @@ AM_LDFLAGS = $(LIBCURL) $(LIBXML2_LIBS)
 noinst_LTLIBRARIES = libexch.la
 
 libexch_la_SOURCES = \
-  mailexch.c types_internal.c helper.c xml.c \
+  mailexch.c types_internal.c mailexch_types_item.c \
+  helper.c xml.c \
   mailexch_autodiscover.c mailexch_requests.c requests/list.c
