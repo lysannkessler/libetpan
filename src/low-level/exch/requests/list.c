@@ -36,7 +36,7 @@
 #include "list.h"
 #include <libetpan/mailexch_requests.h>
 #include "helper.h"
- #include "types_internal.h"
+#include "types_internal.h"
 #include "xml.h"
 
 #include <stdlib.h>
@@ -134,6 +134,7 @@ mailexch_result mailexch_list(mailexch* exch,
   sax_context.list = list;
   sax_context.prev_state = sax_context.state = MAILEXCH_LIST_SAX_CONTEXT_STATE__NONE;
   sax_context.item = NULL;
+  sax_context.item_node_depth = 0;
   if(mailexch_handle_response_xml(exch, &mailexch_list_sax_handler, &sax_context) != MAILEXCH_NO_ERROR) {
     mailexch_release_response_xml_parser(exch);
     return MAILEXCH_ERROR_INTERNAL;
@@ -193,11 +194,25 @@ void mailexch_list_sax_handler_start_element_ns(void* user_data,
           other item classes, multiple response messages */
   if(context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE_START_DOCUMENT &&
      xmlStrcmp(ns_uri, MAILEXCH_XML_NS_EXCH_TYPES) == 0 &&
-     xmlStrcmp(localname, BAD_CAST "Message") == 0) {
-    context->state = MAILEXCH_LIST_SAX_CONTEXT_STATE_MESSAGE;
-    /* TODO warn if item ins not NULL, clear item */
-    context->item = (mailexch_type_item*) calloc(1, sizeof(mailexch_type_message));
-  } else if(context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE_MESSAGE &&
+     xmlStrcmp(localname, BAD_CAST "Items") == 0) {
+    /* TODO check items_node_depth */
+    context->state = MAILEXCH_LIST_SAX_CONTEXT_STATE_ITEMS;
+
+  } else if(context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE_ITEMS) {
+    if(context->item) { /* TODO warn */ }
+    if(xmlStrcmp(ns_uri, MAILEXCH_XML_NS_EXCH_TYPES) == 0 &&
+       xmlStrcmp(localname, BAD_CAST "Message") == 0) {
+      context->state = MAILEXCH_LIST_SAX_CONTEXT_STATE_MESSAGE;
+      context->item = (mailexch_type_item*) calloc(1, sizeof(mailexch_type_message));
+    } else {
+      context->state = MAILEXCH_LIST_SAX_CONTEXT_STATE_ITEM;
+      context->item = (mailexch_type_item*) calloc(1, sizeof(mailexch_type_item));
+    }
+    context->item_node_depth = 1;
+
+  } else if((context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE_MESSAGE ||
+     context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE_ITEM) &&
+     context->item_node_depth == 1 &&
      xmlStrcmp(ns_uri, MAILEXCH_XML_NS_EXCH_TYPES) == 0 &&
      xmlStrcmp(localname, BAD_CAST "ItemId") == 0) {
     /* TODO check item */
@@ -213,12 +228,21 @@ void mailexch_list_sax_handler_start_element_ns(void* user_data,
       }
       /* TODO warn for unknown attributes */
     }
-  } else if(context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE_MESSAGE &&
+    context->item_node_depth++;
+
+  } else if((context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE_MESSAGE ||
+     context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE_ITEM) &&
+     context->item_node_depth == 1 &&
      xmlStrcmp(ns_uri, MAILEXCH_XML_NS_EXCH_TYPES) == 0 &&
      xmlStrcmp(localname, BAD_CAST "Subject") == 0) {
     /* TODO check item */
     context->prev_state = context->state;
     context->state = MAILEXCH_LIST_SAX_CONTEXT_STATE_ITEM_SUBJECT;
+    context->item_node_depth++;
+
+  } else if(context->item_node_depth > 0) {
+    context->item_node_depth++;
+
   } else {
     /* TODO warn for unknown tags */
     /* TODO go to error state for invalid state-tag combinations */
@@ -232,22 +256,32 @@ void mailexch_list_sax_handler_end_element_ns(void* user_data,
   mailexch_list_sax_context* context = (mailexch_list_sax_context*) user_data;
   if(context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE__ERROR) return;
 
-  if(context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE_MESSAGE &&
+  if(context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE_ITEMS &&
      xmlStrcmp(ns_uri, MAILEXCH_XML_NS_EXCH_TYPES) == 0 &&
-     xmlStrcmp(localname, BAD_CAST "Message") == 0) {
-    /* TODO check item */
-    carray_add(*context->list, context->item, NULL);
-    context->item = NULL;
-    /* not freeing the item on purpose, because it's in the list now */
+     xmlStrcmp(localname, BAD_CAST "Items") == 0) {
     context->state = MAILEXCH_LIST_SAX_CONTEXT_STATE_START_DOCUMENT;
+
   } else if(context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE_ITEM_SUBJECT &&
      xmlStrcmp(ns_uri, MAILEXCH_XML_NS_EXCH_TYPES) == 0 &&
      xmlStrcmp(localname, BAD_CAST "Subject") == 0) {
     context->state = context->prev_state;
     context->prev_state = MAILEXCH_LIST_SAX_CONTEXT_STATE__NONE;
+
   } else {
     /* TODO warn for unknown tags */
     /* TODO go to error state for invalid state-tag combinations */
+  }
+
+  if(context->item_node_depth > 0) {
+    context->item_node_depth--;
+    if(context->item_node_depth == 0) {
+      /* end of current item, add it to the result list */
+      /* TODO check item */
+      carray_add(*context->list, context->item, NULL);
+      context->item = NULL;
+      /* not freeing the item on purpose, because it's in the list now */
+      context->state = MAILEXCH_LIST_SAX_CONTEXT_STATE_ITEMS;
+    }
   }
 }
 

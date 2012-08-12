@@ -48,6 +48,8 @@ enum mailexch_list_sax_context_state {
   MAILEXCH_LIST_SAX_CONTEXT_STATE__ERROR = -1,
 
   MAILEXCH_LIST_SAX_CONTEXT_STATE_START_DOCUMENT = 1,
+  MAILEXCH_LIST_SAX_CONTEXT_STATE_ITEMS,
+  MAILEXCH_LIST_SAX_CONTEXT_STATE_ITEM,
   MAILEXCH_LIST_SAX_CONTEXT_STATE_MESSAGE,
   MAILEXCH_LIST_SAX_CONTEXT_STATE_ITEM_SUBJECT,
   MAILEXCH_LIST_SAX_CONTEXT_STATE_END_DOCUMENT,
@@ -62,6 +64,7 @@ struct mailexch_list_sax_context {
   mailexch_list_sax_context_state state;
 
   mailexch_type_item* item;
+  unsigned int item_node_depth;
 };
 typedef struct mailexch_list_sax_context mailexch_list_sax_context;
 
