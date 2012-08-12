@@ -44,4 +44,4 @@ noinst_LTLIBRARIES = libexch.la
 
 libexch_la_SOURCES = \
   mailexch.c types_internal.c helper.c xml.c \
-  mailexch_autodiscover.c  mailexch_requests.c
+  mailexch_autodiscover.c mailexch_requests.c requests/list.c

@@ -42,6 +42,35 @@ extern "C" {
 #include <libetpan/mailexch_types_item.h>
 
 
+extern const char* mailexch_distfolder_id_name_map[];
+extern const short mailexch_distfolder_id_name_map_length;
+
+
+/*
+  mailexch_prepare_for_requests()
+
+  Prepare given connected Exchange session to be used for SOAP requests, if the
+  current state is MAILEXCH_STATE_CONNECTED.
+    - disables CURLOPT_FOLLOWLOCATION and CURLOPT_UNRESTRICTED_AUTH
+    - sets CURLOPT_POST
+    - sets CURLOPT_URL to the AsUrl
+    - clears all headers and sets Content-Type header to text/xml
+    - clears request body
+  Upon success, the new state is MAILEXCH_STATE_READY_FOR_REQUESTS.
+
+  @param exch   the connected Exchange session object to configure
+
+  @return - MAILEXCH_NO_ERROR indicates success
+          - (see mailexch_save_response_xml() for return codes)
+
+  @see mailexch_connect()
+  @see mailexch_perform_request_xml()
+
+  @note TODO update
+*/
+mailexch_result mailexch_prepare_for_requests(mailexch* exch);
+
+
 /*
   mailexch_list()
 
@@ -83,6 +112,8 @@ extern "C" {
   @note TODO allow to pass change key per folder
   @note TODO add traversal parameter
   @note TODO configure returned field list
+
+  @note for implementation see requests/list.c
 */
 LIBETPAN_EXPORT
 mailexch_result mailexch_list(mailexch* exch,
