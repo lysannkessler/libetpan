@@ -42,6 +42,10 @@ extern "C" {
 #include <libetpan/mailexch_types.h>
 
 
+#ifndef UNUSED
+#define UNUSED(x) (void)(x)
+#endif
+
 /*
   mailexch_prepare_curl()
 

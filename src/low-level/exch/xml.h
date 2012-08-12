@@ -86,20 +86,19 @@ mailexch_result mailexch_prepare_xml_request_method_node(const char* name,
             values and can be inspected for error treatment.
 
   @note The caller must free the response by calling
-        mailexch_release_response_xml().
+        mailexch_release_response_xml_parser().
 
   @note TODO support SOAP failures
+
+  @note TODO update
 */
-mailexch_result mailexch_perform_request_xml(mailexch* exch, xmlNodePtr request,
-        xmlDocPtr* response, xmlNodePtr* response_body);
+mailexch_result mailexch_perform_request_xml(mailexch* exch,
+        xmlNodePtr request_body);
 
 
 /* @note TODO docstring */
-mailexch_result mailexch_save_response_xml(mailexch* exch);
-
-/* @note TODO docstring */
-size_t mailexch_save_response_xml_callback(char *ptr, size_t size, size_t nmemb,
-        void *userdata);
+mailexch_result mailexch_handle_response_xml(mailexch* exch,
+        xmlSAXHandlerPtr sax_handler, void* sax_context);
 
 /* @note TODO docstring */
 xmlDocPtr mailexch_get_response_xml(mailexch* exch);
@@ -108,7 +107,7 @@ xmlDocPtr mailexch_get_response_xml(mailexch* exch);
 xmlNodePtr mailexch_get_response_xml_body(mailexch* exch);
 
 /* @note TODO docstring */
-void mailexch_release_response_xml(mailexch* exch);
+void mailexch_release_response_xml_parser(mailexch* exch);
 
 
 #ifdef __cplusplus

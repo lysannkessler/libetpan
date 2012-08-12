@@ -37,6 +37,11 @@
 #include "xml.h"
 
 
+/* @note TODO docstring */
+size_t mailexch_handle_response_xml_callback(char *ptr, size_t size,
+        size_t nmemb, void *userdata);
+
+
 mailexch_result mailexch_prepare_xml_request_method_node(const char* name,
         xmlNodePtr* node, xmlNsPtr* ns_exch_messages, xmlNsPtr* ns_exch_types) {
 
@@ -49,14 +54,10 @@ mailexch_result mailexch_prepare_xml_request_method_node(const char* name,
 }
 
 mailexch_result mailexch_perform_request_xml(mailexch* exch,
-        xmlNodePtr request_body, xmlDocPtr* response, xmlNodePtr* response_body) {
+        xmlNodePtr request_body) {
 
   if(exch->state != MAILEXCH_STATE_READY_FOR_REQUESTS)
     return MAILEXCH_ERROR_BAD_STATE;
-
-  /* initialize output variables */
-  *response = NULL;
-  *response_body = NULL;
 
   /* build request document:
     <?xml version="1.0"?>
@@ -87,18 +88,11 @@ mailexch_result mailexch_perform_request_xml(mailexch* exch,
   CURLcode curl_code = curl_easy_perform(curl);
   int result = MAILEXCH_ERROR_CONNECT;
   if(curl_code == CURLE_OK) {
-    /* get response & response code */
-    *response = mailexch_get_response_xml(exch);
-    if(*response)
-      *response_body = mailexch_get_response_xml_body(exch);
-
+    /* process response code */
     long http_response_code;
     curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_response_code);
     if(http_response_code == 200) {
-      if(*response != NULL)
-        result = MAILEXCH_NO_ERROR;
-      else
-        result = MAILEXCH_ERROR_INVALID_RESPONSE;
+      result = MAILEXCH_NO_ERROR;
     } else {
       result = MAILEXCH_ERROR_REQUEST_FAILED;
     }
@@ -110,37 +104,28 @@ mailexch_result mailexch_perform_request_xml(mailexch* exch,
   return result;
 }
 
+mailexch_result mailexch_handle_response_xml(mailexch* exch,
+        xmlSAXHandlerPtr sax_handler, void* sax_context) {
 
-mailexch_result mailexch_save_response_xml(mailexch* exch) {
   mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
 
+  /* configure CURL write callback */
   curl_easy_setopt(internal->curl, CURLOPT_WRITEFUNCTION,
-                   mailexch_save_response_xml_callback);
+                   mailexch_handle_response_xml_callback);
   curl_easy_setopt(internal->curl, CURLOPT_WRITEDATA, internal);
 
-  mailexch_release_response_xml(exch);
+  /* create XML parser */
+  mailexch_release_response_xml_parser(exch);
+  internal->response_xml_parser = xmlCreatePushParserCtxt(
+          sax_handler, sax_context, NULL, 0, NULL);
 
-  return MAILEXCH_NO_ERROR;
-}
-
-size_t mailexch_save_response_xml_callback(char *ptr, size_t size, size_t nmemb,
-        void *userdata) {
-
-  size_t length = size*nmemb < 1 ? 0 : size*nmemb;
-  mailexch_internal* internal = (mailexch_internal*) userdata;
-
-  if(internal->response_xml_parser == NULL) {
-    /* create parser context with first data chunk */
-    internal->response_xml_parser = xmlCreatePushParserCtxt(NULL, NULL, ptr,
-                                                            length, NULL);
-    if(internal->response_xml_parser == NULL)
-      return 0; /* error */
-  } else {
-    /* read next data chunk */
-    xmlParseChunk(internal->response_xml_parser, ptr, length, 0);
+  /* reallocate empty response string buffer */
+  if(internal->response_buffer) {
+    mmap_string_free(internal->response_buffer);
+    internal->response_buffer = mmap_string_sized_new(0);
   }
 
-  return length;
+  return MAILEXCH_NO_ERROR;
 }
 
 xmlDocPtr mailexch_get_response_xml(mailexch* exch) {
@@ -203,7 +188,7 @@ xmlNodePtr mailexch_get_response_xml_body(mailexch* exch) {
   return NULL;
 }
 
-void mailexch_release_response_xml(mailexch* exch) {
+void mailexch_release_response_xml_parser(mailexch* exch) {
   mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
 
   if(internal->response_xml_parser != NULL) {
@@ -212,4 +197,21 @@ void mailexch_release_response_xml(mailexch* exch) {
     xmlFreeParserCtxt(internal->response_xml_parser);
     internal->response_xml_parser = NULL;
   }
+}
+
+
+size_t mailexch_handle_response_xml_callback(char *ptr, size_t size,
+        size_t nmemb,void *userdata) {
+
+  size_t length = size*nmemb < 1 ? 0 : size*nmemb;
+  mailexch_internal* internal = (mailexch_internal*) userdata;
+
+  if(internal->response_xml_parser == NULL) {
+    return 0; /* error */
+  } else {
+    /* read next data chunk */
+    xmlParseChunk(internal->response_xml_parser, ptr, length, 0);
+  }
+
+  return length;
 }

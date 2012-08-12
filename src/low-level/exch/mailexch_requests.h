@@ -90,31 +90,6 @@ mailexch_result mailexch_list(mailexch* exch,
         int count, carray** list);
 
 
-/*
-  mailexch_prepare_for_requests()
-
-  Prepare given connected Exchange session to be used for SOAP requests, if the
-  current state is MAILEXCH_STATE_CONNECTED.
-    - disables CURLOPT_FOLLOWLOCATION and CURLOPT_UNRESTRICTED_AUTH
-    - sets CURLOPT_POST
-    - sets CURLOPT_URL to the AsUrl
-    - clears all headers and sets Content-Type header to text/xml
-    - clears request body
-    - allocates default size response buffer and clears it
-    - reponses are parsed as XML, chunk by chunk
-  Upon success, the new state is MAILEXCH_STATE_READY_FOR_REQUESTS.
-
-  @param exch   the connected Exchange session object to configure
-
-  @return - MAILEXCH_NO_ERROR indicates success
-          - (see mailexch_save_response_xml() for return codes)
-
-  @see mailexch_connect()
-  @see mailexch_perform_request_xml()
-*/
-mailexch_result mailexch_prepare_for_requests(mailexch* exch);
-
-
 #ifdef __cplusplus
 }
 #endif
