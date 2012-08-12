@@ -63,3 +63,11 @@ void mailexch_internal_free(mailexch_internal* internal) {
 
   free(internal);
 }
+
+
+void mailexch_internal_response_buffer_free(mailexch_internal* internal) {
+  if(internal->response_buffer) {
+    mmap_string_free(internal->response_buffer);
+    internal->response_buffer = NULL;
+  }
+}

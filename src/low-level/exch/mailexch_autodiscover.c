@@ -159,7 +159,7 @@ mailexch_result mailexch_autodiscover(mailexch* exch, const char* host,
   /*   allocate buffer */
   char* url = malloc(MAILEXCH_AUTODISCOVER_URL_LENGTH + strlen(host) + 1);
   if(!url) {
-    mmap_string_set_size(MAILEXCH_INTERNAL(exch)->response_buffer, 0);
+    mailexch_internal_response_buffer_free(MAILEXCH_INTERNAL(exch));
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
     curl_slist_free_all(headers);
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, NULL);
@@ -176,7 +176,7 @@ mailexch_result mailexch_autodiscover(mailexch* exch, const char* host,
 
   /* clean up */
   free(url);
-  mmap_string_set_size(MAILEXCH_INTERNAL(exch)->response_buffer, 0);
+  mailexch_internal_response_buffer_free(MAILEXCH_INTERNAL(exch));
   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
   curl_slist_free_all(headers);
   curl_easy_setopt(curl, CURLOPT_HTTPHEADER, NULL);

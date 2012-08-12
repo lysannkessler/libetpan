@@ -69,6 +69,9 @@ mailexch_internal* mailexch_internal_new();
 void mailexch_internal_free(mailexch_internal* internal);
 
 
+void mailexch_internal_response_buffer_free(mailexch_internal* internal);
+
+
 #ifdef __cplusplus
 }
 #endif
