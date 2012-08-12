@@ -54,8 +54,6 @@
     - sets CURLOPT_URL to the AsUrl
     - clears all headers and sets Content-Type header to text/xml
     - clears request body
-    - allocates default size response buffer and clears it
-    - reponses are parsed as XML, chunk by chunk
   Upon success, the new state is MAILEXCH_STATE_READY_FOR_REQUESTS.
 
   @param exch   the connected Exchange session object to configure
@@ -369,38 +367,33 @@ mailexch_result mailexch_list(mailexch* exch,
 mailexch_result mailexch_prepare_for_requests(mailexch* exch,
         xmlSAXHandlerPtr sax_handler, void* sax_context) {
 
-  if(exch->state != MAILEXCH_STATE_CONNECTED &&
-     exch->state != MAILEXCH_STATE_READY_FOR_REQUESTS)
-    return MAILEXCH_ERROR_BAD_STATE;
+  if(exch->state == MAILEXCH_STATE_READY_FOR_REQUESTS)
+    return MAILEXCH_NO_ERROR;
 
   mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
 
-  if(exch->state != MAILEXCH_STATE_READY_FOR_REQUESTS) {
-    /* paranoia */
-    curl_easy_setopt(internal->curl, CURLOPT_FOLLOWLOCATION, 0L);
-    curl_easy_setopt(internal->curl, CURLOPT_UNRESTRICTED_AUTH, 0L);
+  /* paranoia */
+  curl_easy_setopt(internal->curl, CURLOPT_FOLLOWLOCATION, 0L);
+  curl_easy_setopt(internal->curl, CURLOPT_UNRESTRICTED_AUTH, 0L);
 
-    /* post to AsUrl */
-    curl_easy_setopt(internal->curl, CURLOPT_POST, 1L);
-    curl_easy_setopt(internal->curl, CURLOPT_URL,
-            exch->connection_settings.as_url);
+  /* post to AsUrl */
+  curl_easy_setopt(internal->curl, CURLOPT_POST, 1L);
+  curl_easy_setopt(internal->curl, CURLOPT_URL,
+          exch->connection_settings.as_url);
 
-    /* Clear headers and set Content-Type to text/xml. */
-    if(internal->curl_headers) {
-      curl_slist_free_all(internal->curl_headers);
-      internal->curl_headers = NULL;
-    }
-    internal->curl_headers = curl_slist_append(internal->curl_headers,
-            "Content-Type: text/xml");
-    curl_easy_setopt(internal->curl, CURLOPT_HTTPHEADER, internal->curl_headers);
-
-    /* clear request string for now */
-    curl_easy_setopt(internal->curl, CURLOPT_POSTFIELDS, NULL);
-
-    /* update state */
-    exch->state = MAILEXCH_STATE_READY_FOR_REQUESTS;
+  /* Clear headers and set Content-Type to text/xml. */
+  if(internal->curl_headers) {
+    curl_slist_free_all(internal->curl_headers);
+    internal->curl_headers = NULL;
   }
+  internal->curl_headers = curl_slist_append(internal->curl_headers,
+          "Content-Type: text/xml");
+  curl_easy_setopt(internal->curl, CURLOPT_HTTPHEADER, internal->curl_headers);
 
-  /* configure response XML parser */
-  return mailexch_handle_response_xml(exch, sax_handler, sax_context);
+  /* clear request string for now */
+  curl_easy_setopt(internal->curl, CURLOPT_POSTFIELDS, NULL);
+
+  /* update state */
+  exch->state = MAILEXCH_STATE_READY_FOR_REQUESTS;
+  return MAILEXCH_NO_ERROR;
 }

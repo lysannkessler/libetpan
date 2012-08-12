@@ -119,12 +119,6 @@ mailexch_result mailexch_handle_response_xml(mailexch* exch,
   internal->response_xml_parser = xmlCreatePushParserCtxt(
           sax_handler, sax_context, NULL, 0, NULL);
 
-  /* reallocate empty response string buffer */
-  if(internal->response_buffer) {
-    mmap_string_free(internal->response_buffer);
-    internal->response_buffer = mmap_string_sized_new(0);
-  }
-
   return MAILEXCH_NO_ERROR;
 }
 

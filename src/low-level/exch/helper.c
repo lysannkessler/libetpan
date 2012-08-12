@@ -109,8 +109,13 @@ mailexch_result mailexch_write_response_to_buffer(mailexch* exch,
                    mailexch_write_response_to_buffer_callback);
   curl_easy_setopt(internal->curl, CURLOPT_WRITEDATA, internal);
 
-  mmap_string_set_size(internal->response_buffer, buffer_size_hint);
-  mmap_string_truncate(internal->response_buffer, 0);
+  /* (re)allocate and clear response buffer */
+  if(internal->response_buffer) {
+    mmap_string_set_size(internal->response_buffer, buffer_size_hint);
+    mmap_string_truncate(internal->response_buffer, 0);
+  } else {
+    internal->response_buffer = mmap_string_sized_new(buffer_size_hint);
+  }
 
   return MAILEXCH_NO_ERROR;
 }
@@ -121,6 +126,10 @@ size_t mailexch_write_response_to_buffer_callback(char *ptr, size_t size,
   size_t length = size*nmemb < 1 ? 0 : size*nmemb;
   mailexch_internal* internal = (mailexch_internal*) userdata;
 
-  mmap_string_append_len(internal->response_buffer, ptr, length);
-  return length;
+  if(internal->response_buffer) {
+    mmap_string_append_len(internal->response_buffer, ptr, length);
+    return length;
+  } else {
+    return 0; /* error */
+  }
 }
