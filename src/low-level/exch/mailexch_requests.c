@@ -66,8 +66,7 @@
 
   @note TODO update
 */
-mailexch_result mailexch_prepare_for_requests(mailexch* exch,
-        xmlSAXHandlerPtr sax_handler, void* sax_context);
+mailexch_result mailexch_prepare_for_requests(mailexch* exch);
 
 
 /* maps from mailexch_distinguished_folder_id to string */
@@ -265,14 +264,7 @@ mailexch_result mailexch_list(mailexch* exch,
       return MAILEXCH_ERROR_INVALID_PARAMETER;
   }
 
-  /* prepare for request */
-  mailexch_list_sax_context sax_context;
-  sax_context.count = count > 0 ? count : 10;
-  sax_context.list = list;
-  sax_context.prev_state = sax_context.state = MAILEXCH_LIST_SAX_CONTEXT_STATE__NONE;
-  sax_context.item = NULL;
-
-  if(mailexch_prepare_for_requests(exch, &mailexch_list_sax_handler, &sax_context) != MAILEXCH_NO_ERROR)
+  if(mailexch_prepare_for_requests(exch) != MAILEXCH_NO_ERROR)
     return MAILEXCH_ERROR_INTERNAL;
   if(exch->state != MAILEXCH_STATE_READY_FOR_REQUESTS)
     return MAILEXCH_ERROR_BAD_STATE;
@@ -342,6 +334,17 @@ mailexch_result mailexch_list(mailexch* exch,
     xmlNewProp(node_folderId, BAD_CAST "Id", BAD_CAST folder_id);
   }
 
+  /* configure response XML parser */
+  mailexch_list_sax_context sax_context;
+  sax_context.count = count > 0 ? count : 10;
+  sax_context.list = list;
+  sax_context.prev_state = sax_context.state = MAILEXCH_LIST_SAX_CONTEXT_STATE__NONE;
+  sax_context.item = NULL;
+  if(mailexch_handle_response_xml(exch, &mailexch_list_sax_handler, &sax_context) != MAILEXCH_NO_ERROR) {
+    mailexch_release_response_xml_parser(exch);
+    return MAILEXCH_ERROR_INTERNAL;
+  }
+
   /* perform request. the SAX handler will fill the list */
   int result = mailexch_perform_request_xml(exch, node_findItem);
   if(sax_context.state == MAILEXCH_LIST_SAX_CONTEXT_STATE__ERROR) {
@@ -364,9 +367,7 @@ mailexch_result mailexch_list(mailexch* exch,
 }
 
 
-mailexch_result mailexch_prepare_for_requests(mailexch* exch,
-        xmlSAXHandlerPtr sax_handler, void* sax_context) {
-
+mailexch_result mailexch_prepare_for_requests(mailexch* exch) {
   if(exch->state == MAILEXCH_STATE_READY_FOR_REQUESTS)
     return MAILEXCH_NO_ERROR;
 
