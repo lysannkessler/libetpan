@@ -42,12 +42,9 @@ extern "C" {
 #include <libetpan/mailexch_types.h>
 
 
-#define MAILEXCH_XML_NS_SOAP \
-  (BAD_CAST "http://schemas.xmlsoap.org/soap/envelope/")
-#define MAILEXCH_XML_NS_EXCH_MESSAGES \
-  (BAD_CAST "http://schemas.microsoft.com/exchange/services/2006/messages")
-#define MAILEXCH_XML_NS_EXCH_TYPES \
-  (BAD_CAST "http://schemas.microsoft.com/exchange/services/2006/types")
+#define MAILEXCH_XML_NS_SOAP          (BAD_CAST "http://schemas.xmlsoap.org/soap/envelope/")
+#define MAILEXCH_XML_NS_EXCH_MESSAGES (BAD_CAST "http://schemas.microsoft.com/exchange/services/2006/messages")
+#define MAILEXCH_XML_NS_EXCH_TYPES    (BAD_CAST "http://schemas.microsoft.com/exchange/services/2006/types")
 
 
 /* @note TODO docstring */
@@ -92,13 +89,11 @@ mailexch_result mailexch_prepare_xml_request_method_node(const char* name,
 
   @note TODO update
 */
-mailexch_result mailexch_perform_request_xml(mailexch* exch,
-        xmlNodePtr request_body);
+mailexch_result mailexch_perform_request_xml(mailexch* exch, xmlNodePtr request_body);
 
 
 /* @note TODO docstring */
-mailexch_result mailexch_handle_response_xml(mailexch* exch,
-        xmlSAXHandlerPtr sax_handler, void* sax_context);
+mailexch_result mailexch_handle_response_xml(mailexch* exch, xmlSAXHandlerPtr sax_handler, void* sax_context);
 
 /* @note TODO docstring */
 xmlDocPtr mailexch_get_response_xml(mailexch* exch);

@@ -52,12 +52,9 @@
 
 #define MAILEXCH_AUTODISCOVER_MIN_RESPONSE_BUFFER_LENGTH 3000
 
-#define MAILEXCH_AUTODISCOVER_STEP1_URL_FORMAT \
-        "https://%s/autodiscover/autodiscover.xml"
-#define MAILEXCH_AUTODISCOVER_STEP2_URL_FORMAT \
-        "https://autodiscover.%s/autodiscover/autodiscover.xml"
-#define MAILEXCH_AUTODISCOVER_URL_LENGTH \
-        strlen(MAILEXCH_AUTODISCOVER_STEP2_URL_FORMAT-2) /*the longer of them*/
+#define MAILEXCH_AUTODISCOVER_STEP1_URL_FORMAT "https://%s/autodiscover/autodiscover.xml"
+#define MAILEXCH_AUTODISCOVER_STEP2_URL_FORMAT "https://autodiscover.%s/autodiscover/autodiscover.xml"
+#define MAILEXCH_AUTODISCOVER_URL_LENGTH strlen(MAILEXCH_AUTODISCOVER_STEP2_URL_FORMAT-2) /* the longer of both */
 
 
 #define MAILEXCH_AUTODISCOVER_TRY_STEP_LONG(step, exch, url_buffer, settings, host, result) \
@@ -90,8 +87,7 @@
           - MAILEXCH_ERROR_AUTODISCOVER_UNAVAILABLE: given URL does not seem to
             point to a Exchange autodiscover service
 */
-mailexch_result mailexch_autodiscover_try_url(mailexch* exch, const char* url,
-        mailexch_connection_settings* settings);
+mailexch_result mailexch_autodiscover_try_url(mailexch* exch, const char* url, mailexch_connection_settings* settings);
 
 
 mailexch_result mailexch_autodiscover(mailexch* exch, const char* host,
@@ -184,8 +180,7 @@ mailexch_result mailexch_autodiscover(mailexch* exch, const char* host,
   return result;
 }
 
-mailexch_result mailexch_autodiscover_try_url(mailexch* exch, const char* url,
-        mailexch_connection_settings* settings) {
+mailexch_result mailexch_autodiscover_try_url(mailexch* exch, const char* url, mailexch_connection_settings* settings) {
 
   if(exch->state != MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED)
     return MAILEXCH_ERROR_BAD_STATE;

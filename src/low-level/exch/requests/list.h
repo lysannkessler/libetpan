@@ -82,8 +82,7 @@ void mailexch_list_sax_handler_start_element_ns(void* user_data,
 void mailexch_list_sax_handler_end_element_ns(void* user_data,
         const xmlChar* localname, const xmlChar* prefix, const xmlChar* ns_uri);
 
-void mailexch_list_sax_handler_characters(void* user_data,
-        const xmlChar* chars, int length);
+void mailexch_list_sax_handler_characters(void* user_data, const xmlChar* chars, int length);
 
 extern xmlSAXHandler mailexch_list_sax_handler;
 

@@ -40,9 +40,7 @@
 #include <string.h>
 
 
-mailexch_result mailexch_prepare_curl(mailexch* exch, const char* username,
-        const char* password, const char* domain) {
-
+mailexch_result mailexch_prepare_curl(mailexch* exch, const char* username, const char* password, const char* domain) {
   /* do this only once */
   if(MAILEXCH_INTERNAL(exch)->curl != NULL)
     return MAILEXCH_NO_ERROR;
@@ -66,8 +64,7 @@ mailexch_result mailexch_prepare_curl(mailexch* exch, const char* username,
   return result;
 }
 
-mailexch_result mailexch_set_credentials(mailexch* exch, const char* username,
-        const char* password, const char* domain) {
+mailexch_result mailexch_set_credentials(mailexch* exch, const char* username, const char* password, const char* domain) {
 
   if(exch->state != MAILEXCH_STATE_NEW &&
      exch->state != MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED)
@@ -100,8 +97,7 @@ mailexch_result mailexch_set_credentials(mailexch* exch, const char* username,
 }
 
 
-mailexch_result mailexch_write_response_to_buffer(mailexch* exch,
-        size_t buffer_size_hint) {
+mailexch_result mailexch_write_response_to_buffer(mailexch* exch, size_t buffer_size_hint) {
 
   mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
 
@@ -120,8 +116,7 @@ mailexch_result mailexch_write_response_to_buffer(mailexch* exch,
   return MAILEXCH_NO_ERROR;
 }
 
-size_t mailexch_write_response_to_buffer_callback(char *ptr, size_t size,
-        size_t nmemb, void *userdata) {
+size_t mailexch_write_response_to_buffer_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
 
   size_t length = size*nmemb < 1 ? 0 : size*nmemb;
   mailexch_internal* internal = (mailexch_internal*) userdata;

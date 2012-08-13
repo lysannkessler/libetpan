@@ -42,16 +42,14 @@
 #include <string.h>
 
 
-size_t mailexch_test_connection_write_callback(char *ptr, size_t size,
-        size_t nmemb, void *userdata);
+size_t mailexch_test_connection_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
 
 
 /*
   mailexch structure
 */
 
-mailexch* mailexch_new(size_t progr_rate, progress_function* progr_fun)
-{
+mailexch* mailexch_new(size_t progr_rate, progress_function* progr_fun) {
   mailexch* exch = calloc(1, sizeof(* exch));
   if (exch == NULL)
     return NULL;
@@ -122,20 +120,14 @@ void mailexch_free(mailexch* exch) {
     (dest) = NULL; \
   }
 
-mailexch_result mailexch_set_connection_settings(mailexch* exch,
-        mailexch_connection_settings* settings) {
-
+mailexch_result mailexch_set_connection_settings(mailexch* exch, mailexch_connection_settings* settings) {
   if(exch->state != MAILEXCH_STATE_NEW) return MAILEXCH_ERROR_BAD_STATE;
 
   int result = MAILEXCH_NO_ERROR;
-  MAILEXCH_COPY_STRING(result, exch->connection_settings.as_url,
-                       settings->as_url);
-  MAILEXCH_COPY_STRING(result, exch->connection_settings.oof_url,
-                       settings->oof_url);
-  MAILEXCH_COPY_STRING(result, exch->connection_settings.um_url,
-                       settings->um_url);
-  MAILEXCH_COPY_STRING(result, exch->connection_settings.oab_url,
-                       settings->oab_url);
+  MAILEXCH_COPY_STRING(result, exch->connection_settings.as_url, settings->as_url);
+  MAILEXCH_COPY_STRING(result, exch->connection_settings.oof_url, settings->oof_url);
+  MAILEXCH_COPY_STRING(result, exch->connection_settings.um_url, settings->um_url);
+  MAILEXCH_COPY_STRING(result, exch->connection_settings.oab_url, settings->oab_url);
 
   if(result == MAILEXCH_NO_ERROR)
     exch->state = MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED;
@@ -148,8 +140,7 @@ mailexch_result mailexch_autodiscover_connection_settings(mailexch* exch,
 
   if(exch->state != MAILEXCH_STATE_NEW) return MAILEXCH_ERROR_BAD_STATE;
 
-  int result = mailexch_autodiscover(exch, host, email_address, username,
-          password, domain, &exch->connection_settings);
+  int result = mailexch_autodiscover(exch, host, email_address, username, password, domain, &exch->connection_settings);
 
   if(result == MAILEXCH_NO_ERROR)
     exch->state = MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED;
@@ -157,8 +148,7 @@ mailexch_result mailexch_autodiscover_connection_settings(mailexch* exch,
 }
 
 
-mailexch_result mailexch_connect(mailexch* exch, const char* username,
-        const char* password, const char* domain) {
+mailexch_result mailexch_connect(mailexch* exch, const char* username, const char* password, const char* domain) {
 
   if(exch->state != MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED)
     return MAILEXCH_ERROR_BAD_STATE;
@@ -183,8 +173,7 @@ mailexch_result mailexch_connect(mailexch* exch, const char* username,
 
   /* result */
   uint8_t found_wsdl = 0;
-  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION,
-                   mailexch_test_connection_write_callback);
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, mailexch_test_connection_write_callback);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &found_wsdl);
 
   /* perform request */
@@ -229,8 +218,7 @@ mailexch_result mailexch_connect(mailexch* exch, const char* username,
   @note The search will not stop on a 0-byte, with i.e. mailexch_strnstr() you
         can search in strings that are note zero-terminated.
 */
-const char* mailexch_strnstr(const char* str, const char* substr,
-        size_t length) {
+const char* mailexch_strnstr(const char* str, const char* substr, size_t length) {
 
   size_t substr_length = strlen(substr);
   unsigned int i;
@@ -252,8 +240,7 @@ const char* mailexch_strnstr(const char* str, const char* substr,
                     pointer so that this callback is called with it as
                     parameter.
 */
-size_t mailexch_test_connection_write_callback(char *ptr, size_t size,
-        size_t nmemb, void *userdata) {
+size_t mailexch_test_connection_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
 
   size_t response_length = size*nmemb < 1 ? 0 : size*nmemb;
   uint8_t* found_wsdl = ((uint8_t*)userdata);

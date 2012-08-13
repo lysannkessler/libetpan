@@ -38,8 +38,7 @@
 
 
 /* @note TODO docstring */
-size_t mailexch_handle_response_xml_callback(char *ptr, size_t size,
-        size_t nmemb, void *userdata);
+size_t mailexch_handle_response_xml_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
 
 
 mailexch_result mailexch_prepare_xml_request_method_node(const char* name,
@@ -53,8 +52,7 @@ mailexch_result mailexch_prepare_xml_request_method_node(const char* name,
   return MAILEXCH_NO_ERROR;
 }
 
-mailexch_result mailexch_perform_request_xml(mailexch* exch,
-        xmlNodePtr request_body) {
+mailexch_result mailexch_perform_request_xml(mailexch* exch, xmlNodePtr request_body) {
 
   if(exch->state != MAILEXCH_STATE_READY_FOR_REQUESTS)
     return MAILEXCH_ERROR_BAD_STATE;
@@ -104,8 +102,7 @@ mailexch_result mailexch_perform_request_xml(mailexch* exch,
   return result;
 }
 
-mailexch_result mailexch_handle_response_xml(mailexch* exch,
-        xmlSAXHandlerPtr sax_handler, void* sax_context) {
+mailexch_result mailexch_handle_response_xml(mailexch* exch, xmlSAXHandlerPtr sax_handler, void* sax_context) {
 
   mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
 
@@ -194,8 +191,7 @@ void mailexch_release_response_xml_parser(mailexch* exch) {
 }
 
 
-size_t mailexch_handle_response_xml_callback(char *ptr, size_t size,
-        size_t nmemb,void *userdata) {
+size_t mailexch_handle_response_xml_callback(char *ptr, size_t size, size_t nmemb,void *userdata) {
 
   size_t length = size*nmemb < 1 ? 0 : size*nmemb;
   mailexch_internal* internal = (mailexch_internal*) userdata;
