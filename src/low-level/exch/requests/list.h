@@ -57,7 +57,7 @@ enum mailexch_list_sax_context_state {
 typedef enum mailexch_list_sax_context_state mailexch_list_sax_context_state;
 
 struct mailexch_list_sax_context {
-  int count;
+  unsigned int count;
   carray** list;
 
   mailexch_list_sax_context_state prev_state;
@@ -67,6 +67,8 @@ struct mailexch_list_sax_context {
   unsigned int item_node_depth;
 };
 typedef struct mailexch_list_sax_context mailexch_list_sax_context;
+
+void mailexch_list_sax_context_init(mailexch_list_sax_context* context, unsigned int count, carray** list);
 
 void mailexch_list_sax_handler_start_document(void* user_data);
 

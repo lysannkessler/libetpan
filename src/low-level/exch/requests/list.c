@@ -40,6 +40,7 @@
 #include "xml.h"
 
 #include <stdlib.h>
+#include <string.h>
 #include <libxml/parser.h>
 
 
@@ -130,11 +131,7 @@ mailexch_result mailexch_list(mailexch* exch,
 
   /* configure response XML parser */
   mailexch_list_sax_context sax_context;
-  sax_context.count = count > 0 ? count : 10;
-  sax_context.list = list;
-  sax_context.prev_state = sax_context.state = MAILEXCH_LIST_SAX_CONTEXT_STATE__NONE;
-  sax_context.item = NULL;
-  sax_context.item_node_depth = 0;
+  mailexch_list_sax_context_init(&sax_context, count > 0 ? count : 10, list);
   if(mailexch_handle_response_xml(exch, &mailexch_list_sax_handler, &sax_context) != MAILEXCH_NO_ERROR) {
     mailexch_release_response_xml_parser(exch);
     return MAILEXCH_ERROR_INTERNAL;
@@ -154,6 +151,13 @@ mailexch_result mailexch_list(mailexch* exch,
   }
   mailexch_release_response_xml_parser(exch);
   return result;
+}
+
+
+void mailexch_list_sax_context_init(mailexch_list_sax_context* context, unsigned int count, carray** list) {
+  memset(context, 0, sizeof(mailexch_list_sax_context));
+  context->count = count;
+  context->list = list;
 }
 
 
