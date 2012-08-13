@@ -140,8 +140,9 @@ mailexch_result mailexch_list(mailexch* exch,
   /* perform request. the SAX handler will fill the list */
   int result = mailexch_perform_request_xml(exch, node_findItem);
   if(sax_context.state == MAILEXCH_LIST_SAX_CONTEXT_STATE__ERROR) {
-    /* TODO set result */
-    puts(">>> error");
+    result = MAILEXCH_ERROR_INVALID_RESPONSE;
+  } else if(*list == NULL) {
+    result = MAILEXCH_ERROR_INTERNAL;
   }
 
   /* clean up */
