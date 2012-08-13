@@ -48,22 +48,15 @@ extern "C" {
   Creates a new MS Exchange session object.
   The new state is OXWS_STATE_NEW.
 
-  @param progr_rate  When downloading messages, a function will be called
-    each time the amount of bytes downloaded reaches a multiple of this
-    value, this can be 0.
-  @param progr_fun   This is the function to call to notify the progress,
-    this can be NULL.
-
-  @note The object should be freed with oxws_free().
-  @note TODO Progress rate and function are not implemented yet.
-
   @return Upon succes, an MS Exchange session is returned.
           Returns NULL if an error occurs.
+
+  @note The object should be freed with oxws_free().
 
   @see oxws_free()
  */
 LIBETPAN_EXPORT
-oxws* oxws_new(size_t progr_rate, progress_function* progr_fun);
+oxws* oxws_new();
 
 /*
   oxws_free()
@@ -157,6 +150,10 @@ oxws_result oxws_autodiscover_connection_settings(oxws* oxws,
 */
 LIBETPAN_EXPORT
 oxws_result oxws_connect(oxws* oxws, const char* username, const char* password, const char* domain);
+
+
+LIBETPAN_EXPORT
+oxws_result oxws_set_progress_callback(oxws* oxws, mailprogress_function* callback, void* userdata);
 
 
 /* include all request functions */

@@ -112,11 +112,9 @@ typedef enum oxws_state oxws_state;
   A Exchange session object.
 */
 struct oxws {
-  /* When downloading messages, a function will be called each time the amount
-     of bytes downloaded reaches a multiple of this value, this can be 0. */
-  size_t progr_rate;
-  /* This is the function to call to notify the progress, this can be NULL. */
-  progress_function* progr_fun;
+  /* callback called on download progress */
+  mailprogress_function* progress_callback;
+  void* progress_callback_userdata;
 
   /* current state */
   oxws_state state;

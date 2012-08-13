@@ -49,13 +49,10 @@ size_t oxws_test_connection_write_callback(char *ptr, size_t size, size_t nmemb,
   oxws structure
 */
 
-oxws* oxws_new(size_t progr_rate, progress_function* progr_fun) {
+oxws* oxws_new() {
   oxws* oxws = calloc(1, sizeof(* oxws));
   if (oxws == NULL)
     return NULL;
-
-  oxws->progr_rate = progr_rate;
-  oxws->progr_fun = progr_fun;
 
   oxws->state = OXWS_STATE_NEW;
 
@@ -202,6 +199,14 @@ oxws_result oxws_connect(oxws* oxws, const char* username, const char* password,
   /* clean up */
   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
   return result;
+}
+
+
+oxws_result oxws_set_progress_callback(oxws* oxws, mailprogress_function* callback, void* userdata) {
+  if(oxws == NULL) return OXWS_ERROR_INVALID_PARAMETER;
+  oxws->progress_callback = callback;
+  oxws->progress_callback_userdata = userdata;
+  return OXWS_NO_ERROR;
 }
 
 

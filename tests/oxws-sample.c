@@ -31,7 +31,7 @@ int main(int argc, char ** argv) {
     exit(EXIT_FAILURE);
   }
 
-  oxws* oxws = oxws_new(0, NULL);
+  oxws* oxws = oxws_new();
   if(oxws == NULL) {
     fprintf(stderr, "Could not create oxws instance.");
     exit(EXIT_FAILURE);
