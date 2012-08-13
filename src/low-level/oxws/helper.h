@@ -109,6 +109,8 @@ oxws_result oxws_set_credentials(CURL* curl, const char* username, const char* p
           - OXWS_ERROR_INTERNAL: arbitrary failure
 
   @see oxws_write_response_to_buffer_callback()
+
+  @note currently unused
 */
 oxws_result oxws_write_response_to_buffer(oxws* oxws, size_t buffer_size_hint);
 

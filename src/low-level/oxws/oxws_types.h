@@ -70,6 +70,13 @@ enum oxws_result {
 };
 typedef enum oxws_result oxws_result;
 
+/*
+  struct oxws_progress_info
+
+  Encapsulates progress callback information: callback function, userdata, rate.
+  To realize the progress rate it also saves the last progress rate of the
+  current download activity.
+*/
 struct oxws_progress_info {
   /* callback called on download progress */
   mailprogress_function* callback;
@@ -78,7 +85,8 @@ struct oxws_progress_info {
   /* callback invocation rate in bytes */
   size_t rate;
 
-  /* last progress */
+  /* last progress, must be reset to 0 before each request.
+     @see oxws_prepare_for_requests() */
   size_t last;
 };
 typedef struct oxws_progress_info oxws_progress_info;
@@ -106,6 +114,8 @@ struct oxws_connection_settings {
 typedef struct oxws_connection_settings oxws_connection_settings;
 
 /*
+  enum oxws_state
+
   Possible states for Exchange session object
 */
 enum oxws_state {
@@ -143,6 +153,8 @@ typedef struct oxws oxws;
 
 
 /*
+  enum oxws_distinguished_folder_id
+
   identifies the folders that can be accessed by these special keys
 */
 enum oxws_distinguished_folder_id {
@@ -166,8 +178,7 @@ enum oxws_distinguished_folder_id {
   OXWS_DISTFOLDER_SEARCHFOLDERS,
   OXWS_DISTFOLDER_VOICEMAIL,
 
-  OXWS_DISTFOLDER__MAX = OXWS_DISTFOLDER_VOICEMAIL, /* meta key to catch
-                                                               invalid ids */
+  OXWS_DISTFOLDER__MAX = OXWS_DISTFOLDER_VOICEMAIL, /* meta key to catch invalid ids */
   OXWS_DISTFOLDER__COUNT, /* meta key to iterate all keys */
 };
 typedef enum  oxws_distinguished_folder_id oxws_distinguished_folder_id;

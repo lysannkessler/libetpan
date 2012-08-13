@@ -50,7 +50,7 @@ extern "C" {
 
   states supported by the SAX context object for parsing the list response
 
-  @see oxws_list
+  @see oxws_list()
   @see struct oxws_list_sax_context
 */
 enum oxws_list_sax_context_state {
@@ -82,8 +82,8 @@ typedef enum oxws_list_sax_context_state oxws_list_sax_context_state;
   SAX context object used to track the status of response parsing.
   It is passed as user data to the SAX handler functions.
 
-  @see oxws_list
-  @see oxws_list_sax_handler_*
+  @see oxws_list()
+  @see oxws_list_sax_handler_*()
 */
 struct oxws_list_sax_context {
   /* Expected number of items in the response. Will be used as initial list
@@ -227,12 +227,12 @@ void oxws_list_sax_handler_error(void* user_data, const char* message, ...);
   A SAX 2 handler with the startDocument, endDocument, characters, error,
   fatalError, startElementNs and endElementNs callbacks from this module.
 
-  @see oxws_list_sax_handler_start_document
-  @see oxws_list_sax_handler_end_document
-  @see oxws_list_sax_handler_characters
-  @see oxws_list_sax_handler_error
-  @see oxws_list_sax_handler_start_element_ns
-  @see oxws_list_sax_handler_end_element_ns
+  @see oxws_list_sax_handler_start_document()
+  @see oxws_list_sax_handler_end_document()
+  @see oxws_list_sax_handler_characters()
+  @see oxws_list_sax_handler_error()
+  @see oxws_list_sax_handler_start_element_ns()
+  @see oxws_list_sax_handler_end_element_ns()
 */
 extern xmlSAXHandler oxws_list_sax_handler;
 

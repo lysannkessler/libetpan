@@ -49,9 +49,10 @@ extern "C" {
 
 
 /*
-  struct oxws
+  struct oxws_internal
 
-  A Exchange session object.
+  The type of the oxws.internal member. It is in this private header in order
+  to reduce the number of headers the user has to include when using oxws.
 */
 struct oxws_internal {
   /* the CURL object used to perform HTTP requests to the service */
@@ -65,11 +66,38 @@ struct oxws_internal {
 };
 typedef struct oxws_internal oxws_internal;
 
+/*
+  oxws_internal_new()
+
+  Creates a new oxws_internal object.
+  The caller must release the object using oxws_internal_free().
+
+  @return The new object, or NULL on failure.
+
+  @see oxws_internal_free()
+*/
 oxws_internal* oxws_internal_new();
 
+/*
+  oxws_internal_free()
+
+  Frees the given oxws_internal object.
+
+  @param internal [required] object to release
+
+  @see oxws_internal_new()
+*/
 void oxws_internal_free(oxws_internal* internal);
 
 
+/*
+  oxws_internal_response_buffer_free()
+
+  Release the response buffer of given oxws_internal object.
+
+  @param internal [required] oxws_internal object whose response buffer to
+                  release
+*/
 void oxws_internal_response_buffer_free(oxws_internal* internal);
 
 

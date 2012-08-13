@@ -57,6 +57,9 @@ oxws_result oxws_prepare_for_requests(oxws* oxws) {
   oxws_internal* internal = OXWS_INTERNAL(oxws);
   if(internal == NULL) return OXWS_ERROR_INTERNAL;
 
+  if(oxws->state != OXWS_STATE_READY_FOR_REQUESTS && oxws->state != OXWS_STATE_CONNECTED)
+    return OXWS_ERROR_BAD_STATE;
+
   if(oxws->state != OXWS_STATE_READY_FOR_REQUESTS) {
     /* paranoia */
     curl_easy_setopt(internal->curl, CURLOPT_FOLLOWLOCATION, 0L);

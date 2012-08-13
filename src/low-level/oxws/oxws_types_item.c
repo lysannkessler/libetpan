@@ -39,10 +39,36 @@
 #include <stdlib.h>
 
 
+/*
+  oxws_entry_free
+
+  Defines a function that releases a given object.
+*/
 typedef void (*oxws_entry_free) (void*);
+
+/*
+  oxws_type_special_array_free()
+
+  Free an array of objects, but use the given function to release each object
+  contained in the array first.
+
+  @param array      [required] array to release
+  @param entry_free [optional] function to be used to release the objects. If
+                    given, it will be called with each object as parameter.
+*/
 void oxws_type_special_array_free(carray* array, oxws_entry_free entry_free);
 
 
+/*
+  oxws_type_item_or_folder_id_free()
+
+  Release given item or folder id object.
+
+  @param id [required] object to release
+
+  @see oxws_type_item_id_free
+  @see oxws_type_folder_id_free
+*/
 void oxws_type_item_or_folder_id_free(oxws_type_item_or_folder_id* id) {
   if(!id) return;
 
@@ -84,6 +110,15 @@ void oxws_type_body_free(oxws_type_body* body) {
 }
 
 
+/*
+  oxws_type_item_free_members()
+
+  Free all members of given object which are specific to oxws_type_item.
+
+  @param item [required] item whose members to release
+
+  @see oxws_type_item_free
+*/
 void oxws_type_item_free_members(oxws_type_item* item) {
   if(!item) return;
 
@@ -95,6 +130,16 @@ void oxws_type_item_free_members(oxws_type_item* item) {
   if(item->date_time_sent) free(item->date_time_sent);
 }
 
+/*
+  oxws_type_message_free_members()
+
+  Free all members of given object which are specific to oxws_type_message.
+  This will leave other members untouched.
+
+  @param message [required] message whose members to release
+
+  @see oxws_type_item_free
+*/
 void oxws_type_message_free_members(oxws_type_message* message) {
   if(!message) return;
 

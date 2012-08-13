@@ -38,7 +38,22 @@
 #include "xml.h"
 
 
-/* @note TODO docstring */
+/*
+  oxws_handle_response_xml_callback()
+
+  Callback called by CURL as write function if configured with
+  oxws_handle_response_xml(). It parses the given response chunk using the
+  response XML parser. This will either continue parsing into an in-memory
+  response XML document, or invoke the configured SAX handler.
+
+  @param userdata [required] the oxws_internal* of the Exchange session
+                  receiving the SOAP response. It is configured as
+                  CURLOPT_WRITEDATA in oxws_handle_response_xml().
+
+  @seealso CURL documentation
+
+  @see oxws_handle_response_xml()
+*/
 size_t oxws_handle_response_xml_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
 
 
@@ -74,13 +89,11 @@ oxws_result oxws_perform_request_xml(oxws* oxws, xmlNodePtr request_body) {
   xmlDocPtr doc = xmlNewDoc(BAD_CAST "1.0");
 
   xmlNodePtr node_envelope = xmlNewNode(NULL, BAD_CAST "Envelope");
-  xmlNsPtr ns_soap = xmlNewNs(node_envelope, OXWS_XML_NS_SOAP,
-          BAD_CAST "soap");
+  xmlNsPtr ns_soap = xmlNewNs(node_envelope, OXWS_XML_NS_SOAP, BAD_CAST "soap");
   xmlSetNs(node_envelope, ns_soap);
   xmlDocSetRootElement(doc, node_envelope);
 
-  xmlNodePtr node_body = xmlNewChild(node_envelope, ns_soap, BAD_CAST "Body",
-          NULL);
+  xmlNodePtr node_body = xmlNewChild(node_envelope, ns_soap, BAD_CAST "Body", NULL);
   xmlAddChild(node_body, request_body);
 
   /* dump request to buffer and set body in CURL object */
@@ -117,14 +130,12 @@ oxws_result oxws_handle_response_xml(oxws* oxws, xmlSAXHandlerPtr sax_handler, v
   if(internal == NULL) return OXWS_ERROR_INTERNAL;
 
   /* configure CURL write callback */
-  curl_easy_setopt(internal->curl, CURLOPT_WRITEFUNCTION,
-                   oxws_handle_response_xml_callback);
+  curl_easy_setopt(internal->curl, CURLOPT_WRITEFUNCTION, oxws_handle_response_xml_callback);
   curl_easy_setopt(internal->curl, CURLOPT_WRITEDATA, internal);
 
   /* create XML parser */
   oxws_release_response_xml_parser(oxws);
-  internal->response_xml_parser = xmlCreatePushParserCtxt(
-          sax_handler, sax_context, NULL, 0, NULL);
+  internal->response_xml_parser = xmlCreatePushParserCtxt(sax_handler, sax_context, NULL, 0, NULL);
 
   return OXWS_NO_ERROR;
 }
@@ -132,7 +143,7 @@ oxws_result oxws_handle_response_xml(oxws* oxws, xmlSAXHandlerPtr sax_handler, v
 xmlDocPtr oxws_get_response_xml(oxws* oxws) {
   if(oxws == NULL) return NULL;
   oxws_internal* internal = OXWS_INTERNAL(oxws);
-  if(internal == NULL) return NULL;
+  if(internal == NULL) return NULL; /* TODO warn */
 
   if(internal->response_xml_parser == NULL)
     return NULL;

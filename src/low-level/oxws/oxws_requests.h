@@ -51,25 +51,27 @@ extern const short oxws_distfolder_id_name_map_length;
   oxws_prepare_for_requests()
 
   Prepare given connected Exchange session to be used for SOAP requests, if the
-  current state is OXWS_STATE_CONNECTED.
+  current state is OXWS_STATE_CONNECTED:
     - disables CURLOPT_FOLLOWLOCATION and CURLOPT_UNRESTRICTED_AUTH
     - sets CURLOPT_POST
     - sets CURLOPT_URL to the AsUrl
     - clears all headers and sets Content-Type header to text/xml
-    - clears request body
-  Upon success, the new state is OXWS_STATE_READY_FOR_REQUESTS.
+    - sets the download progress callback
+    - clears the request body
+    - sets the state to OXWS_STATE_READY_FOR_REQUESTS.
+  Also resets the current progress callback status.
 
   @param oxws   [required] The connected Exchange session object to configure.
 
   @return - OXWS_NO_ERROR indicates success
           - OXWS_ERROR_INVALID_PARAMETER: a required parameter is missing.
+          - OXWS_ERROR_BAD_STATE: state is not OXWS_STATE_CONNECTED or
+            OXWS_STATE_READY_FOR_REQUESTS.
           - OXWS_ERROR_INTERNAL: arbitrary failure
           - (see oxws_save_response_xml() for return codes)
 
   @see oxws_connect()
   @see oxws_perform_request_xml()
-
-  @note TODO update
 */
 oxws_result oxws_prepare_for_requests(oxws* oxws);
 
