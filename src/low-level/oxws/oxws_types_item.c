@@ -1,5 +1,6 @@
 /*
  * libEtPan! -- a mail stuff library
+ *   Microsoft Exchange Web Services support
  *
  * Copyright (C) 2012 Lysann Kessler
  * All rights reserved.
