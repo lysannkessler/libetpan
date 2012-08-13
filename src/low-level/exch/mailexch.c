@@ -80,8 +80,7 @@ void mailexch_free(mailexch* exch) {
   if(exch->connection_settings.oab_url)
     free(exch->connection_settings.oab_url);
 
-  if(exch->internal)
-    mailexch_internal_free(MAILEXCH_INTERNAL(exch));
+  mailexch_internal_free(MAILEXCH_INTERNAL(exch));
 
   free(exch);
 }
@@ -121,7 +120,10 @@ void mailexch_free(mailexch* exch) {
   }
 
 mailexch_result mailexch_set_connection_settings(mailexch* exch, mailexch_connection_settings* settings) {
-  if(exch->state != MAILEXCH_STATE_NEW) return MAILEXCH_ERROR_BAD_STATE;
+  if(exch == NULL || settings == NULL)
+    return MAILEXCH_ERROR_INVALID_PARAMETER;
+  if(exch->state != MAILEXCH_STATE_NEW)
+    return MAILEXCH_ERROR_BAD_STATE;
 
   int result = MAILEXCH_NO_ERROR;
   MAILEXCH_COPY_STRING(result, exch->connection_settings.as_url, settings->as_url);
@@ -138,6 +140,7 @@ mailexch_result mailexch_autodiscover_connection_settings(mailexch* exch,
         const char* host, const char* email_address, const char* username,
         const char* password, const char* domain) {
 
+  if(exch == NULL) return MAILEXCH_ERROR_INVALID_PARAMETER;
   if(exch->state != MAILEXCH_STATE_NEW) return MAILEXCH_ERROR_BAD_STATE;
 
   int result = mailexch_autodiscover(exch, host, email_address, username, password, domain, &exch->connection_settings);
@@ -150,6 +153,9 @@ mailexch_result mailexch_autodiscover_connection_settings(mailexch* exch,
 
 mailexch_result mailexch_connect(mailexch* exch, const char* username, const char* password, const char* domain) {
 
+  if(exch == NULL) return MAILEXCH_ERROR_INVALID_PARAMETER;
+  mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
+  if(internal == NULL) return MAILEXCH_ERROR_INTERNAL;
   if(exch->state != MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED)
     return MAILEXCH_ERROR_BAD_STATE;
 
@@ -159,7 +165,7 @@ mailexch_result mailexch_connect(mailexch* exch, const char* username, const cha
   /* prepare curl: curl object + credentials */
   int result = mailexch_prepare_curl(exch, username, password, domain);
   if(result != MAILEXCH_NO_ERROR) return result;
-  CURL* curl = MAILEXCH_INTERNAL(exch)->curl;
+  CURL* curl = internal->curl;
 
   /* GET url */
   curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
@@ -208,17 +214,20 @@ mailexch_result mailexch_connect(mailexch* exch, const char* username, const cha
 
   Find first occurrence of substring in a string's first few bytes.
 
-  @param str      string to search for substr
-  @param substr   string to find in str
+  @param str      [required] string to search for substr
+  @param substr   [required] string to find in str
   @param length   number of bytes to search in str
 
-  @return NULL if substr does not occur in the first 'length' bytes of str;
+  @return NULL if a required parameter is missing.
+          NULL if substr does not occur in the first 'length' bytes of str;
           the beginning of the first occurrence of substr in str otherwise.
 
   @note The search will not stop on a 0-byte, with i.e. mailexch_strnstr() you
         can search in strings that are note zero-terminated.
 */
 const char* mailexch_strnstr(const char* str, const char* substr, size_t length) {
+
+  if(str == NULL || substr == NULL) return NULL;
 
   size_t substr_length = strlen(substr);
   unsigned int i;
@@ -235,10 +244,12 @@ const char* mailexch_strnstr(const char* str, const char* substr, size_t length)
   A CURL write callback, set via the CURLOPT_WRITEFUNCTION option, that searches
   for WSDL definitions in the HTTP response.
 
-  @param userdata   Must be a pointer to a uint8_t that will receive the search
-                    result. You must set the CURLOPT_WRITEDATA option to such a
-                    pointer so that this callback is called with it as
-                    parameter.
+  @param userdata [required] Must be a pointer to a uint8_t that will receive
+                  the search result. You must set the CURLOPT_WRITEDATA option
+                  to such a pointer so that this callback is called with it as
+                  parameter.
+
+  @see CURL documentation for more information.
 */
 size_t mailexch_test_connection_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
 

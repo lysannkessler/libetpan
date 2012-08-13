@@ -44,6 +44,9 @@ size_t mailexch_handle_response_xml_callback(char *ptr, size_t size, size_t nmem
 mailexch_result mailexch_prepare_xml_request_method_node(const char* name,
         xmlNodePtr* node, xmlNsPtr* ns_exch_messages, xmlNsPtr* ns_exch_types) {
 
+  if(name == NULL || node == NULL || ns_exch_messages == NULL || ns_exch_types == NULL)
+    return MAILEXCH_ERROR_INVALID_PARAMETER;
+
   *node = xmlNewNode(NULL, BAD_CAST name);
   *ns_exch_messages = xmlNewNs(*node, MAILEXCH_XML_NS_EXCH_MESSAGES, NULL);
   *ns_exch_types = xmlNewNs(*node, MAILEXCH_XML_NS_EXCH_TYPES, BAD_CAST "t");
@@ -54,6 +57,10 @@ mailexch_result mailexch_prepare_xml_request_method_node(const char* name,
 
 mailexch_result mailexch_perform_request_xml(mailexch* exch, xmlNodePtr request_body) {
 
+  if(exch == NULL || request_body == NULL)
+    return MAILEXCH_ERROR_INVALID_PARAMETER;
+  mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
+  if(internal == NULL) return MAILEXCH_ERROR_INTERNAL;
   if(exch->state != MAILEXCH_STATE_READY_FOR_REQUESTS)
     return MAILEXCH_ERROR_BAD_STATE;
 
@@ -79,7 +86,7 @@ mailexch_result mailexch_perform_request_xml(mailexch* exch, xmlNodePtr request_
   xmlChar* request_str = NULL;
   xmlDocDumpFormatMemory(doc, &request_str, NULL, 0);
   xmlFreeDoc(doc);
-  CURL* curl = MAILEXCH_INTERNAL(exch)->curl;
+  CURL* curl = internal->curl;
   curl_easy_setopt(curl, CURLOPT_POSTFIELDS, (char*) request_str);
 
   /* perform request */
@@ -104,7 +111,9 @@ mailexch_result mailexch_perform_request_xml(mailexch* exch, xmlNodePtr request_
 
 mailexch_result mailexch_handle_response_xml(mailexch* exch, xmlSAXHandlerPtr sax_handler, void* sax_context) {
 
+  if(exch == NULL) return MAILEXCH_ERROR_INVALID_PARAMETER;
   mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
+  if(internal == NULL) return MAILEXCH_ERROR_INTERNAL;
 
   /* configure CURL write callback */
   curl_easy_setopt(internal->curl, CURLOPT_WRITEFUNCTION,
@@ -120,7 +129,9 @@ mailexch_result mailexch_handle_response_xml(mailexch* exch, xmlSAXHandlerPtr sa
 }
 
 xmlDocPtr mailexch_get_response_xml(mailexch* exch) {
+  if(exch == NULL) return NULL;
   mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
+  if(internal == NULL) return NULL;
 
   if(internal->response_xml_parser == NULL)
     return NULL;
@@ -136,6 +147,7 @@ xmlDocPtr mailexch_get_response_xml(mailexch* exch) {
 }
 
 xmlNodePtr mailexch_get_response_xml_body(mailexch* exch) {
+
   /* response format:
     <?xml version="1.0" encoding="utf-8"?>
     <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
@@ -180,7 +192,9 @@ xmlNodePtr mailexch_get_response_xml_body(mailexch* exch) {
 }
 
 void mailexch_release_response_xml_parser(mailexch* exch) {
+  if(exch == NULL) return;
   mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
+  if(internal == NULL) return; /* TODO warn */
 
   if(internal->response_xml_parser != NULL) {
     if(internal->response_xml_parser->myDoc != NULL)
@@ -196,11 +210,11 @@ size_t mailexch_handle_response_xml_callback(char *ptr, size_t size, size_t nmem
   size_t length = size*nmemb < 1 ? 0 : size*nmemb;
   mailexch_internal* internal = (mailexch_internal*) userdata;
 
-  if(internal->response_xml_parser == NULL) {
-    return 0; /* error */
-  } else {
+  if(internal != NULL && internal->response_xml_parser != NULL) {
     /* read next data chunk */
     xmlParseChunk(internal->response_xml_parser, ptr, length, 0);
+  } else {
+    return 0; /* error */
   }
 
   return length;

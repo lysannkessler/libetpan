@@ -41,8 +41,13 @@
 
 
 mailexch_result mailexch_prepare_curl(mailexch* exch, const char* username, const char* password, const char* domain) {
+  if(exch == NULL || username == NULL || password == NULL)
+    return MAILEXCH_ERROR_INVALID_PARAMETER;
+  mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
+  if(internal == NULL) return MAILEXCH_ERROR_INTERNAL;
+
   /* do this only once */
-  if(MAILEXCH_INTERNAL(exch)->curl != NULL)
+  if(internal->curl != NULL)
     return MAILEXCH_NO_ERROR;
   else if (exch->state != MAILEXCH_STATE_NEW &&
            exch->state != MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED)
@@ -50,7 +55,7 @@ mailexch_result mailexch_prepare_curl(mailexch* exch, const char* username, cons
 
   CURL* curl = curl_easy_init();
   if(!curl) return MAILEXCH_ERROR_INTERNAL;
-  MAILEXCH_INTERNAL(exch)->curl = curl;
+  internal->curl = curl;
 #if 0
   curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 #endif
@@ -58,13 +63,18 @@ mailexch_result mailexch_prepare_curl(mailexch* exch, const char* username, cons
   int result = mailexch_set_credentials(exch, username, password, domain);
   if(result != MAILEXCH_NO_ERROR) {
     curl_easy_cleanup(curl);
-    MAILEXCH_INTERNAL(exch)->curl = NULL;
+    internal->curl = NULL;
   }
 
   return result;
 }
 
 mailexch_result mailexch_set_credentials(mailexch* exch, const char* username, const char* password, const char* domain) {
+
+  if(exch == NULL || username == NULL || password == NULL)
+    return MAILEXCH_ERROR_INVALID_PARAMETER;
+  mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
+  if(internal == NULL) return MAILEXCH_ERROR_INTERNAL;
 
   if(exch->state != MAILEXCH_STATE_NEW &&
      exch->state != MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED)
@@ -87,19 +97,21 @@ mailexch_result mailexch_set_credentials(mailexch* exch, const char* username, c
     sprintf(userpwd, "%s:%s", username, password);
   }
 
-  curl_easy_setopt(MAILEXCH_INTERNAL(exch)->curl, CURLOPT_USERPWD, userpwd);
+  curl_easy_setopt(internal->curl, CURLOPT_USERPWD, userpwd);
   free(userpwd);
 
   /* allow any authentication protocol */
-  curl_easy_setopt(MAILEXCH_INTERNAL(exch)->curl, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+  curl_easy_setopt(internal->curl, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
 
   return MAILEXCH_NO_ERROR;
 }
 
 
 mailexch_result mailexch_write_response_to_buffer(mailexch* exch, size_t buffer_size_hint) {
+  if(exch == NULL) return MAILEXCH_ERROR_INVALID_PARAMETER;
 
   mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
+  if(internal == NULL) return MAILEXCH_ERROR_INTERNAL;
 
   curl_easy_setopt(internal->curl, CURLOPT_WRITEFUNCTION,
                    mailexch_write_response_to_buffer_callback);
@@ -117,11 +129,10 @@ mailexch_result mailexch_write_response_to_buffer(mailexch* exch, size_t buffer_
 }
 
 size_t mailexch_write_response_to_buffer_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
-
-  size_t length = size*nmemb < 1 ? 0 : size*nmemb;
   mailexch_internal* internal = (mailexch_internal*) userdata;
 
-  if(internal->response_buffer) {
+  if(internal != NULL && internal->response_buffer) {
+    size_t length = size * nmemb < 1 ? 0 : size * nmemb;
     mmap_string_append_len(internal->response_buffer, ptr, length);
     return length;
   } else {

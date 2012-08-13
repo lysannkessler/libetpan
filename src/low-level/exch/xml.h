@@ -58,19 +58,14 @@ mailexch_result mailexch_prepare_xml_request_method_node(const char* name,
   SOAP response string.
   The current state must be MAILEXCH_STATE_READY_FOR_REQUESTS.
 
-  @param exch       Exchange session object whose connection to use for the
-                    request
-  @param request    request body XML node
-  @param response   pointer to xmlDocPtr that will be assigned the response
-                    document. It is only valid until the next request is
-                    performed or the exchange session is freed.
-  @param response_body pointer to xmlNodePtr that will receive the XML node
-                       which is the response body (the first node within the
-                       SOAP body).
+  @param exch         [required] Exchange session object whose connection to use
+                      for the request
+  @param request_body [required] Request body XML node
 
   @return - MAILEXCH_NO_ERROR indicates success. response and response_body are
             filled with meaningful output values.
-          - MAILEXCH_ERROR_BAD_REQUEST: state ist not
+          - MAILEXCH_ERROR_INVALID_PARAMETER: a required parameter is missing.
+          - MAILEXCH_ERROR_BAD_STATE: state ist not
             MAILEXCH_STATE_READY_FOR_REQUESTS. response and response_body are
             not filled with meaningful output values.
           - MAILEXCH_ERROR_CONNECT: could not connect to service. response and
@@ -81,6 +76,7 @@ mailexch_result mailexch_prepare_xml_request_method_node(const char* name,
           - MAILEXCH_ERROR_REQUEST_FAILED: HTTP response code was not 200.
             response and response_body might be filled with meaningful output
             values and can be inspected for error treatment.
+          - MAILEXCH_ERROR_INTERNAL: arbitrary failure
 
   @note The caller must free the response by calling
         mailexch_release_response_xml_parser().

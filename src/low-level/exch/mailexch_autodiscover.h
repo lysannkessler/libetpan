@@ -48,24 +48,27 @@ extern "C" {
   The current state must be MAILEXCH_STATE_NEW or
   MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED.
 
-  @param exch             Exchange session object. Its curl object will be used
-                          to perform HTTP requests.
-  @param host             exchange server host name. Can be NULL, in this case
-                          the host name is extracted from email_address
-  @param email_address    email address of user whose connection settings
-                          should be autodiscovered
-  @param username         username required for authentication to autodiscover
-                          service
-  @param password         password required for authentication to autodiscover
-                          service
-  @param domain           domain name required for authentication to
-                          autodiscover service. Can be NULL.
+  @param exch             [required] Exchange session object. Its curl object
+                          will be used to perform HTTP requests.
+  @param host             [optional] exchange server host name; if missing the
+                          host name is extracted from email_address
+  @param email_address    [required] email address of user whose connection
+                          settings should be autodiscovered
+  @param username         [required] username required for authentication to the
+                          autodiscover service
+  @param password         [required] password required for authentication to the
+                          autodiscover service
+  @param domain           [optional] domain name required for authentication to
+                          the autodiscover service
+  @param settings         [required] Upon success, the connection settings are
+                          stored in the structure ponited at by this parameter.
 
   @return - MAILEXCH_NO_ERROR indicates success
+          - MAILEXCH_ERROR_INVALID_PARAMETER indicates one of the following:
+            * a required parameter is missing
+            * no host given and host cannot be extracted from email_address
           - MAILEXCH_BAD_STATE: state is not MAILEXCH_STATE_NEW or
             MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED
-          - MAILEXCH_ERROR_INVALID_PARAMETER: no host given and host cannot be
-            extracted from email_address
           - MAILEXCH_ERROR_AUTODISCOVER_UNAVAILABLE: autodiscovering the
             connection settings failed
           - MAILEXCH_ERROR_INTERNAL: arbitrary failure

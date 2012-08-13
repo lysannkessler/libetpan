@@ -48,10 +48,11 @@ const short mailexch_distfolder_id_name_map_length =
 
 
 mailexch_result mailexch_prepare_for_requests(mailexch* exch) {
+  if(exch == NULL) return MAILEXCH_ERROR_INVALID_PARAMETER;
+  mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
+  if(internal == NULL) return MAILEXCH_ERROR_INTERNAL;
   if(exch->state == MAILEXCH_STATE_READY_FOR_REQUESTS)
     return MAILEXCH_NO_ERROR;
-
-  mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
 
   /* paranoia */
   curl_easy_setopt(internal->curl, CURLOPT_FOLLOWLOCATION, 0L);

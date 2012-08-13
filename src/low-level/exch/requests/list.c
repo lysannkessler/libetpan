@@ -50,7 +50,7 @@ mailexch_result mailexch_list(mailexch* exch,
         int count, carray** list) {
 
   /* check parameters */
-  if(list == NULL)
+  if(exch == NULL || list == NULL)
     return MAILEXCH_ERROR_INVALID_PARAMETER;
   if(distfolder_id == MAILEXCH_DISTFOLDER__NONE && folder_id == NULL)
     return MAILEXCH_ERROR_INVALID_PARAMETER;
@@ -119,8 +119,8 @@ mailexch_result mailexch_list(mailexch* exch,
 
   /* configure response XML parser */
   mailexch_list_sax_context sax_context;
-  mailexch_list_sax_context_init(&sax_context, count > 0 ? count : 10, list);
-  if(mailexch_handle_response_xml(exch, &mailexch_list_sax_handler, &sax_context) != MAILEXCH_NO_ERROR) {
+  if(mailexch_list_sax_context_init(&sax_context, count > 0 ? count : 10, list) != MAILEXCH_NO_ERROR ||
+     mailexch_handle_response_xml(exch, &mailexch_list_sax_handler, &sax_context) != MAILEXCH_NO_ERROR) {
     mailexch_release_response_xml_parser(exch);
     return MAILEXCH_ERROR_INTERNAL;
   }
@@ -143,15 +143,21 @@ mailexch_result mailexch_list(mailexch* exch,
 }
 
 
-void mailexch_list_sax_context_init(mailexch_list_sax_context* context, unsigned int count, carray** list) {
+mailexch_result mailexch_list_sax_context_init(mailexch_list_sax_context* context, unsigned int count, carray** list) {
+  if(context == NULL || list == NULL)
+    return MAILEXCH_ERROR_INVALID_PARAMETER;
+
   memset(context, 0, sizeof(mailexch_list_sax_context));
   context->count = count;
   context->list = list;
+  return MAILEXCH_NO_ERROR;
 }
 
 
 void mailexch_list_sax_handler_start_document(void* user_data) {
+  if(user_data == NULL) return;
   mailexch_list_sax_context* context = (mailexch_list_sax_context*) user_data;
+
   if(context->state != MAILEXCH_LIST_SAX_CONTEXT_STATE__NONE)
     context->state = MAILEXCH_LIST_SAX_CONTEXT_STATE__ERROR;
   if(context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE__ERROR) return;
@@ -162,6 +168,7 @@ void mailexch_list_sax_handler_start_document(void* user_data) {
 }
 
 void mailexch_list_sax_handler_end_document(void* user_data) {
+  if(user_data == NULL) return;
   mailexch_list_sax_context* context = (mailexch_list_sax_context*) user_data;
   /* TODO check state */
   if(context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE__ERROR) return;
@@ -178,6 +185,7 @@ void mailexch_list_sax_handler_start_element_ns(void* user_data,
   UNUSED(namespaces);
   UNUSED(nb_defaulted);
 
+  if(user_data == NULL || localname == NULL) return;
   mailexch_list_sax_context* context = (mailexch_list_sax_context*) user_data;
   if(context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE__ERROR) return;
 
@@ -246,6 +254,7 @@ void mailexch_list_sax_handler_end_element_ns(void* user_data,
         const xmlChar* localname, const xmlChar* prefix, const xmlChar* ns_uri) {
   UNUSED(prefix);
 
+  if(user_data == NULL || localname == NULL) return;
   mailexch_list_sax_context* context = (mailexch_list_sax_context*) user_data;
   if(context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE__ERROR) return;
 
@@ -280,6 +289,7 @@ void mailexch_list_sax_handler_end_element_ns(void* user_data,
 
 void mailexch_list_sax_handler_characters(void* user_data, const xmlChar* chars, int length) {
 
+  if(user_data == NULL || chars == NULL) return;
   mailexch_list_sax_context* context = (mailexch_list_sax_context*) user_data;
   if(context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE__ERROR) return;
 
@@ -296,10 +306,11 @@ void mailexch_list_sax_handler_characters(void* user_data, const xmlChar* chars,
   }
 }
 
-void mailexch_list_sax_handler_error(void* user_data, const char* msg, ...) {
+void mailexch_list_sax_handler_error(void* user_data, const char* message, ...) {
   /* TODO log error message */
-  UNUSED(msg);
+  UNUSED(message);
 
+  if(user_data == NULL) return;
   mailexch_list_sax_context* context = (mailexch_list_sax_context*) user_data;
   context->state = MAILEXCH_LIST_SAX_CONTEXT_STATE__ERROR;
 }

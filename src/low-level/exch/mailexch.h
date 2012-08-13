@@ -70,7 +70,7 @@ mailexch* mailexch_new(size_t progr_rate, progress_function* progr_fun);
 
   Free the data structures associated with the Exchange session.
 
-  @param exch   Exchange session created with mailexch_new().
+  @param exch   [optional] Exchange session created with mailexch_new().
 
   @see mailexch_new()
  */
@@ -85,14 +85,15 @@ void mailexch_free(mailexch* exch);
   The state must be MAILEXCH_STATE_NEW. Upon success, the new state is
   MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED.
 
-  @param exch       Exchange object to update.
-  @param settings   New connection settings for the object.
+  @param exch       [required] Exchange object to update.
+  @param settings   [required] New connection settings for the object.
 
-  @return   - MAILEXCH_NO_ERROR upon success
-            - MAILEXCH_ERROR_BAD_STATE if state is not MAILEXCH_STATE_NEW
-            - MAILEXCH_ERROR_INTERNAL indicates failure of the operation.
-              The state of the connection settings of the given session is
-              undefined.
+  @return - MAILEXCH_NO_ERROR upon success
+          - MAILEXCH_ERROR_INVALID_PARAMETER: a required parameter is missing.
+          - MAILEXCH_ERROR_BAD_STATE if state is not MAILEXCH_STATE_NEW
+          - MAILEXCH_ERROR_INTERNAL indicates failure of the operation.
+            The state of the connection settings of the given session is
+            undefined.
 
   @see mailexch_autodiscover_connection_settings()
   @see mailexch_connect()
@@ -107,15 +108,16 @@ mailexch_result mailexch_set_connection_settings(mailexch* exch, mailexch_connec
   The state must be MAILEXCH_STATE_NEW. Upon success, the new state is
   MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED.
 
-  @param exch             Exchange object to update. It's curl object will be
-                          used to perform HTTP requests.
+  @param exch             [required] Exchange object to update. It's curl object
+                          will be used to perform HTTP requests.
   @param host             (see mailexch_autodiscover())
   @param email_address    (see mailexch_autodiscover())
   @param username         (see mailexch_autodiscover())
   @param password         (see mailexch_autodiscover())
   @param domain           (see mailexch_autodiscover())
 
-  @return - MAILEXCH_ERROR_BAD_STATE if state is not MAILEXCH_STATE_NEW
+  @return - MAILEXCH_ERROR_INVALID_PARAMETER: a required parameter is missing.
+          - MAILEXCH_ERROR_BAD_STATE if state is not MAILEXCH_STATE_NEW
           - (see mailexch_autodiscover() for other return codes)
 
   @note This is identical to (error handling ommitted):
@@ -138,18 +140,19 @@ mailexch_result mailexch_autodiscover_connection_settings(mailexch* exch,
   The state must be MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED. Upon success,
   the new state is MAILEXCH_STATE_CONNECTED.
 
-  @param exch       Exchange session object
-  @param username   username required for authentication to Exchange service
-  @param password   password required for authentication to Exchange service
-  @param domain     domain name required for authentication to Exchange service
+  @param exch       [required] Exchange session object
+  @param username   (see mailexch_prepare_curl())
+  @param password   (see mailexch_prepare_curl())
+  @param domain     (see mailexch_prepare_curl())
 
   @return - MAILEXCH_NO_ERROR indicates success
+          - MAILEXCH_ERROR_INVALID_PARAMETER: a required parameter is missing.
           - MAILEXCH_ERROR_BAD_STATE: state is not
             MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED
           - MAILEXCH_ERROR_CONNECT: cannot connect to Exchange service
           - MAILEXCH_ERROR_NO_EWS: the configured as_url dows not seem to refer
             to a Exchange Web Services 2007 service
-          - MAILEXCH_ERROR_INTERNAL indicates an arbitrary failure
+          - MAILEXCH_ERROR_INTERNAL: arbitrary failure
 
   @see mailexch_set_connection_settings()
 */

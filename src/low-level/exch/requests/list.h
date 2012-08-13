@@ -38,6 +38,7 @@ extern "C" {
 
 
 #include <libetpan/carray.h>
+#include <libetpan/mailexch_types.h>
 #include <libetpan/mailexch_types_item.h>
 
 #include <libxml/parser.h>
@@ -68,7 +69,7 @@ struct mailexch_list_sax_context {
 };
 typedef struct mailexch_list_sax_context mailexch_list_sax_context;
 
-void mailexch_list_sax_context_init(mailexch_list_sax_context* context, unsigned int count, carray** list);
+mailexch_result mailexch_list_sax_context_init(mailexch_list_sax_context* context, unsigned int count, carray** list);
 
 void mailexch_list_sax_handler_start_document(void* user_data);
 

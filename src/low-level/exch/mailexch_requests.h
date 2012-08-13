@@ -58,9 +58,11 @@ extern const short mailexch_distfolder_id_name_map_length;
     - clears request body
   Upon success, the new state is MAILEXCH_STATE_READY_FOR_REQUESTS.
 
-  @param exch   the connected Exchange session object to configure
+  @param exch   [required] The connected Exchange session object to configure.
 
   @return - MAILEXCH_NO_ERROR indicates success
+          - MAILEXCH_ERROR_INVALID_PARAMETER: a required parameter is missing.
+          - MAILEXCH_ERROR_INTERNAL: arbitrary failure
           - (see mailexch_save_response_xml() for return codes)
 
   @see mailexch_connect()
@@ -80,40 +82,41 @@ mailexch_result mailexch_prepare_for_requests(mailexch* exch);
   MAILEXCH_STATE_READY_FOR_REQUESTS. Upon success, the new state will be
   MAILEXCH_STATE_READY_FOR_REQUESTS.
 
-  @param exch           Exchange session object
-  @param distfolder_id  distinguished id of folder whose items to list;
-                        may be MAILEXCH_DISTFOLDER__NONE
-  @param folder_id      folder if of folder whose items to list; may be NULL
-  @param count          number of items to list
-  @param list           result list of mailexch_type_item*
+  @param exch          [required] Exchange session object
+  @param distfolder_id [optional] distinguished id of folder whose items to list
+  @param folder_id     [optional] folder if of folder whose items to list
+  @param count         number of items to list; will list all available items
+                       if count < 0
+  @param list          [required] result list of mailexch_type_item*
 
-  @return TODO: TBD
-          - MAILEXCH_NO_ERROR indicates success
+  @return - MAILEXCH_NO_ERROR indicates success; *list points to a result list
           - MAILEXCH_ERROR_INVALID_PARAMETER indicates one of the following:
-            * list is NULL
+            * a required parameter is missing
             * both, distfolder_id is MAILEXCH_DISTFOLDER__NONE and
               folder_id is NULL
             * distfolder_id is invalid
           - MAILEXCH_ERROR_BAD_STATE: state is not MAILEXCH_STATE_CONNECTED or
             MAILEXCH_STATE_READY_FOR_REQUESTS, or the session could not be
             prepared to perform SOAP requests.
+          - MAILEXCH_ERROR_INVALID_RESPONSE: unexpected response format
           - MAILEXCH_ERROR_INTERNAL: arbitrary failure
           - (see mailexch_perform_request_xml() for other return codes)
 
   @note If both, distfolder_id and folder_id contain valid folder ids,
         folder_id is ignored and the folder specified by distfolder_id is used
         for the request.
+  @note Upon error, *list is set to NULL.
+        Upon success, *list points to a list of mailexch_type_item*. The caller
+        must free the list with mailexch_type_item_array_free(*list).
 
-  @note TODO not fully implemented yet
+  @note for implementation see requests/list.c
 
   @note TODO allow delegate access by adding the mailbox element to folders
         identified by a distinguished folder id
   @note TODO allow multiple folder ids
   @note TODO allow to pass change key per folder
   @note TODO add traversal parameter
-  @note TODO configure returned field list
-
-  @note for implementation see requests/list.c
+  @note TODO configure which fields to request
 */
 LIBETPAN_EXPORT
 mailexch_result mailexch_list(mailexch* exch,

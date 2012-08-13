@@ -74,18 +74,20 @@
   given settings structure.
   The current state must be MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED.
 
-  @param exch     Exchange session object. Its curl object will be used to
-                  perform HTTP requests.
-  @param url      URL to try
-  @param settings Upon success, the connection settings are stored in the
-                  structure ponited at by this parameter.
+  @param exch     [required] Exchange session object. Its curl object will be
+                  used to perform HTTP requests.
+  @param url      [required] URL to try
+  @param settings [required] Upon success, the connection settings are stored in
+                  the structure ponited at by this parameter.
 
   @return - MAILEXCH_NO_ERROR indicated success
+          - MAILEXCH_ERROR_INVALID_PARAMETER: a required parameter is missing.
           - MAILEXCH_ERROR_BAD_STATE: state is not
             MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED
           - MAILEXCH_ERROR_CONNECT: cannot connect to given URL
           - MAILEXCH_ERROR_AUTODISCOVER_UNAVAILABLE: given URL does not seem to
             point to a Exchange autodiscover service
+          - MAILEXCH_ERROR_INTERNAL: arbitrary failure
 */
 mailexch_result mailexch_autodiscover_try_url(mailexch* exch, const char* url, mailexch_connection_settings* settings);
 
@@ -95,6 +97,10 @@ mailexch_result mailexch_autodiscover(mailexch* exch, const char* host,
         const char* domain, mailexch_connection_settings* settings) {
   /* http://msdn.microsoft.com/en-us/library/exchange/ee332364(v=exchg.140).aspx */
 
+  if(exch == NULL || email_address == NULL || username == NULL || password == NULL || settings == NULL)
+    return MAILEXCH_ERROR_INVALID_PARAMETER;
+  mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
+  if(internal == NULL) return MAILEXCH_ERROR_INTERNAL;
   if(exch->state != MAILEXCH_STATE_NEW &&
      exch->state != MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED)
     return MAILEXCH_ERROR_BAD_STATE;
@@ -106,7 +112,7 @@ mailexch_result mailexch_autodiscover(mailexch* exch, const char* host,
       return MAILEXCH_ERROR_INVALID_PARAMETER;
     host += 1;
     if(*host == 0) {
-      /* end of string after @ */
+      /* end of string after @, i.e. empty host name */
       return MAILEXCH_ERROR_INVALID_PARAMETER;
     }
   }
@@ -114,7 +120,7 @@ mailexch_result mailexch_autodiscover(mailexch* exch, const char* host,
   /* prepare curl: curl object + credentials */
   int result = mailexch_prepare_curl(exch, username, password, domain);
   if(result != MAILEXCH_NO_ERROR) return result;
-  CURL* curl = MAILEXCH_INTERNAL(exch)->curl;
+  CURL* curl = internal->curl;
 
   /* headers */
   struct curl_slist *headers = NULL;
@@ -155,7 +161,7 @@ mailexch_result mailexch_autodiscover(mailexch* exch, const char* host,
   /*   allocate buffer */
   char* url = malloc(MAILEXCH_AUTODISCOVER_URL_LENGTH + strlen(host) + 1);
   if(!url) {
-    mailexch_internal_response_buffer_free(MAILEXCH_INTERNAL(exch));
+    mailexch_internal_response_buffer_free(internal);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
     curl_slist_free_all(headers);
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, NULL);
@@ -172,7 +178,7 @@ mailexch_result mailexch_autodiscover(mailexch* exch, const char* host,
 
   /* clean up */
   free(url);
-  mailexch_internal_response_buffer_free(MAILEXCH_INTERNAL(exch));
+  mailexch_internal_response_buffer_free(internal);
   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
   curl_slist_free_all(headers);
   curl_easy_setopt(curl, CURLOPT_HTTPHEADER, NULL);
@@ -182,10 +188,13 @@ mailexch_result mailexch_autodiscover(mailexch* exch, const char* host,
 
 mailexch_result mailexch_autodiscover_try_url(mailexch* exch, const char* url, mailexch_connection_settings* settings) {
 
+  if(exch == NULL || url == NULL || settings == NULL)
+    return MAILEXCH_ERROR_INVALID_PARAMETER;
+  mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
+  if(internal == NULL) return MAILEXCH_ERROR_INTERNAL;
   if(exch->state != MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED)
     return MAILEXCH_ERROR_BAD_STATE;
 
-  mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
   curl_easy_setopt(internal->curl, CURLOPT_URL, url);
   CURLcode curl_code = curl_easy_perform(internal->curl);
 
