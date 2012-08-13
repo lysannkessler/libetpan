@@ -45,11 +45,7 @@ extern "C" {
 
   Autodiscover connection settings for given account and store them in a
   mailexch_connection_settings structure.
-  The current state must be MAILEXCH_STATE_NEW or
-  MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED.
 
-  @param exch             [required] Exchange session object. Its curl object
-                          will be used to perform HTTP requests.
   @param host             [optional] exchange server host name; if missing the
                           host name is extracted from email_address
   @param email_address    [required] email address of user whose connection
@@ -67,8 +63,6 @@ extern "C" {
           - MAILEXCH_ERROR_INVALID_PARAMETER indicates one of the following:
             * a required parameter is missing
             * no host given and host cannot be extracted from email_address
-          - MAILEXCH_BAD_STATE: state is not MAILEXCH_STATE_NEW or
-            MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED
           - MAILEXCH_ERROR_AUTODISCOVER_UNAVAILABLE: autodiscovering the
             connection settings failed
           - MAILEXCH_ERROR_INTERNAL: arbitrary failure
@@ -79,9 +73,9 @@ extern "C" {
   @seealso http://msdn.microsoft.com/en-us/library/exchange/ee332364(v=exchg.140).aspx
 */
 LIBETPAN_EXPORT
-mailexch_result mailexch_autodiscover(mailexch* exch, const char* host,
-        const char* email_address, const char* username, const char* password,
-        const char* domain, mailexch_connection_settings* settings);
+mailexch_result mailexch_autodiscover(const char* host, const char* email_address,
+        const char* username, const char* password, const char* domain,
+        mailexch_connection_settings* settings);
 
 
 #ifdef __cplusplus

@@ -108,8 +108,7 @@ mailexch_result mailexch_set_connection_settings(mailexch* exch, mailexch_connec
   The state must be MAILEXCH_STATE_NEW. Upon success, the new state is
   MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED.
 
-  @param exch             [required] Exchange object to update. It's curl object
-                          will be used to perform HTTP requests.
+  @param exch             [required] Exchange object to update.
   @param host             (see mailexch_autodiscover())
   @param email_address    (see mailexch_autodiscover())
   @param username         (see mailexch_autodiscover())
@@ -117,11 +116,11 @@ mailexch_result mailexch_set_connection_settings(mailexch* exch, mailexch_connec
   @param domain           (see mailexch_autodiscover())
 
   @return - MAILEXCH_ERROR_INVALID_PARAMETER: a required parameter is missing.
-          - MAILEXCH_ERROR_BAD_STATE if state is not MAILEXCH_STATE_NEW
+          - MAILEXCH_ERROR_BAD_STATE: state is not MAILEXCH_STATE_NEW.
           - (see mailexch_autodiscover() for other return codes)
 
   @note This is identical to (error handling ommitted):
-        {@code mailexch_autodiscover(exch, host, email_address, username,
+        {@code mailexch_autodiscover(host, email_address, username,
         password, domain, &exch->connection_settings)}</pre>
 
   @see mailexch_set_connection_settings()

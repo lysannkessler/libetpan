@@ -143,7 +143,7 @@ mailexch_result mailexch_autodiscover_connection_settings(mailexch* exch,
   if(exch == NULL) return MAILEXCH_ERROR_INVALID_PARAMETER;
   if(exch->state != MAILEXCH_STATE_NEW) return MAILEXCH_ERROR_BAD_STATE;
 
-  int result = mailexch_autodiscover(exch, host, email_address, username, password, domain, &exch->connection_settings);
+  int result = mailexch_autodiscover(host, email_address, username, password, domain, &exch->connection_settings);
 
   if(result == MAILEXCH_NO_ERROR)
     exch->state = MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED;

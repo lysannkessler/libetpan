@@ -40,6 +40,7 @@
 
 #include "helper.h"
 #include "types_internal.h"
+#include <libetpan/mmapstring.h>
 
 
 #define MAILEXCH_AUTODISCOVER_REQUEST_FORMAT ( \
@@ -54,17 +55,19 @@
 
 #define MAILEXCH_AUTODISCOVER_STEP1_URL_FORMAT "https://%s/autodiscover/autodiscover.xml"
 #define MAILEXCH_AUTODISCOVER_STEP2_URL_FORMAT "https://autodiscover.%s/autodiscover/autodiscover.xml"
-#define MAILEXCH_AUTODISCOVER_URL_LENGTH strlen(MAILEXCH_AUTODISCOVER_STEP2_URL_FORMAT-2) /* the longer of both */
+#define MAILEXCH_AUTODISCOVER_LONGEST_URL_FORMAT MAILEXCH_AUTODISCOVER_STEP2_URL_FORMAT
+#define MAILEXCH_AUTODISCOVER_URL_LENGTH strlen(MAILEXCH_AUTODISCOVER_LONGEST_URL_FORMAT - 2)
 
 
-#define MAILEXCH_AUTODISCOVER_TRY_STEP_LONG(step, exch, url_buffer, settings, host, result) \
+#define MAILEXCH_AUTODISCOVER_TRY_STEP_LONG(step, curl, response_buffer, url_buffer, settings, host, result) \
   do { \
     sprintf(url_buffer, MAILEXCH_AUTODISCOVER_STEP##step##_URL_FORMAT, host); \
-    result = mailexch_autodiscover_try_url(exch, url_buffer, settings); \
+    result = mailexch_autodiscover_try_url(curl, response_buffer, url_buffer, settings); \
+    mmap_string_truncate(response_buffer, 0); \
   } while(0);
 
 #define MAILEXCH_AUTODISCOVER_TRY_STEP(step) \
-    MAILEXCH_AUTODISCOVER_TRY_STEP_LONG(step, exch, url, settings, host, result)
+    MAILEXCH_AUTODISCOVER_TRY_STEP_LONG(step, curl, response_buffer, url, settings, host, result)
 
 
 /*
@@ -72,39 +75,33 @@
 
   Try to extract autodiscover information from given URL, and save them in the
   given settings structure.
-  The current state must be MAILEXCH_STATE_NEW or
-  MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED.
 
-  @param exch     [required] Exchange session object. Its curl object will be
-                  used to perform HTTP requests.
-  @param url      [required] URL to try
-  @param settings [required] Upon success, the connection settings are stored in
-                  the structure ponited at by this parameter.
+  @param curl            [required] CURL object to use for HTTP requests.
+  @param response_buffer [required] the response buffer that will receive the
+                         HTTP response body.
+  @param url             [required] URL to try
+  @param settings        [required] Upon success, the connection settings are
+                         stored in the structure ponited at by this parameter.
 
   @return - MAILEXCH_NO_ERROR indicated success
           - MAILEXCH_ERROR_INVALID_PARAMETER: a required parameter is missing.
-          - MAILEXCH_BAD_STATE: state is not MAILEXCH_STATE_NEW or
-            MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED
           - MAILEXCH_ERROR_CONNECT: cannot connect to given URL
           - MAILEXCH_ERROR_AUTODISCOVER_UNAVAILABLE: given URL does not seem to
             point to a Exchange autodiscover service
           - MAILEXCH_ERROR_INTERNAL: arbitrary failure
 */
-mailexch_result mailexch_autodiscover_try_url(mailexch* exch, const char* url, mailexch_connection_settings* settings);
+mailexch_result mailexch_autodiscover_try_url(CURL* curl, MMAPString* response_buffer, const char* url, mailexch_connection_settings* settings);
+
+size_t mailexch_autodiscover_curl_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
 
 
-mailexch_result mailexch_autodiscover(mailexch* exch, const char* host,
-        const char* email_address, const char* username, const char* password,
-        const char* domain, mailexch_connection_settings* settings) {
+mailexch_result mailexch_autodiscover(const char* host, const char* email_address,
+        const char* username, const char* password, const char* domain,
+        mailexch_connection_settings* settings) {
   /* http://msdn.microsoft.com/en-us/library/exchange/ee332364(v=exchg.140).aspx */
 
-  if(exch == NULL || email_address == NULL || username == NULL || password == NULL || settings == NULL)
+  if(email_address == NULL || username == NULL || password == NULL || settings == NULL)
     return MAILEXCH_ERROR_INVALID_PARAMETER;
-  mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
-  if(internal == NULL) return MAILEXCH_ERROR_INTERNAL;
-  if(exch->state != MAILEXCH_STATE_NEW &&
-     exch->state != MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED)
-    return MAILEXCH_ERROR_BAD_STATE;
 
   /* get host name */
   if(host == NULL) {
@@ -119,9 +116,9 @@ mailexch_result mailexch_autodiscover(mailexch* exch, const char* host,
   }
 
   /* prepare curl: curl object + credentials */
-  int result = mailexch_prepare_curl(exch, username, password, domain);
+  CURL* curl = NULL;
+  int result = mailexch_prepare_curl_internal(&curl, username, password, domain);
   if(result != MAILEXCH_NO_ERROR) return result;
-  CURL* curl = internal->curl;
 
   /* headers */
   struct curl_slist *headers = NULL;
@@ -139,34 +136,32 @@ mailexch_result mailexch_autodiscover(mailexch* exch, const char* host,
     strlen(MAILEXCH_AUTODISCOVER_REQUEST_FORMAT) - 2 + /* remove format chars */
     strlen(email_address) + 1);      /* add email address and null terminator */
   if(!request) {
-    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
     curl_slist_free_all(headers);
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, NULL);
+    curl_easy_cleanup(curl);
     return MAILEXCH_ERROR_INTERNAL;
   }
   sprintf(request, MAILEXCH_AUTODISCOVER_REQUEST_FORMAT, email_address);
   curl_easy_setopt(curl, CURLOPT_POSTFIELDS, request);
 
-  /* result */
-  if(mailexch_write_response_to_buffer(exch,
-     MAILEXCH_AUTODISCOVER_MIN_RESPONSE_BUFFER_LENGTH) != MAILEXCH_NO_ERROR) {
-
-    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
-    curl_slist_free_all(headers);
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, NULL);
+  /* buffer response. TODO use SAX interface */
+  MMAPString* response_buffer = mmap_string_sized_new(MAILEXCH_AUTODISCOVER_MIN_RESPONSE_BUFFER_LENGTH);
+  if(response_buffer == NULL) {
     free(request);
+    curl_slist_free_all(headers);
+    curl_easy_cleanup(curl);
     return MAILEXCH_ERROR_INTERNAL;
   }
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, mailexch_autodiscover_curl_write_callback);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, response_buffer);
 
   /* try steps: */
   /*   allocate buffer */
   char* url = malloc(MAILEXCH_AUTODISCOVER_URL_LENGTH + strlen(host) + 1);
   if(!url) {
-    mailexch_internal_response_buffer_free(internal);
-    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
-    curl_slist_free_all(headers);
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, NULL);
+    mmap_string_free(response_buffer);
     free(request);
+    curl_slist_free_all(headers);
+    curl_easy_cleanup(curl);
     return MAILEXCH_ERROR_INTERNAL;
   }
   /*   try */
@@ -179,36 +174,30 @@ mailexch_result mailexch_autodiscover(mailexch* exch, const char* host,
 
   /* clean up */
   free(url);
-  mailexch_internal_response_buffer_free(internal);
-  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
-  curl_slist_free_all(headers);
-  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, NULL);
+  mmap_string_free(response_buffer);
   free(request);
+  curl_slist_free_all(headers);
+  curl_easy_cleanup(curl);
   return result;
 }
 
-mailexch_result mailexch_autodiscover_try_url(mailexch* exch, const char* url, mailexch_connection_settings* settings) {
+mailexch_result mailexch_autodiscover_try_url(CURL* curl, MMAPString* response_buffer, const char* url, mailexch_connection_settings* settings) {
 
-  if(exch == NULL || url == NULL || settings == NULL)
+  if(curl == NULL || response_buffer == NULL || url == NULL || settings == NULL)
     return MAILEXCH_ERROR_INVALID_PARAMETER;
-  mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
-  if(internal == NULL) return MAILEXCH_ERROR_INTERNAL;
-  if(exch->state != MAILEXCH_STATE_NEW &&
-     exch->state != MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED)
-    return MAILEXCH_ERROR_BAD_STATE;
 
-  curl_easy_setopt(internal->curl, CURLOPT_URL, url);
-  CURLcode curl_code = curl_easy_perform(internal->curl);
+  curl_easy_setopt(curl, CURLOPT_URL, url);
+  CURLcode curl_code = curl_easy_perform(curl);
 
   int result = MAILEXCH_ERROR_CONNECT;
   if(curl_code == CURLE_OK) {
     long http_response = 0;
-    curl_easy_getinfo (internal->curl, CURLINFO_RESPONSE_CODE, &http_response);
+    curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_response);
     if(http_response == 200) {
       result = MAILEXCH_ERROR_AUTODISCOVER_UNAVAILABLE;
 
       /* parse ASUrl */
-      char* as_url = strstr(internal->response_buffer->str, "<ASUrl>");
+      char* as_url = strstr(response_buffer->str, "<ASUrl>");
       if(as_url != NULL) {
         as_url += 7;
         char* as_url_end = strstr(as_url, "</ASUrl>");
@@ -230,3 +219,15 @@ mailexch_result mailexch_autodiscover_try_url(mailexch* exch, const char* url, m
 
   return result;
 }
+
+size_t mailexch_autodiscover_curl_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
+  MMAPString* buffer = (MMAPString*) userdata;
+  if(buffer != NULL) {
+    size_t length = size * nmemb < 1 ? 0 : size * nmemb;
+    mmap_string_append_len(buffer, ptr, length);
+    return length;
+  } else {
+    return 0; /* error */
+  }
+}
+

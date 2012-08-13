@@ -68,15 +68,14 @@ extern "C" {
 */
 mailexch_result mailexch_prepare_curl(mailexch* exch, const char* username, const char* password, const char* domain);
 
+mailexch_result mailexch_prepare_curl_internal(CURL** curl, const char* username, const char* password, const char* domain);
+
 /*
   mailexch_set_credentials()
 
-  Update credentials of Exchange session's CURL object.
-  The current state must be MAILEXCH_STATE_NEW or
-  MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED.
+  Update credentials of given CURL object.
 
-  @param exch     [required] Exchange session object whose CURL object to
-                  configure
+  @param curl     [required] CURL object to configure
   @param username [required] username to use for all further HTTP authentication
                   actions
   @param password [required] password to use for all further HTTP authentication
@@ -86,11 +85,9 @@ mailexch_result mailexch_prepare_curl(mailexch* exch, const char* username, cons
 
   @return - MAILEXCH_NO_ERROR indicates success
           - MAILEXCH_ERROR_INVALID_PARAMETER: a required parameter is missing.
-          - MAILEXCH_ERROR_BAD_STATE: the state is not MAILEXCH_STATE_NEW or
-            MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED
           - MAILEXCH_ERROR_INTERNAL: arbitrary failure
 */
-mailexch_result mailexch_set_credentials(mailexch* exch, const char* username, const char* password, const char* domain);
+mailexch_result mailexch_set_credentials(CURL* curl, const char* username, const char* password, const char* domain);
 
 
 /*
