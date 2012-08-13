@@ -35,6 +35,7 @@
 
 #include <libetpan/oxws_requests.h>
 #include "types_internal.h"
+#include "helper.h"
 
 
 /* maps from oxws_distinguished_folder_id to string */
@@ -47,35 +48,67 @@ const short oxws_distfolder_id_name_map_length =
   sizeof(oxws_distfolder_id_name_map) / sizeof(const char*);
 
 
+int oxws_curl_progress_callback(void* userdata, double dltotal, double dlnow, double ultotal, double ulnow);
+
+
 oxws_result oxws_prepare_for_requests(oxws* oxws) {
   if(oxws == NULL) return OXWS_ERROR_INVALID_PARAMETER;
   oxws_internal* internal = OXWS_INTERNAL(oxws);
   if(internal == NULL) return OXWS_ERROR_INTERNAL;
-  if(oxws->state == OXWS_STATE_READY_FOR_REQUESTS)
-    return OXWS_NO_ERROR;
 
-  /* paranoia */
-  curl_easy_setopt(internal->curl, CURLOPT_FOLLOWLOCATION, 0L);
-  curl_easy_setopt(internal->curl, CURLOPT_UNRESTRICTED_AUTH, 0L);
+  if(oxws->state != OXWS_STATE_READY_FOR_REQUESTS) {
+    /* paranoia */
+    curl_easy_setopt(internal->curl, CURLOPT_FOLLOWLOCATION, 0L);
+    curl_easy_setopt(internal->curl, CURLOPT_UNRESTRICTED_AUTH, 0L);
 
-  /* post to AsUrl */
-  curl_easy_setopt(internal->curl, CURLOPT_POST, 1L);
-  curl_easy_setopt(internal->curl, CURLOPT_URL,
-          oxws->connection_settings.as_url);
+    /* post to AsUrl */
+    curl_easy_setopt(internal->curl, CURLOPT_POST, 1L);
+    curl_easy_setopt(internal->curl, CURLOPT_URL, oxws->connection_settings.as_url);
 
-  /* Clear headers and set Content-Type to text/xml. */
-  if(internal->curl_headers) {
-    curl_slist_free_all(internal->curl_headers);
-    internal->curl_headers = NULL;
+    /* Clear headers and set Content-Type to text/xml. */
+    if(internal->curl_headers) {
+      curl_slist_free_all(internal->curl_headers);
+      internal->curl_headers = NULL;
+    }
+    internal->curl_headers = curl_slist_append(internal->curl_headers, "Content-Type: text/xml");
+    curl_easy_setopt(internal->curl, CURLOPT_HTTPHEADER, internal->curl_headers);
+
+    /* set progress callback */
+    curl_easy_setopt(internal->curl, CURLOPT_PROGRESSFUNCTION, oxws_curl_progress_callback);
+    curl_easy_setopt(internal->curl, CURLOPT_PROGRESSDATA, oxws);
+    curl_easy_setopt(internal->curl, CURLOPT_NOPROGRESS, 0L);
+
+    /* clear request string for now */
+    curl_easy_setopt(internal->curl, CURLOPT_POSTFIELDS, NULL);
+
+    /* update state */
+    oxws->state = OXWS_STATE_READY_FOR_REQUESTS;
   }
-  internal->curl_headers = curl_slist_append(internal->curl_headers,
-          "Content-Type: text/xml");
-  curl_easy_setopt(internal->curl, CURLOPT_HTTPHEADER, internal->curl_headers);
 
-  /* clear request string for now */
-  curl_easy_setopt(internal->curl, CURLOPT_POSTFIELDS, NULL);
+  /* reset progress callback state */
+  oxws->progress_callback.last = 0;
 
-  /* update state */
-  oxws->state = OXWS_STATE_READY_FOR_REQUESTS;
   return OXWS_NO_ERROR;
+}
+
+int oxws_curl_progress_callback(void* userdata, double dltotal, double dlnow, double ultotal, double ulnow) {
+  UNUSED(ultotal);
+  UNUSED(ulnow);
+
+  oxws* oxws = (struct oxws*) userdata;
+  if(oxws == NULL) return 0; /* TODO warn */
+
+  /* call the configured progress callback */
+  if(oxws->progress_callback.callback != NULL) {
+    size_t dlnow_s = (size_t) dlnow;
+    size_t dltotal_s = (size_t) dltotal;
+    if(oxws->progress_callback.rate == 0 ||
+       dlnow_s - oxws->progress_callback.last > oxws->progress_callback.rate ||
+       (dlnow_s == dltotal_s && dlnow_s > oxws->progress_callback.last)) {
+      oxws->progress_callback.callback(dlnow_s, dltotal_s, oxws->progress_callback.userdata);
+      oxws->progress_callback.last = dlnow_s;
+    }
+  }
+
+  return 0;
 }

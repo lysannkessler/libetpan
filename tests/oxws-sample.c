@@ -24,6 +24,13 @@ oxws_result list_items(oxws* oxws, oxws_distinguished_folder_id folder_id) {
   return result;
 }
 
+void progress_callback(size_t count, size_t total, void* userdata) {
+  (void)(userdata); /* unused */
+  if(total > 0) {
+    printf("(received %.0lf%%)\n", (double)count * 100.0 / (double)total);
+  }
+}
+
 int main(int argc, char ** argv) {
   /* ./oxws-sample myhpiemail myhpiaccount myhpipassword */
   if (argc < 4) {
@@ -36,6 +43,7 @@ int main(int argc, char ** argv) {
     fprintf(stderr, "Could not create oxws instance.");
     exit(EXIT_FAILURE);
   }
+  oxws_set_progress_callback(oxws, progress_callback, NULL, 4096);
 
   oxws_result result;
 #if 1

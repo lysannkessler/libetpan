@@ -153,7 +153,7 @@ oxws_result oxws_connect(oxws* oxws, const char* username, const char* password,
 
 
 LIBETPAN_EXPORT
-oxws_result oxws_set_progress_callback(oxws* oxws, mailprogress_function* callback, void* userdata);
+oxws_result oxws_set_progress_callback(oxws* oxws, mailprogress_function* callback, void* userdata, size_t rate);
 
 
 /* include all request functions */

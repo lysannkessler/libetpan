@@ -202,10 +202,11 @@ oxws_result oxws_connect(oxws* oxws, const char* username, const char* password,
 }
 
 
-oxws_result oxws_set_progress_callback(oxws* oxws, mailprogress_function* callback, void* userdata) {
+oxws_result oxws_set_progress_callback(oxws* oxws, mailprogress_function* callback, void* userdata, size_t rate) {
   if(oxws == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-  oxws->progress_callback = callback;
-  oxws->progress_callback_userdata = userdata;
+  oxws->progress_callback.callback = callback;
+  oxws->progress_callback.userdata = userdata;
+  oxws->progress_callback.rate = rate;
   return OXWS_NO_ERROR;
 }
 

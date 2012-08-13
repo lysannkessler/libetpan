@@ -69,6 +69,19 @@ enum oxws_result {
 };
 typedef enum oxws_result oxws_result;
 
+struct oxws_progress_info {
+  /* callback called on download progress */
+  mailprogress_function* callback;
+  /* userdata to pass to the callback */
+  void* userdata;
+  /* callback invocation rate in bytes */
+  size_t rate;
+
+  /* last progress */
+  size_t last;
+};
+typedef struct oxws_progress_info oxws_progress_info;
+
 /*
   struct oxws_connection_settings
 
@@ -112,15 +125,14 @@ typedef enum oxws_state oxws_state;
   A Exchange session object.
 */
 struct oxws {
-  /* callback called on download progress */
-  mailprogress_function* progress_callback;
-  void* progress_callback_userdata;
+  /* connection settings */
+  oxws_connection_settings connection_settings;
+
+  /* progress callback information */
+  oxws_progress_info progress_callback;
 
   /* current state */
   oxws_state state;
-
-  /* connection settings */
-  oxws_connection_settings connection_settings;
 
   /* A oxws_internal structure as defined in types_internal.h.
      The fields are not added directly to avoid includes in client code. */
