@@ -303,7 +303,7 @@ struct newsfeed_item * newsfeed_get_item(struct newsfeed * feed, unsigned int n)
  * we got from url's server. */
 int newsfeed_update(struct newsfeed * feed, time_t last_update)
 {
-#if (defined(HAVE_CURL) && defined(HAVE_EXPAT))
+#if (defined(HAVE_LIBCURL) && defined(HAVE_EXPAT))
   CURL * eh;
   CURLcode curl_res;
   struct newsfeed_parser_context * feed_ctx;

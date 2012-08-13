@@ -1,6 +1,6 @@
 # libEtPan! -- a mail stuff library
 #
-# Copyright (C) 2007 g10 Code GmbH
+# Copyright (C) 2012 Lysann Kessler
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,34 +29,20 @@
 
 include $(top_srcdir)/rules.mk
 
-EXTRA_DIST = README
+etpaninclude_HEADERS = \
+  oxws.h oxws_types.h oxws_types_item.h \
+  oxws_autodiscover.h oxws_requests.h
 
-noinst_PROGRAMS = smime decrypt pgp frm frm-tree frm-simple	\
-	readmsg-simple fetch-attachment smtpsend readmsg-uid \
-	readmsg compose-msg imap-sample mime-create mime-parse \
-	pop-sample oxws-sample
+AM_CPPFLAGS = -Werror \
+  -I$(top_builddir)/include \
+  -I$(top_srcdir)/src/data-types \
+  $(LIBCURL_CPPFLAGS) $(LIBXML2_CFLAGS)
 
-# For W32, reverse the -DLIBETPAN_DLL.  Unfortunately, CFLAGS comes
-# after AM_CPPFLAGS, so we have to frob CFLAGS.
-AM_CFLAGS = -ULIBETPAN_DLL
-AM_CPPFLAGS = -I$(top_builddir)/include
-LDADD = ../src/libetpan.la
+AM_LDFLAGS = $(LIBCURL) $(LIBXML2_LIBS)
 
-FRMCOMMON = frm-common.h frm-common.c option-parser.h option-parser.c
+noinst_LTLIBRARIES = liboxws.la
 
-frm_SOURCES = $(FRMCOMMON) frm.c
-
-frm_tree_SOURCES = $(FRMCOMMON) frm-tree.c
-
-frm_simple_SOURCES = $(FRMCOMMON) frm-simple.c
-
-READMSGCOMMON = readmsg-common.h readmsg-common.c option-parser.h	\
-	option-parser.c
-
-readmsg_SOURCES = $(READMSGCOMMON) readmsg.c
-
-readmsg_simple_SOURCES = $(READMSGCOMMON) readmsg-simple.c
-
-readmsg_uid_SOURCES = $(READMSGCOMMON) readmsg-uid.c
-
-fetch_attachment_SOURCES = $(READMSGCOMMON) fetch-attachment.c
+liboxws_la_SOURCES = \
+  oxws.c types_internal.c oxws_types_item.c \
+  helper.c xml.c \
+  oxws_autodiscover.c oxws_requests.c requests/list.c

@@ -115,6 +115,9 @@ extern "C" {
 /* message which content given by a string */
 #include <libetpan/data_message_driver.h>
 
+/* Microsoft Exchange web services */
+#include <libetpan/oxws.h>
+
 /* engine */
 #include <libetpan/mailprivacy.h>
 #include <libetpan/mailengine.h>

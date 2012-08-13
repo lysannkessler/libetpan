@@ -69,7 +69,7 @@ BUILD_REVISION=0
 AC_SUBST(BUILD_REVISION)
 BUILD_TIMESTAMP=`date +'%Y-%m-%dT%H:%M%z'`
 AC_SUBST(BUILD_TIMESTAMP)
-changequote(,)dnl 
+changequote(,)dnl
 BUILD_FILEVERSION=`echo "${VERSION_MAJOR}.${VERSION_MINOR}.0" | sed 's/\([0-9.]*\).*/\1./;s/\./,/g'`
 changequote([,])dnl
 BUILD_FILEVERSION="${BUILD_FILEVERSION}${BUILD_REVISION}"
@@ -109,22 +109,22 @@ AC_PROG_CC
 AC_PROG_CXX
 
 # Compiler flags.
-AC_ARG_ENABLE(debug,   [  --enable-debug          setup flags (gcc) for debugging (default=no)],
+AC_ARG_ENABLE(debug,   [  --enable-debug          setup flags (gcc) for debugging (default=no)],[],[])
+AC_ARG_ENABLE(optim,   [  --enable-optim          setup flags (gcc) for optimizations (default=yes)],[],[])
 if test "x$enable_debug" = xyes; then
-  CFLAGS="$CFLAGS -O2 -g"
+  CFLAGS="$CFLAGS -g -O0"
+  CPPFLAGS="$CPPFLAGS -DDEBUG"
 fi
-CPPFLAGS="$CPPFLAGS -DDEBUG"
-LDFLAGS="$LDFLAGS",)
-AC_ARG_ENABLE(optim,   [  --enable-optim          setup flags (gcc) for optimizations (default=no)],
-if test "x$enable_debug" != "xyes" ; then
-  if test "x$GCC" = xyes; then
-    CFLAGS="$CFLAGS -O2 -ffast-math -funroll-loops -g0"
+if test "x$enable_optim" == "xyes"; then
+  if test "x$enable_debug" != "xyes"; then
+    if test "x$GCC" = xyes; then
+      CFLAGS="$CFLAGS -ffast-math -funroll-loops -g0"
+    fi
+    LDFLAGS="$LDFLAGS -s"
+  else
+    AC_MSG_WARN([enable-optim and enable-debug are incompatible -- disabling optimizations])
   fi
-  CPPFLAGS="$CPPFLAGS"
-  LDFLAGS="$LDFLAGS -s"
-else
-  AC_MSG_WARN([enable-optim and enable-debug are incompatible -- disabling optimizations])
-fi,)
+fi
 if test "x$GCC" = xyes; then
   CFLAGS="$CFLAGS -W -Wall"
 fi
@@ -148,6 +148,8 @@ dnl Can't use AC_PROG_INSTALL
 INSTALL='$(SHELL) $(top_srcdir)/install-sh -c'
 AC_SUBST(INSTALL)
 
+AM_PROG_CC_C_O
+
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(fcntl.h unistd.h ctype.h sys/types.h sys/stat.h sys/mman.h limits.h)
@@ -162,14 +164,14 @@ AC_FUNC_MMAP
 
 dnl Network libs
 AC_CHECK_FUNC(connect, checksocket=no, checksocket=yes)
-if test "x$checksocket" = "xyes"; then 
+if test "x$checksocket" = "xyes"; then
 case "x$LIBS" in
  *-lsocket*);;
  *) AC_CHECK_LIB(socket, connect) ;;
 esac
 fi
 AC_CHECK_FUNC(inet_ntoa, checknsl=no, checknsl=yes)
-if test "x$checknsl" = "xyes"; then 
+if test "x$checknsl" = "xyes"; then
 case "x$LIBS" in
  *-lnsl*);;
  *) AC_CHECK_LIB(nsl, inet_ntoa) ;;
@@ -260,7 +262,7 @@ AC_ARG_ENABLE(iconv,
 if test x$enable_iconv = xyes; then
    dnl get prototype
    AC_CHECK_HEADER(iconv.h, [ICONV_HEADER=1], [ICONV_HEADER=0])
-   
+
    ICONV_PROTO=no
    AC_MSG_CHECKING([checking iconv() prototype])
    if test "x$ICONV_HEADER" = x1 ; then
@@ -289,9 +291,9 @@ if test x$enable_iconv = xyes; then
    ICONV_LINKED=NO
    if test "$ICONV_PROTO" != "xno" ; then
      AC_MSG_RESULT([ok])
-     
+
      AC_MSG_CHECKING([for iconv])
-     
+
      ICONV_LINKED=0
      AC_TRY_LINK([#include <stdlib.h>
 #include <iconv.h>],
@@ -314,7 +316,7 @@ if test x$enable_iconv = xyes; then
        fi
      done
      LIBS="$saved_LIBS"
-     
+
      if test "x$ICONV_LINKED" = "x1" ; then
        AC_MSG_RESULT([found])
      else
@@ -327,7 +329,7 @@ if test x$enable_iconv = xyes; then
    if test "x$ICONV_LINKED" = "x1" ; then
      AC_DEFINE(HAVE_ICONV, 1, [Define if you have the iconv() function.])
    fi
-   
+
    ICONV_PROTO_CONST=0
    if test "x$ICONV_PROTO" = "xconst" ; then
      AC_DEFINE_UNQUOTED(HAVE_ICONV_PROTO_CONST, 1,
@@ -406,7 +408,7 @@ dnl Look for db2 with db_open call
     2)
     AC_MSG_RESULT([version 2.x])
     for lib in db2 db; do
-      if test "x$DBLINKED" = "x0"; then 
+      if test "x$DBLINKED" = "x0"; then
         AC_CHECK_LIB($lib, db_open, [DBLIB="-l$lib"; DBLINKED=1], [])
       fi
     done
@@ -447,8 +449,8 @@ if test "x$enable_threads" = "xyes"; then
   checkpthread=yes
 
   AC_MSG_CHECKING([for pthread_create with libc])
-  AC_TRY_LINK([], [pthread_create();], 
-                  [pthflag=yes; checkpthread=no], 
+  AC_TRY_LINK([], [pthread_create();],
+                  [pthflag=yes; checkpthread=no],
                   [pthflag=no])
   AC_MSG_RESULT($pthflag)
 
@@ -457,8 +459,8 @@ if test "x$enable_threads" = "xyes"; then
       AC_MSG_CHECKING([for pthread_create with -$flag])
       OLDLIBS="$LIBS"
       LIBS="$LIBS -$flag"
-      AC_TRY_LINK([], [pthread_create();], 
-                      [pthflag=yes; checkpthread=no], 
+      AC_TRY_LINK([], [pthread_create();],
+                      [pthflag=yes; checkpthread=no],
                       [pthflag=no; LIBS="$OLDLIBS"])
       AC_MSG_RESULT($pthflag)
     fi
@@ -549,7 +551,7 @@ if test "x$enable_ipv6" != "xno"; then
 
   if test "x$ipv6_support" = "xno"; then
     if test "x$enable_ipv6" = "xyes"; then
-      AC_MSG_ERROR([cannot enable IPv6 support]) 
+      AC_MSG_ERROR([cannot enable IPv6 support])
     fi
   else
     AC_DEFINE(HAVE_IPV6, 1, [Define to enable IPv6 support.])
@@ -557,8 +559,8 @@ if test "x$enable_ipv6" != "xno"; then
     dnl check for getaddrinfo and freeaddrinfo function presence
     for func in "getaddrinfo" "freeaddrinfo"; do
       AC_MSG_CHECKING([for $func])
-      AC_TRY_LINK([], [$func();], 
-                      [func_present=yes], 
+      AC_TRY_LINK([], [$func();],
+                      [func_present=yes],
                       [func_present=no])
       AC_MSG_RESULT($func_present)
 
@@ -571,62 +573,8 @@ fi
 
 dnl libcurl
 
-libcurl=no
-AC_ARG_WITH(curl,   [  --with-curl[=DIR]    curl install directory (default=auto)],
-            [], [with_curl=auto])
-if test "x$with_curl" != "xno"; then
-  :
-elif test "x$with_curl" != "xauto"; then
-  OCPPFLAGS="$CPPFLAGS"
-  OLDFLAGS="$LDFLAGS"
-  if test "x$with_curl" != "xyes" ; then
-    CPPFLAGS="$CPPFLAGS -I$with_curl/include"
-    LDFLAGS="$LDFLAGS -L$with_curl/lib -lcurl -lz"
-  fi
-  AC_CHECK_HEADER(curl/curl.h, [libcurl=yes])
-  if test "x$libcurl" = "xyes"; then
-      AC_MSG_CHECKING([whether with-curl compiles and links fine])
-      AC_TRY_LINK([], [curl_easy_init();], [libcurl=yes], [libcurl=no])
-      AC_MSG_RESULT([$libcurl])
-  fi
-   if test "x$libcurl" = "xno"; then
-      CPPFLAGS="$OCPPFLAGS"
-      LDFLAGS="$OLDFLAGS"
-   fi
-else
-  AC_PATH_PROG(libcurlconfig, [curl-config])
-  if test "x$libcurlconfig" != "x"; then
-      CPPFLAGS="$CPPFLAGS `$libcurlconfig --cflags 2>/dev/null`"
-      AC_CHECK_HEADER(curl/curl.h, [libcurl=yes])
-      if test "x$libcurl" = "xyes"; then
-          AC_MSG_CHECKING([whether curl-config hints compiles and links fine])
-          OLDFLAGS="$LDFLAGS"
-          LDFLAGS="$LDFLAGS `$libcurlconfig --libs 2>/dev/null`"
-          AC_TRY_LINK([], [curl_easy_init();], [libcurl=yes], [libcurl=no])
-          AC_MSG_RESULT([$libcurl])
-          if test "x$libcurl" = "xno"; then
-              LDFLAGS="$OLDFLAGS"
-          fi
-      fi
-      
-      libcurl_major_version=`$libcurlconfig --version | \
-          sed 's/^.* \([[0-9]]*\)\.\([[0-9]]*\).*$/\1/'`
-      libcurl_minor_version=`$libcurlconfig --version | \
-          sed 's/^.* \([[0-9]]*\)\.\([[0-9]]*\).*$/\2/'`
-      if test "$libcurl_major_version" -lt "$libcurl_major_required" ; then
-          libcurl=no
-      fi
-      if test "$libcurl_major_version" -eq "$libcurl_major_required" ; then
-          if test "$libcurl_minor_version" -lt "$libcurl_minor_required" ; then
-              libcurl=no
-          fi
-      fi
-  fi
-fi
-
-if test "x$libcurl" = "xyes" ; then
-  AC_DEFINE([HAVE_CURL], 1, [Define to use curl])
-fi
+dnl libcurl >= version 7.21 has a bug with NTLM
+LIBCURL_CHECK_CONFIG([yes], [], [7.20])
 
 dnl expat
 libexpat=no
@@ -669,6 +617,11 @@ if test "x$libexpat" = "xyes" ; then
   AC_DEFINE([HAVE_EXPAT], 1, [Define to use expat])
 fi
 
+dnl libxml2
+PKG_CHECK_MODULES([LIBXML2], [libxml-2.0])
+AC_SUBST([LIBXML2_CFLAGS])
+AC_SUBST([LIBXML2_LIBS])
+
 dnl Version
 VERSION="$VERSION_MAJOR.$VERSION_MINOR"
 test -d .git && VERSION="$VERSION-dev-"`date +'%Y%m%d'`
@@ -697,6 +650,7 @@ AC_CONFIG_FILES(libetpan-config
 		src/low-level/nntp/Makefile
 		src/low-level/pop3/Makefile
 		src/low-level/smtp/Makefile
+    src/low-level/oxws/Makefile
 		src/driver/Makefile
 		src/driver/implementation/Makefile
 		src/driver/implementation/data-message/Makefile

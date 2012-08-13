@@ -32,8 +32,12 @@ include $(top_srcdir)/rules.mk
 etpaninclude_HEADERS = \
 	newsfeed_types.h newsfeed.h newsfeed_item.h newsfeed_item_enclosure.h
 
-AM_CPPFLAGS = -I$(top_builddir)/include \
-	-I$(top_srcdir)/src/data-types -I$(top_srcdir)/src/low-level/imf
+AM_CPPFLAGS = \
+	-I$(top_builddir)/include \
+	-I$(top_srcdir)/src/data-types -I$(top_srcdir)/src/low-level/imf \
+	$(LIBCURL_CPPFLAGS)
+
+AM_LDFLAGS = $(LIBCURL)
 
 noinst_LTLIBRARIES = libfeed.la
 
