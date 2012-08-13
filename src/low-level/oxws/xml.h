@@ -1,7 +1,7 @@
 /*
  * libEtPan! -- a mail stuff library
  *
- * exhange support: Copyright (C) 2012 Lysann Kessler
+ * Copyright (C) 2012 Lysann Kessler
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,8 +29,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef MAILEXCH_XML_H
-#define MAILEXCH_XML_H
+#ifndef OXWS_XML_H
+#define OXWS_XML_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,66 +39,66 @@ extern "C" {
 
 #include <libxml/tree.h>
 
-#include <libetpan/mailexch_types.h>
+#include <libetpan/oxws_types.h>
 
 
-#define MAILEXCH_XML_NS_SOAP          (BAD_CAST "http://schemas.xmlsoap.org/soap/envelope/")
-#define MAILEXCH_XML_NS_EXCH_MESSAGES (BAD_CAST "http://schemas.microsoft.com/exchange/services/2006/messages")
-#define MAILEXCH_XML_NS_EXCH_TYPES    (BAD_CAST "http://schemas.microsoft.com/exchange/services/2006/types")
+#define OXWS_XML_NS_SOAP          (BAD_CAST "http://schemas.xmlsoap.org/soap/envelope/")
+#define OXWS_XML_NS_EXCH_MESSAGES (BAD_CAST "http://schemas.microsoft.com/exchange/services/2006/messages")
+#define OXWS_XML_NS_EXCH_TYPES    (BAD_CAST "http://schemas.microsoft.com/exchange/services/2006/types")
 
 
 /* @note TODO docstring */
-mailexch_result mailexch_prepare_xml_request_method_node(const char* name,
+oxws_result oxws_prepare_xml_request_method_node(const char* name,
         xmlNodePtr* node, xmlNsPtr* ns_exch_messages, xmlNsPtr* ns_exch_types);
 
 /*
-  mailexch_perform_request_xml()
+  oxws_perform_request_xml()
 
   Perform SOAP request given by string, and return its HTTP status code and the
   SOAP response string.
-  The current state must be MAILEXCH_STATE_READY_FOR_REQUESTS.
+  The current state must be OXWS_STATE_READY_FOR_REQUESTS.
 
-  @param exch         [required] Exchange session object whose connection to use
+  @param oxws         [required] Exchange session object whose connection to use
                       for the request
   @param request_body [required] Request body XML node
 
-  @return - MAILEXCH_NO_ERROR indicates success. response and response_body are
+  @return - OXWS_NO_ERROR indicates success. response and response_body are
             filled with meaningful output values.
-          - MAILEXCH_ERROR_INVALID_PARAMETER: a required parameter is missing.
-          - MAILEXCH_ERROR_BAD_STATE: state ist not
-            MAILEXCH_STATE_READY_FOR_REQUESTS. response and response_body are
+          - OXWS_ERROR_INVALID_PARAMETER: a required parameter is missing.
+          - OXWS_ERROR_BAD_STATE: state ist not
+            OXWS_STATE_READY_FOR_REQUESTS. response and response_body are
             not filled with meaningful output values.
-          - MAILEXCH_ERROR_CONNECT: could not connect to service. response and
+          - OXWS_ERROR_CONNECT: could not connect to service. response and
             response_body are not filled with meaningful output values.
-          - MAILEXCH_ERROR_INVALID_RESPONSE: the response was not a valid SOAP
+          - OXWS_ERROR_INVALID_RESPONSE: the response was not a valid SOAP
             response, but the HTTP response code was 200. response and
             response_body are not filled with meaningful values.
-          - MAILEXCH_ERROR_REQUEST_FAILED: HTTP response code was not 200.
+          - OXWS_ERROR_REQUEST_FAILED: HTTP response code was not 200.
             response and response_body might be filled with meaningful output
             values and can be inspected for error treatment.
-          - MAILEXCH_ERROR_INTERNAL: arbitrary failure
+          - OXWS_ERROR_INTERNAL: arbitrary failure
 
   @note The caller must free the response by calling
-        mailexch_release_response_xml_parser().
+        oxws_release_response_xml_parser().
 
   @note TODO support SOAP failures
 
   @note TODO update
 */
-mailexch_result mailexch_perform_request_xml(mailexch* exch, xmlNodePtr request_body);
+oxws_result oxws_perform_request_xml(oxws* oxws, xmlNodePtr request_body);
 
 
 /* @note TODO docstring */
-mailexch_result mailexch_handle_response_xml(mailexch* exch, xmlSAXHandlerPtr sax_handler, void* sax_context);
+oxws_result oxws_handle_response_xml(oxws* oxws, xmlSAXHandlerPtr sax_handler, void* sax_context);
 
 /* @note TODO docstring */
-xmlDocPtr mailexch_get_response_xml(mailexch* exch);
+xmlDocPtr oxws_get_response_xml(oxws* oxws);
 
 /* @note TODO docstring */
-xmlNodePtr mailexch_get_response_xml_body(mailexch* exch);
+xmlNodePtr oxws_get_response_xml_body(oxws* oxws);
 
 /* @note TODO docstring */
-void mailexch_release_response_xml_parser(mailexch* exch);
+void oxws_release_response_xml_parser(oxws* oxws);
 
 
 #ifdef __cplusplus

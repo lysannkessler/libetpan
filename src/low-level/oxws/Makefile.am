@@ -1,6 +1,6 @@
 # libEtPan! -- a mail stuff library
 #
-# exhange support: Copyright (C) 2012 Lysann Kessler
+# Copyright (C) 2012 Lysann Kessler
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,8 +30,8 @@
 include $(top_srcdir)/rules.mk
 
 etpaninclude_HEADERS = \
-  mailexch.h mailexch_types.h mailexch_types_item.h \
-  mailexch_autodiscover.h mailexch_requests.h
+  oxws.h oxws_types.h oxws_types_item.h \
+  oxws_autodiscover.h oxws_requests.h
 
 AM_CPPFLAGS = -Werror \
   -I$(top_builddir)/include \
@@ -40,9 +40,9 @@ AM_CPPFLAGS = -Werror \
 
 AM_LDFLAGS = $(LIBCURL) $(LIBXML2_LIBS)
 
-noinst_LTLIBRARIES = libexch.la
+noinst_LTLIBRARIES = liboxws.la
 
-libexch_la_SOURCES = \
-  mailexch.c types_internal.c mailexch_types_item.c \
+liboxws_la_SOURCES = \
+  oxws.c types_internal.c oxws_types_item.c \
   helper.c xml.c \
-  mailexch_autodiscover.c mailexch_requests.c requests/list.c
+  oxws_autodiscover.c oxws_requests.c requests/list.c

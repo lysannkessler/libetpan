@@ -1,7 +1,7 @@
 /*
  * libEtPan! -- a mail stuff library
  *
- * exhange support: Copyright (C) 2012 Lysann Kessler
+ * Copyright (C) 2012 Lysann Kessler
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,7 @@
 #include <libetpan/mmapstring.h>
 
 
-#define MAILEXCH_AUTODISCOVER_REQUEST_FORMAT ( \
+#define OXWS_AUTODISCOVER_REQUEST_FORMAT ( \
   "<Autodiscover xmlns=\"http://schemas.microsoft.com/exchange/autodiscover/outlook/requestschema/2006\">\n" \
   "  <Request>\n" \
   "    <EMailAddress>%s</EMailAddress>\n" \
@@ -51,27 +51,27 @@
   "  </Request>\n" \
   "</Autodiscover>")
 
-#define MAILEXCH_AUTODISCOVER_MIN_RESPONSE_BUFFER_LENGTH 3000
+#define OXWS_AUTODISCOVER_MIN_RESPONSE_BUFFER_LENGTH 3000
 
-#define MAILEXCH_AUTODISCOVER_STEP1_URL_FORMAT "https://%s/autodiscover/autodiscover.xml"
-#define MAILEXCH_AUTODISCOVER_STEP2_URL_FORMAT "https://autodiscover.%s/autodiscover/autodiscover.xml"
-#define MAILEXCH_AUTODISCOVER_LONGEST_URL_FORMAT MAILEXCH_AUTODISCOVER_STEP2_URL_FORMAT
-#define MAILEXCH_AUTODISCOVER_URL_LENGTH strlen(MAILEXCH_AUTODISCOVER_LONGEST_URL_FORMAT - 2)
+#define OXWS_AUTODISCOVER_STEP1_URL_FORMAT "https://%s/autodiscover/autodiscover.xml"
+#define OXWS_AUTODISCOVER_STEP2_URL_FORMAT "https://autodiscover.%s/autodiscover/autodiscover.xml"
+#define OXWS_AUTODISCOVER_LONGEST_URL_FORMAT OXWS_AUTODISCOVER_STEP2_URL_FORMAT
+#define OXWS_AUTODISCOVER_URL_LENGTH strlen(OXWS_AUTODISCOVER_LONGEST_URL_FORMAT - 2)
 
 
-#define MAILEXCH_AUTODISCOVER_TRY_STEP_LONG(step, curl, response_buffer, url_buffer, settings, host, result) \
+#define OXWS_AUTODISCOVER_TRY_STEP_LONG(step, curl, response_buffer, url_buffer, settings, host, result) \
   do { \
-    sprintf(url_buffer, MAILEXCH_AUTODISCOVER_STEP##step##_URL_FORMAT, host); \
-    result = mailexch_autodiscover_try_url(curl, response_buffer, url_buffer, settings); \
+    sprintf(url_buffer, OXWS_AUTODISCOVER_STEP##step##_URL_FORMAT, host); \
+    result = oxws_autodiscover_try_url(curl, response_buffer, url_buffer, settings); \
     mmap_string_truncate(response_buffer, 0); \
   } while(0);
 
-#define MAILEXCH_AUTODISCOVER_TRY_STEP(step) \
-    MAILEXCH_AUTODISCOVER_TRY_STEP_LONG(step, curl, response_buffer, url, settings, host, result)
+#define OXWS_AUTODISCOVER_TRY_STEP(step) \
+    OXWS_AUTODISCOVER_TRY_STEP_LONG(step, curl, response_buffer, url, settings, host, result)
 
 
 /*
-  mailexch_autodiscover_try_url()
+  oxws_autodiscover_try_url()
 
   Try to extract autodiscover information from given URL, and save them in the
   given settings structure.
@@ -83,42 +83,42 @@
   @param settings        [required] Upon success, the connection settings are
                          stored in the structure ponited at by this parameter.
 
-  @return - MAILEXCH_NO_ERROR indicated success
-          - MAILEXCH_ERROR_INVALID_PARAMETER: a required parameter is missing.
-          - MAILEXCH_ERROR_CONNECT: cannot connect to given URL
-          - MAILEXCH_ERROR_AUTODISCOVER_UNAVAILABLE: given URL does not seem to
+  @return - OXWS_NO_ERROR indicated success
+          - OXWS_ERROR_INVALID_PARAMETER: a required parameter is missing.
+          - OXWS_ERROR_CONNECT: cannot connect to given URL
+          - OXWS_ERROR_AUTODISCOVER_UNAVAILABLE: given URL does not seem to
             point to a Exchange autodiscover service
-          - MAILEXCH_ERROR_INTERNAL: arbitrary failure
+          - OXWS_ERROR_INTERNAL: arbitrary failure
 */
-mailexch_result mailexch_autodiscover_try_url(CURL* curl, MMAPString* response_buffer, const char* url, mailexch_connection_settings* settings);
+oxws_result oxws_autodiscover_try_url(CURL* curl, MMAPString* response_buffer, const char* url, oxws_connection_settings* settings);
 
-size_t mailexch_autodiscover_curl_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
+size_t oxws_autodiscover_curl_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
 
 
-mailexch_result mailexch_autodiscover(const char* host, const char* email_address,
+oxws_result oxws_autodiscover(const char* host, const char* email_address,
         const char* username, const char* password, const char* domain,
-        mailexch_connection_settings* settings) {
+        oxws_connection_settings* settings) {
   /* http://msdn.microsoft.com/en-us/library/exchange/ee332364(v=exchg.140).aspx */
 
   if(email_address == NULL || username == NULL || password == NULL || settings == NULL)
-    return MAILEXCH_ERROR_INVALID_PARAMETER;
+    return OXWS_ERROR_INVALID_PARAMETER;
 
   /* get host name */
   if(host == NULL) {
     host = strstr(email_address, "@");
     if(host == NULL)
-      return MAILEXCH_ERROR_INVALID_PARAMETER;
+      return OXWS_ERROR_INVALID_PARAMETER;
     host += 1;
     if(*host == 0) {
       /* end of string after @, i.e. empty host name */
-      return MAILEXCH_ERROR_INVALID_PARAMETER;
+      return OXWS_ERROR_INVALID_PARAMETER;
     }
   }
 
   /* prepare curl: curl object + credentials */
   CURL* curl = NULL;
-  int result = mailexch_prepare_curl_internal(&curl, username, password, domain);
-  if(result != MAILEXCH_NO_ERROR) return result;
+  int result = oxws_prepare_curl_internal(&curl, username, password, domain);
+  if(result != OXWS_NO_ERROR) return result;
 
   /* headers */
   struct curl_slist *headers = NULL;
@@ -133,44 +133,44 @@ mailexch_result mailexch_autodiscover(const char* host, const char* email_addres
 
   /* content */
   char* request = (char*) malloc(
-    strlen(MAILEXCH_AUTODISCOVER_REQUEST_FORMAT) - 2 + /* remove format chars */
+    strlen(OXWS_AUTODISCOVER_REQUEST_FORMAT) - 2 + /* remove format chars */
     strlen(email_address) + 1);      /* add email address and null terminator */
   if(!request) {
     curl_slist_free_all(headers);
     curl_easy_cleanup(curl);
-    return MAILEXCH_ERROR_INTERNAL;
+    return OXWS_ERROR_INTERNAL;
   }
-  sprintf(request, MAILEXCH_AUTODISCOVER_REQUEST_FORMAT, email_address);
+  sprintf(request, OXWS_AUTODISCOVER_REQUEST_FORMAT, email_address);
   curl_easy_setopt(curl, CURLOPT_POSTFIELDS, request);
 
   /* buffer response. TODO use SAX interface */
-  MMAPString* response_buffer = mmap_string_sized_new(MAILEXCH_AUTODISCOVER_MIN_RESPONSE_BUFFER_LENGTH);
+  MMAPString* response_buffer = mmap_string_sized_new(OXWS_AUTODISCOVER_MIN_RESPONSE_BUFFER_LENGTH);
   if(response_buffer == NULL) {
     free(request);
     curl_slist_free_all(headers);
     curl_easy_cleanup(curl);
-    return MAILEXCH_ERROR_INTERNAL;
+    return OXWS_ERROR_INTERNAL;
   }
-  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, mailexch_autodiscover_curl_write_callback);
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, oxws_autodiscover_curl_write_callback);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, response_buffer);
 
   /* try steps: */
   /*   allocate buffer */
-  char* url = malloc(MAILEXCH_AUTODISCOVER_URL_LENGTH + strlen(host) + 1);
+  char* url = malloc(OXWS_AUTODISCOVER_URL_LENGTH + strlen(host) + 1);
   if(!url) {
     mmap_string_free(response_buffer);
     free(request);
     curl_slist_free_all(headers);
     curl_easy_cleanup(curl);
-    return MAILEXCH_ERROR_INTERNAL;
+    return OXWS_ERROR_INTERNAL;
   }
   /*   try */
-  MAILEXCH_AUTODISCOVER_TRY_STEP(1);
-  if(result != MAILEXCH_NO_ERROR)
-    MAILEXCH_AUTODISCOVER_TRY_STEP(2);
+  OXWS_AUTODISCOVER_TRY_STEP(1);
+  if(result != OXWS_NO_ERROR)
+    OXWS_AUTODISCOVER_TRY_STEP(2);
   /*   set result */
-  if(result != MAILEXCH_NO_ERROR)
-    result = MAILEXCH_ERROR_AUTODISCOVER_UNAVAILABLE;
+  if(result != OXWS_NO_ERROR)
+    result = OXWS_ERROR_AUTODISCOVER_UNAVAILABLE;
 
   /* clean up */
   free(url);
@@ -181,20 +181,20 @@ mailexch_result mailexch_autodiscover(const char* host, const char* email_addres
   return result;
 }
 
-mailexch_result mailexch_autodiscover_try_url(CURL* curl, MMAPString* response_buffer, const char* url, mailexch_connection_settings* settings) {
+oxws_result oxws_autodiscover_try_url(CURL* curl, MMAPString* response_buffer, const char* url, oxws_connection_settings* settings) {
 
   if(curl == NULL || response_buffer == NULL || url == NULL || settings == NULL)
-    return MAILEXCH_ERROR_INVALID_PARAMETER;
+    return OXWS_ERROR_INVALID_PARAMETER;
 
   curl_easy_setopt(curl, CURLOPT_URL, url);
   CURLcode curl_code = curl_easy_perform(curl);
 
-  int result = MAILEXCH_ERROR_CONNECT;
+  int result = OXWS_ERROR_CONNECT;
   if(curl_code == CURLE_OK) {
     long http_response = 0;
     curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_response);
     if(http_response == 200) {
-      result = MAILEXCH_ERROR_AUTODISCOVER_UNAVAILABLE;
+      result = OXWS_ERROR_AUTODISCOVER_UNAVAILABLE;
 
       /* parse ASUrl */
       char* as_url = strstr(response_buffer->str, "<ASUrl>");
@@ -211,7 +211,7 @@ mailexch_result mailexch_autodiscover_try_url(CURL* curl, MMAPString* response_b
 
           /* TODO copy other settings */
 
-          result = MAILEXCH_NO_ERROR;
+          result = OXWS_NO_ERROR;
         }
       }
     }
@@ -220,7 +220,7 @@ mailexch_result mailexch_autodiscover_try_url(CURL* curl, MMAPString* response_b
   return result;
 }
 
-size_t mailexch_autodiscover_curl_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
+size_t oxws_autodiscover_curl_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
   MMAPString* buffer = (MMAPString*) userdata;
   if(buffer != NULL) {
     size_t length = size * nmemb < 1 ? 0 : size * nmemb;

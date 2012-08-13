@@ -1,7 +1,7 @@
 /*
  * libEtPan! -- a mail stuff library
  *
- * exhange support: Copyright (C) 2012 Lysann Kessler
+ * Copyright (C) 2012 Lysann Kessler
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,42 +30,52 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#	include <config.h>
+# include <config.h>
 #endif
 
+#include <libetpan/oxws_requests.h>
 #include "types_internal.h"
 
-#include <stdlib.h>
-#include <string.h>
 
-mailexch_internal* mailexch_internal_new() {
-  mailexch_internal* internal = calloc(1, sizeof(mailexch_internal));
-  if (internal == NULL)
-    return NULL;
+/* maps from oxws_distinguished_folder_id to string */
+const char* oxws_distfolder_id_name_map[] = {
+  "calendar", "contacts", "deleteditems", "drafts", "inbox", "journal", "notes",
+  "outbox", "sentitems", "tasks", "msgfolderroot", "root", "junkemail",
+  "searchfolders", "voicemail"
+};
+const short oxws_distfolder_id_name_map_length =
+  sizeof(oxws_distfolder_id_name_map) / sizeof(const char*);
 
-  return internal;
-}
 
-void mailexch_internal_free(mailexch_internal* internal) {
-  if(!internal) return;
+oxws_result oxws_prepare_for_requests(oxws* oxws) {
+  if(oxws == NULL) return OXWS_ERROR_INVALID_PARAMETER;
+  oxws_internal* internal = OXWS_INTERNAL(oxws);
+  if(internal == NULL) return OXWS_ERROR_INTERNAL;
+  if(oxws->state == OXWS_STATE_READY_FOR_REQUESTS)
+    return OXWS_NO_ERROR;
 
-  if(internal->curl)
-    curl_easy_cleanup(internal->curl);
-  if(internal->curl_headers)
+  /* paranoia */
+  curl_easy_setopt(internal->curl, CURLOPT_FOLLOWLOCATION, 0L);
+  curl_easy_setopt(internal->curl, CURLOPT_UNRESTRICTED_AUTH, 0L);
+
+  /* post to AsUrl */
+  curl_easy_setopt(internal->curl, CURLOPT_POST, 1L);
+  curl_easy_setopt(internal->curl, CURLOPT_URL,
+          oxws->connection_settings.as_url);
+
+  /* Clear headers and set Content-Type to text/xml. */
+  if(internal->curl_headers) {
     curl_slist_free_all(internal->curl_headers);
-
-  if(internal->response_buffer)
-    mmap_string_free(internal->response_buffer);
-  if(internal->response_xml_parser)
-    xmlFreeParserCtxt(internal->response_xml_parser);
-
-  free(internal);
-}
-
-
-void mailexch_internal_response_buffer_free(mailexch_internal* internal) {
-  if(internal != NULL && internal->response_buffer != NULL) {
-    mmap_string_free(internal->response_buffer);
-    internal->response_buffer = NULL;
+    internal->curl_headers = NULL;
   }
+  internal->curl_headers = curl_slist_append(internal->curl_headers,
+          "Content-Type: text/xml");
+  curl_easy_setopt(internal->curl, CURLOPT_HTTPHEADER, internal->curl_headers);
+
+  /* clear request string for now */
+  curl_easy_setopt(internal->curl, CURLOPT_POSTFIELDS, NULL);
+
+  /* update state */
+  oxws->state = OXWS_STATE_READY_FOR_REQUESTS;
+  return OXWS_NO_ERROR;
 }

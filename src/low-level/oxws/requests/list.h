@@ -1,7 +1,7 @@
 /*
  * libEtPan! -- a mail stuff library
  *
- * exhange support: Copyright (C) 2012 Lysann Kessler
+ * Copyright (C) 2012 Lysann Kessler
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,8 +29,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef MAILEXCH_REQUESTS_LIST_H
-#define MAILEXCH_REQUESTS_LIST_H
+#ifndef OXWS_REQUESTS_LIST_H
+#define OXWS_REQUESTS_LIST_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,54 +38,54 @@ extern "C" {
 
 
 #include <libetpan/carray.h>
-#include <libetpan/mailexch_types.h>
-#include <libetpan/mailexch_types_item.h>
+#include <libetpan/oxws_types.h>
+#include <libetpan/oxws_types_item.h>
 
 #include <libxml/parser.h>
 
 
-enum mailexch_list_sax_context_state {
-  MAILEXCH_LIST_SAX_CONTEXT_STATE__NONE = 0,
-  MAILEXCH_LIST_SAX_CONTEXT_STATE__ERROR = -1,
+enum oxws_list_sax_context_state {
+  OXWS_LIST_SAX_CONTEXT_STATE__NONE = 0,
+  OXWS_LIST_SAX_CONTEXT_STATE__ERROR = -1,
 
-  MAILEXCH_LIST_SAX_CONTEXT_STATE_START_DOCUMENT = 1,
-  MAILEXCH_LIST_SAX_CONTEXT_STATE_ITEMS,
-  MAILEXCH_LIST_SAX_CONTEXT_STATE_ITEM,
-  MAILEXCH_LIST_SAX_CONTEXT_STATE_MESSAGE,
-  MAILEXCH_LIST_SAX_CONTEXT_STATE_ITEM_SUBJECT,
-  MAILEXCH_LIST_SAX_CONTEXT_STATE_END_DOCUMENT,
+  OXWS_LIST_SAX_CONTEXT_STATE_START_DOCUMENT = 1,
+  OXWS_LIST_SAX_CONTEXT_STATE_ITEMS,
+  OXWS_LIST_SAX_CONTEXT_STATE_ITEM,
+  OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE,
+  OXWS_LIST_SAX_CONTEXT_STATE_ITEM_SUBJECT,
+  OXWS_LIST_SAX_CONTEXT_STATE_END_DOCUMENT,
 };
-typedef enum mailexch_list_sax_context_state mailexch_list_sax_context_state;
+typedef enum oxws_list_sax_context_state oxws_list_sax_context_state;
 
-struct mailexch_list_sax_context {
+struct oxws_list_sax_context {
   unsigned int count;
   carray** list;
 
-  mailexch_list_sax_context_state prev_state;
-  mailexch_list_sax_context_state state;
+  oxws_list_sax_context_state prev_state;
+  oxws_list_sax_context_state state;
 
-  mailexch_type_item* item;
+  oxws_type_item* item;
   unsigned int item_node_depth;
 };
-typedef struct mailexch_list_sax_context mailexch_list_sax_context;
+typedef struct oxws_list_sax_context oxws_list_sax_context;
 
-mailexch_result mailexch_list_sax_context_init(mailexch_list_sax_context* context, unsigned int count, carray** list);
+oxws_result oxws_list_sax_context_init(oxws_list_sax_context* context, unsigned int count, carray** list);
 
-void mailexch_list_sax_handler_start_document(void* user_data);
+void oxws_list_sax_handler_start_document(void* user_data);
 
-void mailexch_list_sax_handler_end_document(void* user_data);
+void oxws_list_sax_handler_end_document(void* user_data);
 
-void mailexch_list_sax_handler_start_element_ns(void* user_data,
+void oxws_list_sax_handler_start_element_ns(void* user_data,
         const xmlChar* localname, const xmlChar* prefix, const xmlChar* ns_uri,
         int nb_namespaces, const xmlChar** namespaces,
         int nb_attributes, int nb_defaulted, const xmlChar** attrs);
 
-void mailexch_list_sax_handler_end_element_ns(void* user_data,
+void oxws_list_sax_handler_end_element_ns(void* user_data,
         const xmlChar* localname, const xmlChar* prefix, const xmlChar* ns_uri);
 
-void mailexch_list_sax_handler_characters(void* user_data, const xmlChar* chars, int length);
+void oxws_list_sax_handler_characters(void* user_data, const xmlChar* chars, int length);
 
-extern xmlSAXHandler mailexch_list_sax_handler;
+extern xmlSAXHandler oxws_list_sax_handler;
 
 
 #ifdef __cplusplus

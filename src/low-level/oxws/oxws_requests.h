@@ -1,7 +1,7 @@
 /*
  * libEtPan! -- a mail stuff library
  *
- * exhange support: Copyright (C) 2012 Lysann Kessler
+ * Copyright (C) 2012 Lysann Kessler
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,85 +29,85 @@
  * SUCH DAMAGE.
  */
 
-#ifndef MAILEXCH_REQUESTS_H
-#define MAILEXCH_REQUESTS_H
+#ifndef OXWS_REQUESTS_H
+#define OXWS_REQUESTS_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-#include <libetpan/mailexch_types.h>
+#include <libetpan/oxws_types.h>
 #include <libetpan/carray.h>
-#include <libetpan/mailexch_types_item.h>
+#include <libetpan/oxws_types_item.h>
 
 
-extern const char* mailexch_distfolder_id_name_map[];
-extern const short mailexch_distfolder_id_name_map_length;
+extern const char* oxws_distfolder_id_name_map[];
+extern const short oxws_distfolder_id_name_map_length;
 
 
 /*
-  mailexch_prepare_for_requests()
+  oxws_prepare_for_requests()
 
   Prepare given connected Exchange session to be used for SOAP requests, if the
-  current state is MAILEXCH_STATE_CONNECTED.
+  current state is OXWS_STATE_CONNECTED.
     - disables CURLOPT_FOLLOWLOCATION and CURLOPT_UNRESTRICTED_AUTH
     - sets CURLOPT_POST
     - sets CURLOPT_URL to the AsUrl
     - clears all headers and sets Content-Type header to text/xml
     - clears request body
-  Upon success, the new state is MAILEXCH_STATE_READY_FOR_REQUESTS.
+  Upon success, the new state is OXWS_STATE_READY_FOR_REQUESTS.
 
-  @param exch   [required] The connected Exchange session object to configure.
+  @param oxws   [required] The connected Exchange session object to configure.
 
-  @return - MAILEXCH_NO_ERROR indicates success
-          - MAILEXCH_ERROR_INVALID_PARAMETER: a required parameter is missing.
-          - MAILEXCH_ERROR_INTERNAL: arbitrary failure
-          - (see mailexch_save_response_xml() for return codes)
+  @return - OXWS_NO_ERROR indicates success
+          - OXWS_ERROR_INVALID_PARAMETER: a required parameter is missing.
+          - OXWS_ERROR_INTERNAL: arbitrary failure
+          - (see oxws_save_response_xml() for return codes)
 
-  @see mailexch_connect()
-  @see mailexch_perform_request_xml()
+  @see oxws_connect()
+  @see oxws_perform_request_xml()
 
   @note TODO update
 */
-mailexch_result mailexch_prepare_for_requests(mailexch* exch);
+oxws_result oxws_prepare_for_requests(oxws* oxws);
 
 
 /*
-  mailexch_list()
+  oxws_list()
 
   Fetch most recent 'count' items from the folder identified by either its
   folder id or its distinguished folder id (if available).
-  The current state must be MAILEXCH_STATE_CONNECTED or
-  MAILEXCH_STATE_READY_FOR_REQUESTS. Upon success, the new state will be
-  MAILEXCH_STATE_READY_FOR_REQUESTS.
+  The current state must be OXWS_STATE_CONNECTED or
+  OXWS_STATE_READY_FOR_REQUESTS. Upon success, the new state will be
+  OXWS_STATE_READY_FOR_REQUESTS.
 
-  @param exch          [required] Exchange session object
+  @param oxws          [required] Exchange session object
   @param distfolder_id [optional] distinguished id of folder whose items to list
   @param folder_id     [optional] folder if of folder whose items to list
   @param count         number of items to list; will list all available items
                        if count < 0
-  @param list          [required] result list of mailexch_type_item*
+  @param list          [required] result list of oxws_type_item*
 
-  @return - MAILEXCH_NO_ERROR indicates success; *list points to a result list
-          - MAILEXCH_ERROR_INVALID_PARAMETER indicates one of the following:
+  @return - OXWS_NO_ERROR indicates success; *list points to a result list
+          - OXWS_ERROR_INVALID_PARAMETER indicates one of the following:
             * a required parameter is missing
-            * both, distfolder_id is MAILEXCH_DISTFOLDER__NONE and
+            * both, distfolder_id is OXWS_DISTFOLDER__NONE and
               folder_id is NULL
             * distfolder_id is invalid
-          - MAILEXCH_ERROR_BAD_STATE: state is not MAILEXCH_STATE_CONNECTED or
-            MAILEXCH_STATE_READY_FOR_REQUESTS, or the session could not be
+          - OXWS_ERROR_BAD_STATE: state is not OXWS_STATE_CONNECTED or
+            OXWS_STATE_READY_FOR_REQUESTS, or the session could not be
             prepared to perform SOAP requests.
-          - MAILEXCH_ERROR_INVALID_RESPONSE: unexpected response format
-          - MAILEXCH_ERROR_INTERNAL: arbitrary failure
-          - (see mailexch_perform_request_xml() for other return codes)
+          - OXWS_ERROR_INVALID_RESPONSE: unexpected response format
+          - OXWS_ERROR_INTERNAL: arbitrary failure
+          - (see oxws_perform_request_xml() for other return codes)
 
   @note If both, distfolder_id and folder_id contain valid folder ids,
         folder_id is ignored and the folder specified by distfolder_id is used
         for the request.
   @note Upon error, *list is set to NULL.
-        Upon success, *list points to a list of mailexch_type_item*. The caller
-        must free the list with mailexch_type_item_array_free(*list).
+        Upon success, *list points to a list of oxws_type_item*. The caller
+        must free the list with oxws_type_item_array_free(*list).
 
   @note for implementation see requests/list.c
 
@@ -119,8 +119,8 @@ mailexch_result mailexch_prepare_for_requests(mailexch* exch);
   @note TODO configure which fields to request
 */
 LIBETPAN_EXPORT
-mailexch_result mailexch_list(mailexch* exch,
-        mailexch_distinguished_folder_id distfolder_id, const char* folder_id,
+oxws_result oxws_list(oxws* oxws,
+        oxws_distinguished_folder_id distfolder_id, const char* folder_id,
         int count, carray** list);
 
 

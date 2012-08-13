@@ -1,7 +1,7 @@
 /*
  * libEtPan! -- a mail stuff library
  *
- * exhange support: Copyright (C) 2012 Lysann Kessler
+ * Copyright (C) 2012 Lysann Kessler
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,7 @@
 #endif
 
 #include "list.h"
-#include <libetpan/mailexch_requests.h>
+#include <libetpan/oxws_requests.h>
 #include "helper.h"
 #include "types_internal.h"
 #include "xml.h"
@@ -45,24 +45,24 @@
 #include <libxml/parser.h>
 
 
-mailexch_result mailexch_list(mailexch* exch,
-        mailexch_distinguished_folder_id distfolder_id, const char* folder_id,
+oxws_result oxws_list(oxws* oxws,
+        oxws_distinguished_folder_id distfolder_id, const char* folder_id,
         int count, carray** list) {
 
   /* check parameters */
-  if(exch == NULL || list == NULL)
-    return MAILEXCH_ERROR_INVALID_PARAMETER;
-  if(distfolder_id == MAILEXCH_DISTFOLDER__NONE && folder_id == NULL)
-    return MAILEXCH_ERROR_INVALID_PARAMETER;
-  if(distfolder_id != MAILEXCH_DISTFOLDER__NONE &&
-     (distfolder_id < MAILEXCH_DISTFOLDER__MIN || distfolder_id > MAILEXCH_DISTFOLDER__MAX)) {
-      return MAILEXCH_ERROR_INVALID_PARAMETER;
+  if(oxws == NULL || list == NULL)
+    return OXWS_ERROR_INVALID_PARAMETER;
+  if(distfolder_id == OXWS_DISTFOLDER__NONE && folder_id == NULL)
+    return OXWS_ERROR_INVALID_PARAMETER;
+  if(distfolder_id != OXWS_DISTFOLDER__NONE &&
+     (distfolder_id < OXWS_DISTFOLDER__MIN || distfolder_id > OXWS_DISTFOLDER__MAX)) {
+      return OXWS_ERROR_INVALID_PARAMETER;
   }
 
-  if(mailexch_prepare_for_requests(exch) != MAILEXCH_NO_ERROR)
-    return MAILEXCH_ERROR_INTERNAL;
-  if(exch->state != MAILEXCH_STATE_READY_FOR_REQUESTS)
-    return MAILEXCH_ERROR_BAD_STATE;
+  if(oxws_prepare_for_requests(oxws) != OXWS_NO_ERROR)
+    return OXWS_ERROR_INTERNAL;
+  if(oxws->state != OXWS_STATE_READY_FOR_REQUESTS)
+    return OXWS_ERROR_BAD_STATE;
 
   /* build request body:
     <FindItem xmlns="http://schemas.microsoft.com/exchange/services/2006/messages"
@@ -85,7 +85,7 @@ mailexch_result mailexch_list(mailexch* exch,
 
   xmlNodePtr node_findItem = NULL;
   xmlNsPtr ns_exch_messages = NULL, ns_exch_types = NULL;
-  mailexch_prepare_xml_request_method_node("FindItem", &node_findItem, &ns_exch_messages, &ns_exch_types);
+  oxws_prepare_xml_request_method_node("FindItem", &node_findItem, &ns_exch_messages, &ns_exch_types);
   xmlNewProp(node_findItem, BAD_CAST "Traversal", BAD_CAST "Shallow");
 
   xmlNodePtr node_itemShape = xmlNewChild(node_findItem, ns_exch_messages, BAD_CAST "ItemShape", NULL);
@@ -100,83 +100,83 @@ mailexch_result mailexch_list(mailexch* exch,
   if(count >= 0) {
     /* max uint length when printed + \0 */
     char* max_entries_returned = (char*) malloc(10 + 1);
-    if(!max_entries_returned) return MAILEXCH_ERROR_INTERNAL;
+    if(!max_entries_returned) return OXWS_ERROR_INTERNAL;
     sprintf(max_entries_returned, "%d", count);
     xmlNewProp(node_indexedPageItemView, BAD_CAST "MaxEntriesReturned", BAD_CAST max_entries_returned);
     free(max_entries_returned);
   }
 
   xmlNodePtr node_parentFolderIds = xmlNewChild(node_findItem, ns_exch_messages, BAD_CAST "ParentFolderIds", NULL);
-  if(distfolder_id != MAILEXCH_DISTFOLDER__NONE && distfolder_id >= 0 &&
-     distfolder_id < mailexch_distfolder_id_name_map_length) {
+  if(distfolder_id != OXWS_DISTFOLDER__NONE && distfolder_id >= 0 &&
+     distfolder_id < oxws_distfolder_id_name_map_length) {
 
     xmlNodePtr node_distinguishedFolderId = xmlNewChild(node_parentFolderIds, ns_exch_types, BAD_CAST "DistinguishedFolderId", NULL);
-    xmlNewProp(node_distinguishedFolderId, BAD_CAST "Id", BAD_CAST mailexch_distfolder_id_name_map[distfolder_id]);
+    xmlNewProp(node_distinguishedFolderId, BAD_CAST "Id", BAD_CAST oxws_distfolder_id_name_map[distfolder_id]);
   } else if(folder_id != NULL) {
     xmlNodePtr node_folderId = xmlNewChild(node_parentFolderIds, ns_exch_types, BAD_CAST "FolderId", NULL);
     xmlNewProp(node_folderId, BAD_CAST "Id", BAD_CAST folder_id);
   }
 
   /* configure response XML parser */
-  mailexch_list_sax_context sax_context;
-  if(mailexch_list_sax_context_init(&sax_context, count > 0 ? count : 10, list) != MAILEXCH_NO_ERROR ||
-     mailexch_handle_response_xml(exch, &mailexch_list_sax_handler, &sax_context) != MAILEXCH_NO_ERROR) {
-    mailexch_release_response_xml_parser(exch);
-    return MAILEXCH_ERROR_INTERNAL;
+  oxws_list_sax_context sax_context;
+  if(oxws_list_sax_context_init(&sax_context, count > 0 ? count : 10, list) != OXWS_NO_ERROR ||
+     oxws_handle_response_xml(oxws, &oxws_list_sax_handler, &sax_context) != OXWS_NO_ERROR) {
+    oxws_release_response_xml_parser(oxws);
+    return OXWS_ERROR_INTERNAL;
   }
 
   /* perform request. the SAX handler will fill the list */
-  int result = mailexch_perform_request_xml(exch, node_findItem);
-  if(sax_context.state == MAILEXCH_LIST_SAX_CONTEXT_STATE__ERROR) {
-    result = MAILEXCH_ERROR_INVALID_RESPONSE;
+  int result = oxws_perform_request_xml(oxws, node_findItem);
+  if(sax_context.state == OXWS_LIST_SAX_CONTEXT_STATE__ERROR) {
+    result = OXWS_ERROR_INVALID_RESPONSE;
   } else if(*list == NULL) {
-    result = MAILEXCH_ERROR_INTERNAL;
+    result = OXWS_ERROR_INTERNAL;
   }
 
   /* clean up */
-  if(result != MAILEXCH_NO_ERROR) {
-    mailexch_type_item_array_free(*list);
+  if(result != OXWS_NO_ERROR) {
+    oxws_type_item_array_free(*list);
     *list = NULL;
   }
-  mailexch_release_response_xml_parser(exch);
+  oxws_release_response_xml_parser(oxws);
   return result;
 }
 
 
-mailexch_result mailexch_list_sax_context_init(mailexch_list_sax_context* context, unsigned int count, carray** list) {
+oxws_result oxws_list_sax_context_init(oxws_list_sax_context* context, unsigned int count, carray** list) {
   if(context == NULL || list == NULL)
-    return MAILEXCH_ERROR_INVALID_PARAMETER;
+    return OXWS_ERROR_INVALID_PARAMETER;
 
-  memset(context, 0, sizeof(mailexch_list_sax_context));
+  memset(context, 0, sizeof(oxws_list_sax_context));
   context->count = count;
   context->list = list;
-  return MAILEXCH_NO_ERROR;
+  return OXWS_NO_ERROR;
 }
 
 
-void mailexch_list_sax_handler_start_document(void* user_data) {
+void oxws_list_sax_handler_start_document(void* user_data) {
   if(user_data == NULL) return;
-  mailexch_list_sax_context* context = (mailexch_list_sax_context*) user_data;
+  oxws_list_sax_context* context = (oxws_list_sax_context*) user_data;
 
-  if(context->state != MAILEXCH_LIST_SAX_CONTEXT_STATE__NONE)
-    context->state = MAILEXCH_LIST_SAX_CONTEXT_STATE__ERROR;
-  if(context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE__ERROR) return;
+  if(context->state != OXWS_LIST_SAX_CONTEXT_STATE__NONE)
+    context->state = OXWS_LIST_SAX_CONTEXT_STATE__ERROR;
+  if(context->state == OXWS_LIST_SAX_CONTEXT_STATE__ERROR) return;
 
   *context->list = carray_new(context->count);
 
-  context->state = MAILEXCH_LIST_SAX_CONTEXT_STATE_START_DOCUMENT;
+  context->state = OXWS_LIST_SAX_CONTEXT_STATE_START_DOCUMENT;
 }
 
-void mailexch_list_sax_handler_end_document(void* user_data) {
+void oxws_list_sax_handler_end_document(void* user_data) {
   if(user_data == NULL) return;
-  mailexch_list_sax_context* context = (mailexch_list_sax_context*) user_data;
+  oxws_list_sax_context* context = (oxws_list_sax_context*) user_data;
   /* TODO check state */
-  if(context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE__ERROR) return;
+  if(context->state == OXWS_LIST_SAX_CONTEXT_STATE__ERROR) return;
   context->prev_state = context->state;
-  context->state = MAILEXCH_LIST_SAX_CONTEXT_STATE_END_DOCUMENT;
+  context->state = OXWS_LIST_SAX_CONTEXT_STATE_END_DOCUMENT;
 }
 
-void mailexch_list_sax_handler_start_element_ns(void* user_data,
+void oxws_list_sax_handler_start_element_ns(void* user_data,
         const xmlChar* localname, const xmlChar* prefix, const xmlChar* ns_uri,
         int nb_namespaces, const xmlChar** namespaces,
         int nb_attributes, int nb_defaulted, const xmlChar** attrs) {
@@ -186,38 +186,38 @@ void mailexch_list_sax_handler_start_element_ns(void* user_data,
   UNUSED(nb_defaulted);
 
   if(user_data == NULL || localname == NULL) return;
-  mailexch_list_sax_context* context = (mailexch_list_sax_context*) user_data;
-  if(context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE__ERROR) return;
+  oxws_list_sax_context* context = (oxws_list_sax_context*) user_data;
+  if(context->state == OXWS_LIST_SAX_CONTEXT_STATE__ERROR) return;
 
   int attr_index;
 
   /* TODO m:FindItemResponseMessage, m:ResponseCode, m:RootFolder,
           other item classes, multiple response messages */
-  if(context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE_START_DOCUMENT &&
-     xmlStrcmp(ns_uri, MAILEXCH_XML_NS_EXCH_TYPES) == 0 &&
+  if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_START_DOCUMENT &&
+     xmlStrcmp(ns_uri, OXWS_XML_NS_EXCH_TYPES) == 0 &&
      xmlStrcmp(localname, BAD_CAST "Items") == 0) {
     /* TODO check items_node_depth */
-    context->state = MAILEXCH_LIST_SAX_CONTEXT_STATE_ITEMS;
+    context->state = OXWS_LIST_SAX_CONTEXT_STATE_ITEMS;
 
-  } else if(context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE_ITEMS) {
+  } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_ITEMS) {
     if(context->item) { /* TODO warn */ }
-    if(xmlStrcmp(ns_uri, MAILEXCH_XML_NS_EXCH_TYPES) == 0 &&
+    if(xmlStrcmp(ns_uri, OXWS_XML_NS_EXCH_TYPES) == 0 &&
        xmlStrcmp(localname, BAD_CAST "Message") == 0) {
-      context->state = MAILEXCH_LIST_SAX_CONTEXT_STATE_MESSAGE;
-      context->item = (mailexch_type_item*) calloc(1, sizeof(mailexch_type_message));
+      context->state = OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE;
+      context->item = (oxws_type_item*) calloc(1, sizeof(oxws_type_message));
     } else {
-      context->state = MAILEXCH_LIST_SAX_CONTEXT_STATE_ITEM;
-      context->item = (mailexch_type_item*) calloc(1, sizeof(mailexch_type_item));
+      context->state = OXWS_LIST_SAX_CONTEXT_STATE_ITEM;
+      context->item = (oxws_type_item*) calloc(1, sizeof(oxws_type_item));
     }
     context->item_node_depth = 1;
 
-  } else if((context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE_MESSAGE ||
-     context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE_ITEM) &&
+  } else if((context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE ||
+     context->state == OXWS_LIST_SAX_CONTEXT_STATE_ITEM) &&
      context->item_node_depth == 1 &&
-     xmlStrcmp(ns_uri, MAILEXCH_XML_NS_EXCH_TYPES) == 0 &&
+     xmlStrcmp(ns_uri, OXWS_XML_NS_EXCH_TYPES) == 0 &&
      xmlStrcmp(localname, BAD_CAST "ItemId") == 0) {
     /* TODO check item */
-    context->item->item_id = (mailexch_type_item_id*) calloc(1, sizeof(mailexch_type_item_id));
+    context->item->item_id = (oxws_type_item_id*) calloc(1, sizeof(oxws_type_item_id));
     for(attr_index = 0; attr_index < nb_attributes; attr_index++) {
       const xmlChar* name = attrs[5 * attr_index + 0];
       const xmlChar* value = attrs[5 * attr_index + 3];
@@ -231,14 +231,14 @@ void mailexch_list_sax_handler_start_element_ns(void* user_data,
     }
     context->item_node_depth++;
 
-  } else if((context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE_MESSAGE ||
-     context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE_ITEM) &&
+  } else if((context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE ||
+     context->state == OXWS_LIST_SAX_CONTEXT_STATE_ITEM) &&
      context->item_node_depth == 1 &&
-     xmlStrcmp(ns_uri, MAILEXCH_XML_NS_EXCH_TYPES) == 0 &&
+     xmlStrcmp(ns_uri, OXWS_XML_NS_EXCH_TYPES) == 0 &&
      xmlStrcmp(localname, BAD_CAST "Subject") == 0) {
     /* TODO check item */
     context->prev_state = context->state;
-    context->state = MAILEXCH_LIST_SAX_CONTEXT_STATE_ITEM_SUBJECT;
+    context->state = OXWS_LIST_SAX_CONTEXT_STATE_ITEM_SUBJECT;
     context->item_node_depth++;
 
   } else if(context->item_node_depth > 0) {
@@ -250,24 +250,24 @@ void mailexch_list_sax_handler_start_element_ns(void* user_data,
   }
 }
 
-void mailexch_list_sax_handler_end_element_ns(void* user_data,
+void oxws_list_sax_handler_end_element_ns(void* user_data,
         const xmlChar* localname, const xmlChar* prefix, const xmlChar* ns_uri) {
   UNUSED(prefix);
 
   if(user_data == NULL || localname == NULL) return;
-  mailexch_list_sax_context* context = (mailexch_list_sax_context*) user_data;
-  if(context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE__ERROR) return;
+  oxws_list_sax_context* context = (oxws_list_sax_context*) user_data;
+  if(context->state == OXWS_LIST_SAX_CONTEXT_STATE__ERROR) return;
 
-  if(context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE_ITEMS &&
-     xmlStrcmp(ns_uri, MAILEXCH_XML_NS_EXCH_TYPES) == 0 &&
+  if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_ITEMS &&
+     xmlStrcmp(ns_uri, OXWS_XML_NS_EXCH_TYPES) == 0 &&
      xmlStrcmp(localname, BAD_CAST "Items") == 0) {
-    context->state = MAILEXCH_LIST_SAX_CONTEXT_STATE_START_DOCUMENT;
+    context->state = OXWS_LIST_SAX_CONTEXT_STATE_START_DOCUMENT;
 
-  } else if(context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE_ITEM_SUBJECT &&
-     xmlStrcmp(ns_uri, MAILEXCH_XML_NS_EXCH_TYPES) == 0 &&
+  } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_ITEM_SUBJECT &&
+     xmlStrcmp(ns_uri, OXWS_XML_NS_EXCH_TYPES) == 0 &&
      xmlStrcmp(localname, BAD_CAST "Subject") == 0) {
     context->state = context->prev_state;
-    context->prev_state = MAILEXCH_LIST_SAX_CONTEXT_STATE__NONE;
+    context->prev_state = OXWS_LIST_SAX_CONTEXT_STATE__NONE;
 
   } else {
     /* TODO warn for unknown tags */
@@ -282,18 +282,18 @@ void mailexch_list_sax_handler_end_element_ns(void* user_data,
       carray_add(*context->list, context->item, NULL);
       context->item = NULL;
       /* not freeing the item on purpose, because it's in the list now */
-      context->state = MAILEXCH_LIST_SAX_CONTEXT_STATE_ITEMS;
+      context->state = OXWS_LIST_SAX_CONTEXT_STATE_ITEMS;
     }
   }
 }
 
-void mailexch_list_sax_handler_characters(void* user_data, const xmlChar* chars, int length) {
+void oxws_list_sax_handler_characters(void* user_data, const xmlChar* chars, int length) {
 
   if(user_data == NULL || chars == NULL) return;
-  mailexch_list_sax_context* context = (mailexch_list_sax_context*) user_data;
-  if(context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE__ERROR) return;
+  oxws_list_sax_context* context = (oxws_list_sax_context*) user_data;
+  if(context->state == OXWS_LIST_SAX_CONTEXT_STATE__ERROR) return;
 
-  if(context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE_ITEM_SUBJECT) {
+  if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_ITEM_SUBJECT) {
     /* TODO check item */
     xmlChar* subject = (xmlChar*) context->item->subject;
     if(subject) {
@@ -306,16 +306,16 @@ void mailexch_list_sax_handler_characters(void* user_data, const xmlChar* chars,
   }
 }
 
-void mailexch_list_sax_handler_error(void* user_data, const char* message, ...) {
+void oxws_list_sax_handler_error(void* user_data, const char* message, ...) {
   /* TODO log error message */
   UNUSED(message);
 
   if(user_data == NULL) return;
-  mailexch_list_sax_context* context = (mailexch_list_sax_context*) user_data;
-  context->state = MAILEXCH_LIST_SAX_CONTEXT_STATE__ERROR;
+  oxws_list_sax_context* context = (oxws_list_sax_context*) user_data;
+  context->state = OXWS_LIST_SAX_CONTEXT_STATE__ERROR;
 }
 
-xmlSAXHandler mailexch_list_sax_handler = {
+xmlSAXHandler oxws_list_sax_handler = {
   NULL, /* internalSubset */
   NULL, /* isStandalone */
   NULL, /* hasInternalSubset */
@@ -328,24 +328,24 @@ xmlSAXHandler mailexch_list_sax_handler = {
   NULL, /* elementDecl */
   NULL, /* unparsedEntityDecl */
   NULL, /* setDocumentLocator */
-  mailexch_list_sax_handler_start_document,
-  mailexch_list_sax_handler_end_document,
+  oxws_list_sax_handler_start_document,
+  oxws_list_sax_handler_end_document,
   NULL, /* startElement */
   NULL, /* endElement */
   NULL, /* reference */
-  mailexch_list_sax_handler_characters,
+  oxws_list_sax_handler_characters,
   NULL, /* ignorableWhitespace */
   NULL, /* processingInstruction */
   NULL, /* comment */
   NULL, /* TODO warning */
-  mailexch_list_sax_handler_error, /* error */
-  mailexch_list_sax_handler_error, /* fatalError */
+  oxws_list_sax_handler_error, /* error */
+  oxws_list_sax_handler_error, /* fatalError */
   NULL, /* getParameterEntity */
   NULL, /* cdataBlock */
   NULL, /* externalSubset */
   XML_SAX2_MAGIC, /* initialized */
   NULL, /* _private */
-  mailexch_list_sax_handler_start_element_ns,
-  mailexch_list_sax_handler_end_element_ns,
+  oxws_list_sax_handler_start_element_ns,
+  oxws_list_sax_handler_end_element_ns,
   NULL, /* serror */
 };

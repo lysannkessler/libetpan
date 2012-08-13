@@ -1,7 +1,7 @@
 /*
  * libEtPan! -- a mail stuff library
  *
- * exhange support: Copyright (C) 2012 Lysann Kessler
+ * Copyright (C) 2012 Lysann Kessler
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,31 +38,31 @@
 
 
 /* @note TODO docstring */
-size_t mailexch_handle_response_xml_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
+size_t oxws_handle_response_xml_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
 
 
-mailexch_result mailexch_prepare_xml_request_method_node(const char* name,
+oxws_result oxws_prepare_xml_request_method_node(const char* name,
         xmlNodePtr* node, xmlNsPtr* ns_exch_messages, xmlNsPtr* ns_exch_types) {
 
   if(name == NULL || node == NULL || ns_exch_messages == NULL || ns_exch_types == NULL)
-    return MAILEXCH_ERROR_INVALID_PARAMETER;
+    return OXWS_ERROR_INVALID_PARAMETER;
 
   *node = xmlNewNode(NULL, BAD_CAST name);
-  *ns_exch_messages = xmlNewNs(*node, MAILEXCH_XML_NS_EXCH_MESSAGES, NULL);
-  *ns_exch_types = xmlNewNs(*node, MAILEXCH_XML_NS_EXCH_TYPES, BAD_CAST "t");
+  *ns_exch_messages = xmlNewNs(*node, OXWS_XML_NS_EXCH_MESSAGES, NULL);
+  *ns_exch_types = xmlNewNs(*node, OXWS_XML_NS_EXCH_TYPES, BAD_CAST "t");
   xmlSetNs(*node, *ns_exch_messages);
 
-  return MAILEXCH_NO_ERROR;
+  return OXWS_NO_ERROR;
 }
 
-mailexch_result mailexch_perform_request_xml(mailexch* exch, xmlNodePtr request_body) {
+oxws_result oxws_perform_request_xml(oxws* oxws, xmlNodePtr request_body) {
 
-  if(exch == NULL || request_body == NULL)
-    return MAILEXCH_ERROR_INVALID_PARAMETER;
-  mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
-  if(internal == NULL) return MAILEXCH_ERROR_INTERNAL;
-  if(exch->state != MAILEXCH_STATE_READY_FOR_REQUESTS)
-    return MAILEXCH_ERROR_BAD_STATE;
+  if(oxws == NULL || request_body == NULL)
+    return OXWS_ERROR_INVALID_PARAMETER;
+  oxws_internal* internal = OXWS_INTERNAL(oxws);
+  if(internal == NULL) return OXWS_ERROR_INTERNAL;
+  if(oxws->state != OXWS_STATE_READY_FOR_REQUESTS)
+    return OXWS_ERROR_BAD_STATE;
 
   /* build request document:
     <?xml version="1.0"?>
@@ -73,7 +73,7 @@ mailexch_result mailexch_perform_request_xml(mailexch* exch, xmlNodePtr request_
   xmlDocPtr doc = xmlNewDoc(BAD_CAST "1.0");
 
   xmlNodePtr node_envelope = xmlNewNode(NULL, BAD_CAST "Envelope");
-  xmlNsPtr ns_soap = xmlNewNs(node_envelope, MAILEXCH_XML_NS_SOAP,
+  xmlNsPtr ns_soap = xmlNewNs(node_envelope, OXWS_XML_NS_SOAP,
           BAD_CAST "soap");
   xmlSetNs(node_envelope, ns_soap);
   xmlDocSetRootElement(doc, node_envelope);
@@ -91,15 +91,15 @@ mailexch_result mailexch_perform_request_xml(mailexch* exch, xmlNodePtr request_
 
   /* perform request */
   CURLcode curl_code = curl_easy_perform(curl);
-  int result = MAILEXCH_ERROR_CONNECT;
+  int result = OXWS_ERROR_CONNECT;
   if(curl_code == CURLE_OK) {
     /* process response code */
     long http_response_code;
     curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_response_code);
     if(http_response_code == 200) {
-      result = MAILEXCH_NO_ERROR;
+      result = OXWS_NO_ERROR;
     } else {
-      result = MAILEXCH_ERROR_REQUEST_FAILED;
+      result = OXWS_ERROR_REQUEST_FAILED;
     }
   }
 
@@ -109,28 +109,28 @@ mailexch_result mailexch_perform_request_xml(mailexch* exch, xmlNodePtr request_
   return result;
 }
 
-mailexch_result mailexch_handle_response_xml(mailexch* exch, xmlSAXHandlerPtr sax_handler, void* sax_context) {
+oxws_result oxws_handle_response_xml(oxws* oxws, xmlSAXHandlerPtr sax_handler, void* sax_context) {
 
-  if(exch == NULL) return MAILEXCH_ERROR_INVALID_PARAMETER;
-  mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
-  if(internal == NULL) return MAILEXCH_ERROR_INTERNAL;
+  if(oxws == NULL) return OXWS_ERROR_INVALID_PARAMETER;
+  oxws_internal* internal = OXWS_INTERNAL(oxws);
+  if(internal == NULL) return OXWS_ERROR_INTERNAL;
 
   /* configure CURL write callback */
   curl_easy_setopt(internal->curl, CURLOPT_WRITEFUNCTION,
-                   mailexch_handle_response_xml_callback);
+                   oxws_handle_response_xml_callback);
   curl_easy_setopt(internal->curl, CURLOPT_WRITEDATA, internal);
 
   /* create XML parser */
-  mailexch_release_response_xml_parser(exch);
+  oxws_release_response_xml_parser(oxws);
   internal->response_xml_parser = xmlCreatePushParserCtxt(
           sax_handler, sax_context, NULL, 0, NULL);
 
-  return MAILEXCH_NO_ERROR;
+  return OXWS_NO_ERROR;
 }
 
-xmlDocPtr mailexch_get_response_xml(mailexch* exch) {
-  if(exch == NULL) return NULL;
-  mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
+xmlDocPtr oxws_get_response_xml(oxws* oxws) {
+  if(oxws == NULL) return NULL;
+  oxws_internal* internal = OXWS_INTERNAL(oxws);
   if(internal == NULL) return NULL;
 
   if(internal->response_xml_parser == NULL)
@@ -146,7 +146,7 @@ xmlDocPtr mailexch_get_response_xml(mailexch* exch) {
     return internal->response_xml_parser->myDoc;
 }
 
-xmlNodePtr mailexch_get_response_xml_body(mailexch* exch) {
+xmlNodePtr oxws_get_response_xml_body(oxws* oxws) {
 
   /* response format:
     <?xml version="1.0" encoding="utf-8"?>
@@ -162,13 +162,13 @@ xmlNodePtr mailexch_get_response_xml_body(mailexch* exch) {
   */
 
   /* retrieve XML document and SOAP envelope */
-  xmlDocPtr doc = mailexch_get_response_xml(exch);
+  xmlDocPtr doc = oxws_get_response_xml(oxws);
   if(doc == NULL) return NULL;
   xmlNodePtr node_envelope = xmlDocGetRootElement(doc);
   if(node_envelope == NULL) return NULL;
   if(node_envelope->type != XML_ELEMENT_NODE ||
      xmlStrcmp(node_envelope->name, BAD_CAST "Envelope") != 0 ||
-     xmlStrcmp(node_envelope->ns->href, MAILEXCH_XML_NS_SOAP) != 0)
+     xmlStrcmp(node_envelope->ns->href, OXWS_XML_NS_SOAP) != 0)
     return NULL;
 
   /* find SOAP body */
@@ -177,7 +177,7 @@ xmlNodePtr mailexch_get_response_xml_body(mailexch* exch) {
   for(child = node_envelope->children; child; child = child->next) {
     if (child->type == XML_ELEMENT_NODE &&
         xmlStrcmp(child->name, BAD_CAST "Body") == 0 &&
-        xmlStrcmp(child->ns->href, MAILEXCH_XML_NS_SOAP) == 0) {
+        xmlStrcmp(child->ns->href, OXWS_XML_NS_SOAP) == 0) {
       node_body = child;
       break;
     }
@@ -191,9 +191,9 @@ xmlNodePtr mailexch_get_response_xml_body(mailexch* exch) {
   return NULL;
 }
 
-void mailexch_release_response_xml_parser(mailexch* exch) {
-  if(exch == NULL) return;
-  mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
+void oxws_release_response_xml_parser(oxws* oxws) {
+  if(oxws == NULL) return;
+  oxws_internal* internal = OXWS_INTERNAL(oxws);
   if(internal == NULL) return; /* TODO warn */
 
   if(internal->response_xml_parser != NULL) {
@@ -205,10 +205,10 @@ void mailexch_release_response_xml_parser(mailexch* exch) {
 }
 
 
-size_t mailexch_handle_response_xml_callback(char *ptr, size_t size, size_t nmemb,void *userdata) {
+size_t oxws_handle_response_xml_callback(char *ptr, size_t size, size_t nmemb,void *userdata) {
 
   size_t length = size*nmemb < 1 ? 0 : size*nmemb;
-  mailexch_internal* internal = (mailexch_internal*) userdata;
+  oxws_internal* internal = (oxws_internal*) userdata;
 
   if(internal != NULL && internal->response_xml_parser != NULL) {
     /* read next data chunk */

@@ -1,7 +1,7 @@
 /*
  * libEtPan! -- a mail stuff library
  *
- * exhange support: Copyright (C) 2012 Lysann Kessler
+ * Copyright (C) 2012 Lysann Kessler
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,22 +29,22 @@
  * SUCH DAMAGE.
  */
 
-#ifndef MAILEXCH_AUTODISCOVER_H
-#define MAILEXCH_AUTODISCOVER_H
+#ifndef OXWS_AUTODISCOVER_H
+#define OXWS_AUTODISCOVER_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-#include <libetpan/mailexch_types.h>
+#include <libetpan/oxws_types.h>
 
 
 /*
-  mailexch_autodiscover()
+  oxws_autodiscover()
 
   Autodiscover connection settings for given account and store them in a
-  mailexch_connection_settings structure.
+  oxws_connection_settings structure.
 
   @param host             [optional] exchange server host name; if missing the
                           host name is extracted from email_address
@@ -59,23 +59,23 @@ extern "C" {
   @param settings         [required] Upon success, the connection settings are
                           stored in the structure ponited at by this parameter.
 
-  @return - MAILEXCH_NO_ERROR indicates success
-          - MAILEXCH_ERROR_INVALID_PARAMETER indicates one of the following:
+  @return - OXWS_NO_ERROR indicates success
+          - OXWS_ERROR_INVALID_PARAMETER indicates one of the following:
             * a required parameter is missing
             * no host given and host cannot be extracted from email_address
-          - MAILEXCH_ERROR_AUTODISCOVER_UNAVAILABLE: autodiscovering the
+          - OXWS_ERROR_AUTODISCOVER_UNAVAILABLE: autodiscovering the
             connection settings failed
-          - MAILEXCH_ERROR_INTERNAL: arbitrary failure
+          - OXWS_ERROR_INTERNAL: arbitrary failure
 
-  @see mailexch_autodiscover_connection_settings()
-  @see mailexch_set_connection_settings()
+  @see oxws_autodiscover_connection_settings()
+  @see oxws_set_connection_settings()
 
   @seealso http://msdn.microsoft.com/en-us/library/exchange/ee332364(v=exchg.140).aspx
 */
 LIBETPAN_EXPORT
-mailexch_result mailexch_autodiscover(const char* host, const char* email_address,
+oxws_result oxws_autodiscover(const char* host, const char* email_address,
         const char* username, const char* password, const char* domain,
-        mailexch_connection_settings* settings);
+        oxws_connection_settings* settings);
 
 
 #ifdef __cplusplus

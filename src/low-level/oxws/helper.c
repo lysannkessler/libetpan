@@ -1,7 +1,7 @@
 /*
  * libEtPan! -- a mail stuff library
  *
- * exhange support: Copyright (C) 2012 Lysann Kessler
+ * Copyright (C) 2012 Lysann Kessler
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,39 +40,39 @@
 #include <string.h>
 
 
-mailexch_result mailexch_prepare_curl(mailexch* exch, const char* username, const char* password, const char* domain) {
-  if(exch == NULL || username == NULL || password == NULL)
-    return MAILEXCH_ERROR_INVALID_PARAMETER;
-  mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
-  if(internal == NULL) return MAILEXCH_ERROR_INTERNAL;
+oxws_result oxws_prepare_curl(oxws* oxws, const char* username, const char* password, const char* domain) {
+  if(oxws == NULL || username == NULL || password == NULL)
+    return OXWS_ERROR_INVALID_PARAMETER;
+  oxws_internal* internal = OXWS_INTERNAL(oxws);
+  if(internal == NULL) return OXWS_ERROR_INTERNAL;
 
   /* do this only once */
   if(internal->curl != NULL)
-    return MAILEXCH_NO_ERROR;
-  else if (exch->state != MAILEXCH_STATE_NEW &&
-           exch->state != MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED)
-    return MAILEXCH_ERROR_BAD_STATE;
+    return OXWS_NO_ERROR;
+  else if (oxws->state != OXWS_STATE_NEW &&
+           oxws->state != OXWS_STATE_CONNECTION_SETTINGS_CONFIGURED)
+    return OXWS_ERROR_BAD_STATE;
 
   CURL* curl = NULL;
-  mailexch_result result = mailexch_prepare_curl_internal(&curl, username, password, domain);
-  if(result == MAILEXCH_NO_ERROR && curl != NULL) {
+  oxws_result result = oxws_prepare_curl_internal(&curl, username, password, domain);
+  if(result == OXWS_NO_ERROR && curl != NULL) {
     internal->curl = curl;
   }
   return result;
 }
 
-mailexch_result mailexch_prepare_curl_internal(CURL** curl, const char* username, const char* password, const char* domain) {
+oxws_result oxws_prepare_curl_internal(CURL** curl, const char* username, const char* password, const char* domain) {
   if(curl == NULL || username == NULL || password == NULL)
-    return MAILEXCH_ERROR_INVALID_PARAMETER;
+    return OXWS_ERROR_INVALID_PARAMETER;
 
   *curl = curl_easy_init();
-  if(*curl == NULL) return MAILEXCH_ERROR_INTERNAL;
+  if(*curl == NULL) return OXWS_ERROR_INTERNAL;
 #if 0
   curl_easy_setopt(*curl, CURLOPT_VERBOSE, 1L);
 #endif
 
-  int result = mailexch_set_credentials(*curl, username, password, domain);
-  if(result != MAILEXCH_NO_ERROR) {
+  int result = oxws_set_credentials(*curl, username, password, domain);
+  if(result != OXWS_NO_ERROR) {
     curl_easy_cleanup(*curl);
     *curl = NULL;
   }
@@ -80,10 +80,10 @@ mailexch_result mailexch_prepare_curl_internal(CURL** curl, const char* username
   return result;
 }
 
-mailexch_result mailexch_set_credentials(CURL* curl, const char* username, const char* password, const char* domain) {
+oxws_result oxws_set_credentials(CURL* curl, const char* username, const char* password, const char* domain) {
 
   if(curl == NULL || username == NULL || password == NULL)
-    return MAILEXCH_ERROR_INVALID_PARAMETER;
+    return OXWS_ERROR_INVALID_PARAMETER;
 
   /* set userpwd */
   size_t username_length = username ? strlen(username) : 0;
@@ -93,11 +93,11 @@ mailexch_result mailexch_set_credentials(CURL* curl, const char* username, const
 
   if(domain_length > 0) {
     userpwd = (char*) malloc(domain_length + 1 + username_length + 1 + password_length + 1);
-    if(!userpwd) return MAILEXCH_ERROR_INTERNAL;
+    if(!userpwd) return OXWS_ERROR_INTERNAL;
     sprintf(userpwd, "%s\\%s:%s", domain, username, password);
   } else {
     userpwd = (char*) malloc(username_length + 1 + password_length + 1);
-    if(!userpwd) return MAILEXCH_ERROR_INTERNAL;
+    if(!userpwd) return OXWS_ERROR_INTERNAL;
     sprintf(userpwd, "%s:%s", username, password);
   }
 
@@ -107,17 +107,17 @@ mailexch_result mailexch_set_credentials(CURL* curl, const char* username, const
   /* allow any authentication protocol */
   curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
 
-  return MAILEXCH_NO_ERROR;
+  return OXWS_NO_ERROR;
 }
 
 
-mailexch_result mailexch_write_response_to_buffer(mailexch* exch, size_t buffer_size_hint) {
-  if(exch == NULL) return MAILEXCH_ERROR_INVALID_PARAMETER;
+oxws_result oxws_write_response_to_buffer(oxws* oxws, size_t buffer_size_hint) {
+  if(oxws == NULL) return OXWS_ERROR_INVALID_PARAMETER;
 
-  mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
-  if(internal == NULL) return MAILEXCH_ERROR_INTERNAL;
+  oxws_internal* internal = OXWS_INTERNAL(oxws);
+  if(internal == NULL) return OXWS_ERROR_INTERNAL;
 
-  curl_easy_setopt(internal->curl, CURLOPT_WRITEFUNCTION, mailexch_write_response_to_buffer_callback);
+  curl_easy_setopt(internal->curl, CURLOPT_WRITEFUNCTION, oxws_write_response_to_buffer_callback);
   curl_easy_setopt(internal->curl, CURLOPT_WRITEDATA, internal);
 
   /* (re)allocate and clear response buffer */
@@ -128,11 +128,11 @@ mailexch_result mailexch_write_response_to_buffer(mailexch* exch, size_t buffer_
     internal->response_buffer = mmap_string_sized_new(buffer_size_hint);
   }
 
-  return MAILEXCH_NO_ERROR;
+  return OXWS_NO_ERROR;
 }
 
-size_t mailexch_write_response_to_buffer_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
-  mailexch_internal* internal = (mailexch_internal*) userdata;
+size_t oxws_write_response_to_buffer_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
+  oxws_internal* internal = (oxws_internal*) userdata;
 
   if(internal != NULL && internal->response_buffer) {
     size_t length = size * nmemb < 1 ? 0 : size * nmemb;

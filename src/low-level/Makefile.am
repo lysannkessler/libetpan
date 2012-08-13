@@ -29,10 +29,10 @@
 
 include $(top_srcdir)/rules.mk
 
-SUBDIRS = imap imf maildir mbox mh mime nntp pop3 smtp feed exch
+SUBDIRS = imap imf maildir mbox mh mime nntp pop3 smtp feed oxws
 
 noinst_LTLIBRARIES = liblow-level.la
-liblow_level_la_SOURCES = 
+liblow_level_la_SOURCES =
 liblow_level_la_LIBADD = \
 	imap/libimap.la \
 	imf/libimf.la \
@@ -44,4 +44,4 @@ liblow_level_la_LIBADD = \
 	pop3/libpop3.la \
 	smtp/libsmtp.la \
 	feed/libfeed.la \
-	exch/libexch.la
+	oxws/liboxws.la

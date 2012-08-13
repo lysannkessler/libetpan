@@ -1,7 +1,7 @@
 /*
  * libEtPan! -- a mail stuff library
  *
- * exhange support: Copyright (C) 2012 Lysann Kessler
+ * Copyright (C) 2012 Lysann Kessler
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,8 +29,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef MAILEXCH_TYPES_H
-#define MAILEXCH_TYPES_H
+#ifndef OXWS_TYPES_H
+#define OXWS_TYPES_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,39 +43,39 @@ extern "C" {
 
 
 /*
-  Return codes for most of the mailexch* functions
+  Return codes for most of the oxws* functions
 */
-enum mailexch_result {
+enum oxws_result {
   /* indicates success */
-  MAILEXCH_NO_ERROR = 0,
+  OXWS_NO_ERROR = 0,
   /* function called with invalid parameter */
-  MAILEXCH_ERROR_INVALID_PARAMETER,
+  OXWS_ERROR_INVALID_PARAMETER,
   /* Exchange session obejct is in wrong state to perform the operation */
-  MAILEXCH_ERROR_BAD_STATE,
+  OXWS_ERROR_BAD_STATE,
   /* an arbitrary internal error occurred, e.g. memory allocation failed */
-  MAILEXCH_ERROR_INTERNAL,
+  OXWS_ERROR_INTERNAL,
   /* cannot connect to host or service, or its response does not indicate
      success */
-  MAILEXCH_ERROR_CONNECT,
+  OXWS_ERROR_CONNECT,
   /* the configured URL does not point to a supported Exchange Web Services 2007
      service */
-  MAILEXCH_ERROR_NO_EWS,
+  OXWS_ERROR_NO_EWS,
   /* Exchange autodiscover failed */
-  MAILEXCH_ERROR_AUTODISCOVER_UNAVAILABLE,
+  OXWS_ERROR_AUTODISCOVER_UNAVAILABLE,
   /* request was not successful (HTTP status code != 200) */
-  MAILEXCH_ERROR_REQUEST_FAILED,
+  OXWS_ERROR_REQUEST_FAILED,
   /* no or invalid response received for SOAP request */
-  MAILEXCH_ERROR_INVALID_RESPONSE,
+  OXWS_ERROR_INVALID_RESPONSE,
 };
-typedef enum mailexch_result mailexch_result;
+typedef enum oxws_result oxws_result;
 
 /*
-  struct mailexch_connection_settings
+  struct oxws_connection_settings
 
   Holds several URLs that define the location of the Exchange Web Services of a
   Exchange session.
 */
-struct mailexch_connection_settings {
+struct oxws_connection_settings {
   /* the URL of the best endpoint instance of Exchange Web Services for a
      mail-enabled user */
   char* as_url;
@@ -89,77 +89,77 @@ struct mailexch_connection_settings {
   */
   char* oab_url;
 };
-typedef struct mailexch_connection_settings mailexch_connection_settings;
+typedef struct oxws_connection_settings oxws_connection_settings;
 
 /*
   Possible states for Exchange session object
 */
-enum mailexch_state {
+enum oxws_state {
   /* session has just been created, and is not connected yet */
-  MAILEXCH_STATE_NEW,
+  OXWS_STATE_NEW,
   /* connection settings have been set, it is ready to connect */
-  MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED,
+  OXWS_STATE_CONNECTION_SETTINGS_CONFIGURED,
   /* connection successful */
-  MAILEXCH_STATE_CONNECTED,
+  OXWS_STATE_CONNECTED,
   /* Exchange object has been reconfigured to perform SOAP requests */
-  MAILEXCH_STATE_READY_FOR_REQUESTS,
+  OXWS_STATE_READY_FOR_REQUESTS,
 };
-typedef enum mailexch_state mailexch_state;
+typedef enum oxws_state oxws_state;
 
 /*
-  struct mailexch
+  struct oxws
 
   A Exchange session object.
 */
-struct mailexch {
+struct oxws {
   /* When downloading messages, a function will be called each time the amount
      of bytes downloaded reaches a multiple of this value, this can be 0. */
-  size_t exch_progr_rate;
+  size_t progr_rate;
   /* This is the function to call to notify the progress, this can be NULL. */
-  progress_function* exch_progr_fun;
+  progress_function* progr_fun;
 
   /* current state */
-  mailexch_state state;
+  oxws_state state;
 
   /* connection settings */
-  mailexch_connection_settings connection_settings;
+  oxws_connection_settings connection_settings;
 
-  /* A mailexch_internal structure as defined in types_internal.h.
+  /* A oxws_internal structure as defined in types_internal.h.
      The fields are not added directly to avoid includes in client code. */
   void* internal;
 };
-typedef struct mailexch mailexch;
+typedef struct oxws oxws;
 
 
 /*
   identifies the folders that can be accessed by these special keys
 */
-enum mailexch_distinguished_folder_id {
-  MAILEXCH_DISTFOLDER__NONE = -1, /* meta key to allow passing optional
+enum oxws_distinguished_folder_id {
+  OXWS_DISTFOLDER__NONE = -1, /* meta key to allow passing optional
                                      distinguished folder id as values */
-  MAILEXCH_DISTFOLDER__MIN = 0,   /* meta key to catch invalid ids */
+  OXWS_DISTFOLDER__MIN = 0,   /* meta key to catch invalid ids */
 
-  MAILEXCH_DISTFOLDER_CALENDAR = 0,
-  MAILEXCH_DISTFOLDER_CONTACTS,
-  MAILEXCH_DISTFOLDER_DELETEDITEMS,
-  MAILEXCH_DISTFOLDER_DRAFTS,
-  MAILEXCH_DISTFOLDER_INBOX,
-  MAILEXCH_DISTFOLDER_JOURNAL,
-  MAILEXCH_DISTFOLDER_NOTES,
-  MAILEXCH_DISTFOLDER_OUTBOX,
-  MAILEXCH_DISTFOLDER_SENTITEMS,
-  MAILEXCH_DISTFOLDER_TASKS,
-  MAILEXCH_DISTFOLDER_MSGFOLDERROOT,
-  MAILEXCH_DISTFOLDER_ROOT,
-  MAILEXCH_DISTFOLDER_JUNKEMAIL,
-  MAILEXCH_DISTFOLDER_SEARCHFOLDERS,
-  MAILEXCH_DISTFOLDER_VOICEMAIL,
+  OXWS_DISTFOLDER_CALENDAR = 0,
+  OXWS_DISTFOLDER_CONTACTS,
+  OXWS_DISTFOLDER_DELETEDITEMS,
+  OXWS_DISTFOLDER_DRAFTS,
+  OXWS_DISTFOLDER_INBOX,
+  OXWS_DISTFOLDER_JOURNAL,
+  OXWS_DISTFOLDER_NOTES,
+  OXWS_DISTFOLDER_OUTBOX,
+  OXWS_DISTFOLDER_SENTITEMS,
+  OXWS_DISTFOLDER_TASKS,
+  OXWS_DISTFOLDER_MSGFOLDERROOT,
+  OXWS_DISTFOLDER_ROOT,
+  OXWS_DISTFOLDER_JUNKEMAIL,
+  OXWS_DISTFOLDER_SEARCHFOLDERS,
+  OXWS_DISTFOLDER_VOICEMAIL,
 
-  MAILEXCH_DISTFOLDER__MAX = MAILEXCH_DISTFOLDER_VOICEMAIL, /* meta key to catch
+  OXWS_DISTFOLDER__MAX = OXWS_DISTFOLDER_VOICEMAIL, /* meta key to catch
                                                                invalid ids */
-  MAILEXCH_DISTFOLDER__COUNT, /* meta key to iterate all keys */
+  OXWS_DISTFOLDER__COUNT, /* meta key to iterate all keys */
 };
-typedef enum  mailexch_distinguished_folder_id mailexch_distinguished_folder_id;
+typedef enum  oxws_distinguished_folder_id oxws_distinguished_folder_id;
 
 
 #ifdef __cplusplus

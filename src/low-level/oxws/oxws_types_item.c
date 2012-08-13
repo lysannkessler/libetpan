@@ -1,7 +1,7 @@
 /*
  * libEtPan! -- a mail stuff library
  *
- * exhange support: Copyright (C) 2012 Lysann Kessler
+ * Copyright (C) 2012 Lysann Kessler
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,16 +33,16 @@
 # include <config.h>
 #endif
 
-#include <libetpan/mailexch_types_item.h>
+#include <libetpan/oxws_types_item.h>
 
 #include <stdlib.h>
 
 
-typedef void (*mailexch_entry_free) (void*);
-void mailexch_type_special_array_free(carray* array, mailexch_entry_free entry_free);
+typedef void (*oxws_entry_free) (void*);
+void oxws_type_special_array_free(carray* array, oxws_entry_free entry_free);
 
 
-void mailexch_type_item_or_folder_id_free(mailexch_type_item_or_folder_id* id) {
+void oxws_type_item_or_folder_id_free(oxws_type_item_or_folder_id* id) {
   if(!id) return;
 
   if(id->id) free(id->id);
@@ -50,31 +50,31 @@ void mailexch_type_item_or_folder_id_free(mailexch_type_item_or_folder_id* id) {
 
   free(id);
 }
-void mailexch_type_item_id_free(mailexch_type_item_id* id) {
-  return mailexch_type_item_or_folder_id_free(id);
+void oxws_type_item_id_free(oxws_type_item_id* id) {
+  return oxws_type_item_or_folder_id_free(id);
 }
-void mailexch_type_folder_id_free(mailexch_type_folder_id* id) {
-  return mailexch_type_item_or_folder_id_free(id);
+void oxws_type_folder_id_free(oxws_type_folder_id* id) {
+  return oxws_type_item_or_folder_id_free(id);
 }
 
 
-void mailexch_type_email_address_free(mailexch_type_email_address* address) {
+void oxws_type_email_address_free(oxws_type_email_address* address) {
   if(!address) return;
 
   if(address->name) free(address->name);
   if(address->email_address) free(address->email_address);
   if(address->routing_type) free(address->routing_type);
-  if(address->item_id) mailexch_type_item_id_free(address->item_id);
+  if(address->item_id) oxws_type_item_id_free(address->item_id);
 
   free(address);
 }
 
-void mailexch_type_email_address_array_free(carray* array) {
-  return mailexch_type_special_array_free(array, (mailexch_entry_free) mailexch_type_email_address_free);
+void oxws_type_email_address_array_free(carray* array) {
+  return oxws_type_special_array_free(array, (oxws_entry_free) oxws_type_email_address_free);
 }
 
 
-void mailexch_type_body_free(mailexch_type_body* body) {
+void oxws_type_body_free(oxws_type_body* body) {
   if(!body) return;
 
   if(body->string) free(body->string);
@@ -83,39 +83,39 @@ void mailexch_type_body_free(mailexch_type_body* body) {
 }
 
 
-void mailexch_type_item_free_members(mailexch_type_item* item) {
+void oxws_type_item_free_members(oxws_type_item* item) {
   if(!item) return;
 
-  mailexch_type_item_id_free(item->item_id);
-  mailexch_type_folder_id_free(item->parent_folder_id);
+  oxws_type_item_id_free(item->item_id);
+  oxws_type_folder_id_free(item->parent_folder_id);
   if(item->subject) free(item->subject);
-  mailexch_type_body_free(item->body);
+  oxws_type_body_free(item->body);
   if(item->date_time_received) free(item->date_time_received);
   if(item->date_time_sent) free(item->date_time_sent);
 }
 
-void mailexch_type_message_free_members(mailexch_type_message* message) {
+void oxws_type_message_free_members(oxws_type_message* message) {
   if(!message) return;
 
-  mailexch_type_email_address_free(message->sender);
-  mailexch_type_email_address_array_free(message->to_recipients);
-  mailexch_type_email_address_array_free(message->cc_recipients);
-  mailexch_type_email_address_array_free(message->bcc_recipients);
-  mailexch_type_email_address_free(message->from);
+  oxws_type_email_address_free(message->sender);
+  oxws_type_email_address_array_free(message->to_recipients);
+  oxws_type_email_address_array_free(message->cc_recipients);
+  oxws_type_email_address_array_free(message->bcc_recipients);
+  oxws_type_email_address_free(message->from);
 }
 
-void mailexch_type_item_free(mailexch_type_item* item) {
+void oxws_type_item_free(oxws_type_item* item) {
   if(!item) return;
 
-  mailexch_type_item_class item_class = item->item_class;
-  mailexch_type_item_free_members(item);
+  oxws_type_item_class item_class = item->item_class;
+  oxws_type_item_free_members(item);
 
   switch(item_class) {
-    case MAILEXCH_TYPE_ITEM_CLASS_ITEM:
+    case OXWS_TYPE_ITEM_CLASS_ITEM:
       /* no-op */
       break;
-    case MAILEXCH_TYPE_ITEM_CLASS_MESSAGE:
-      mailexch_type_message_free_members((mailexch_type_message*) item);
+    case OXWS_TYPE_ITEM_CLASS_MESSAGE:
+      oxws_type_message_free_members((oxws_type_message*) item);
       break;
     default:
       /* TODO: warn */
@@ -125,19 +125,19 @@ void mailexch_type_item_free(mailexch_type_item* item) {
   free(item);
 }
 
-void mailexch_type_item_array_free(carray* array) {
-  return mailexch_type_special_array_free(array, (mailexch_entry_free) mailexch_type_item_free);
+void oxws_type_item_array_free(carray* array) {
+  return oxws_type_special_array_free(array, (oxws_entry_free) oxws_type_item_free);
 }
 
 
-void mailexch_type_special_array_free(carray* array, mailexch_entry_free entry_free) {
+void oxws_type_special_array_free(carray* array, oxws_entry_free entry_free) {
   if(!array) return;
 
   /* free entries */
   if(entry_free) {
     unsigned int i;
     for(i = 0; i < array->len; i++) {
-      mailexch_type_item* item = (mailexch_type_item*) carray_get(array, i);
+      oxws_type_item* item = (oxws_type_item*) carray_get(array, i);
       entry_free(item);
     }
   }

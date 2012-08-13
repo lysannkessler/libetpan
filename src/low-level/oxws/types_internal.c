@@ -1,7 +1,7 @@
 /*
  * libEtPan! -- a mail stuff library
  *
- * exhange support: Copyright (C) 2012 Lysann Kessler
+ * Copyright (C) 2012 Lysann Kessler
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,51 +29,43 @@
  * SUCH DAMAGE.
  */
 
-#ifndef MAILEXCH_TYPES_INTERNAL_H
-#define MAILEXCH_TYPES_INTERNAL_H
-
-#ifdef __cplusplus
-extern "C" {
+#ifdef HAVE_CONFIG_H
+#	include <config.h>
 #endif
 
+#include "types_internal.h"
 
-#include <libetpan/mailexch_types.h>
-#include <libetpan/mmapstring.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <curl/curl.h>
-#include <libxml/tree.h>
+oxws_internal* oxws_internal_new() {
+  oxws_internal* internal = calloc(1, sizeof(oxws_internal));
+  if (internal == NULL)
+    return NULL;
 
-
-#define MAILEXCH_INTERNAL(exch) ((mailexch_internal*)((exch)->internal))
-
-
-/*
-  struct mailexch
-
-  A Exchange session object.
-*/
-struct mailexch_internal {
-  /* the CURL object used to perform HTTP requests to the service */
-  CURL* curl;
-  struct curl_slist *curl_headers;
-
-  /* a buffer that typically stores the body of the last HTTP response */
-  MMAPString* response_buffer;
-  /* holds xml representation of most recent SOAP response */
-  xmlParserCtxtPtr response_xml_parser;
-};
-typedef struct mailexch_internal mailexch_internal;
-
-mailexch_internal* mailexch_internal_new();
-
-void mailexch_internal_free(mailexch_internal* internal);
-
-
-void mailexch_internal_response_buffer_free(mailexch_internal* internal);
-
-
-#ifdef __cplusplus
+  return internal;
 }
-#endif
 
-#endif
+void oxws_internal_free(oxws_internal* internal) {
+  if(!internal) return;
+
+  if(internal->curl)
+    curl_easy_cleanup(internal->curl);
+  if(internal->curl_headers)
+    curl_slist_free_all(internal->curl_headers);
+
+  if(internal->response_buffer)
+    mmap_string_free(internal->response_buffer);
+  if(internal->response_xml_parser)
+    xmlFreeParserCtxt(internal->response_xml_parser);
+
+  free(internal);
+}
+
+
+void oxws_internal_response_buffer_free(oxws_internal* internal) {
+  if(internal != NULL && internal->response_buffer != NULL) {
+    mmap_string_free(internal->response_buffer);
+    internal->response_buffer = NULL;
+  }
+}

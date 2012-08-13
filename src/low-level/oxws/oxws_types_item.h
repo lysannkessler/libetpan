@@ -1,7 +1,7 @@
 /*
  * libEtPan! -- a mail stuff library
  *
- * exhange support: Copyright (C) 2012 Lysann Kessler
+ * Copyright (C) 2012 Lysann Kessler
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,8 +29,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef MAILEXCH_TYPES_ITEM_H
-#define MAILEXCH_TYPES_ITEM_H
+#ifndef OXWS_TYPES_ITEM_H
+#define OXWS_TYPES_ITEM_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,82 +45,82 @@ extern "C" {
 
 /* structures */
 
-enum mailexch_type_item_class {
-  MAILEXCH_TYPE_ITEM_CLASS_ITEM,
-  MAILEXCH_TYPE_ITEM_CLASS_MESSAGE,
+enum oxws_type_item_class {
+  OXWS_TYPE_ITEM_CLASS_ITEM,
+  OXWS_TYPE_ITEM_CLASS_MESSAGE,
 };
-typedef enum mailexch_type_item_class mailexch_type_item_class;
+typedef enum oxws_type_item_class oxws_type_item_class;
 
-struct mailexch_type_item_or_folder_id {
+struct oxws_type_item_or_folder_id {
   char* id;
   char* change_key;
 };
-typedef struct mailexch_type_item_or_folder_id mailexch_type_item_or_folder_id;
-typedef struct mailexch_type_item_or_folder_id mailexch_type_item_id;
-typedef struct mailexch_type_item_or_folder_id mailexch_type_folder_id;
+typedef struct oxws_type_item_or_folder_id oxws_type_item_or_folder_id;
+typedef struct oxws_type_item_or_folder_id oxws_type_item_id;
+typedef struct oxws_type_item_or_folder_id oxws_type_folder_id;
 
-enum mailexch_type_body_type {
-  MAILEXCH_TYPE_BODY_TYPE__NOT_SET,
+enum oxws_type_body_type {
+  OXWS_TYPE_BODY_TYPE__NOT_SET,
 
-  MAILEXCH_TYPE_BODY_TYPE_HTML,
-  MAILEXCH_TYPE_BODY_TYPE_TEXT,
+  OXWS_TYPE_BODY_TYPE_HTML,
+  OXWS_TYPE_BODY_TYPE_TEXT,
 };
-typedef enum mailexch_type_body_type mailexch_type_body_type;
+typedef enum oxws_type_body_type oxws_type_body_type;
 
-struct mailexch_type_body {
+struct oxws_type_body {
   char* string;
-  mailexch_type_body_type body_type;
+  oxws_type_body_type body_type;
 };
-typedef struct mailexch_type_body mailexch_type_body;
+typedef struct oxws_type_body oxws_type_body;
 
-typedef int32_t mailexch_type_optional_int32;
-#define MAILEXCH_TYPE_OPTIONAL_INT32__NOT_SET -2147483648
+typedef int32_t oxws_type_optional_int32;
+#define OXWS_TYPE_OPTIONAL_INT32__NOT_SET -2147483648
 
-enum mailexch_type_mailbox_type {
-  MAILEXCH_TYPE_MAILBOX_TYPE__NOT_SET,
+enum oxws_type_mailbox_type {
+  OXWS_TYPE_MAILBOX_TYPE__NOT_SET,
 
-  MAILEXCH_TYPE_MAILBOX_TYPE_MAILBOX,
-  MAILEXCH_TYPE_MAILBOX_TYPE_PUBLIC_DL,
-  MAILEXCH_TYPE_MAILBOX_TYPE_PRIVATE_DL,
-  MAILEXCH_TYPE_MAILBOX_TYPE_CONTACT,
-  MAILEXCH_TYPE_MAILBOX_TYPE_PUBLIC_FOLDER,
+  OXWS_TYPE_MAILBOX_TYPE_MAILBOX,
+  OXWS_TYPE_MAILBOX_TYPE_PUBLIC_DL,
+  OXWS_TYPE_MAILBOX_TYPE_PRIVATE_DL,
+  OXWS_TYPE_MAILBOX_TYPE_CONTACT,
+  OXWS_TYPE_MAILBOX_TYPE_PUBLIC_FOLDER,
 };
-typedef enum mailexch_type_mailbox_type mailexch_type_mailbox_type;
+typedef enum oxws_type_mailbox_type oxws_type_mailbox_type;
 
-struct mailexch_type_email_address {
+struct oxws_type_email_address {
   char* name;
   char* email_address;
   char* routing_type;
-  mailexch_type_mailbox_type mailbox_type;
-  mailexch_type_item_id* item_id;
+  oxws_type_mailbox_type mailbox_type;
+  oxws_type_item_id* item_id;
 };
-typedef struct mailexch_type_email_address mailexch_type_email_address;
+typedef struct oxws_type_email_address oxws_type_email_address;
 
-enum mailexch_type_optional_boolean {
-  MAILEXCH_TYPE_OPTIONAL_BOOLEAN__NOT_SET = -1,
-  MAILEXCH_TYPE_OPTIONAL_BOOLEAN_TRUE     = 1,
-  MAILEXCH_TYPE_OPTIONAL_BOOLEAN_FALSE    = 0,
+enum oxws_type_optional_boolean {
+  OXWS_TYPE_OPTIONAL_BOOLEAN__NOT_SET = -1,
+  OXWS_TYPE_OPTIONAL_BOOLEAN_TRUE     = 1,
+  OXWS_TYPE_OPTIONAL_BOOLEAN_FALSE    = 0,
 };
-typedef enum mailexch_type_optional_boolean mailexch_type_optional_boolean;
+typedef enum oxws_type_optional_boolean oxws_type_optional_boolean;
 
 /*
   @note TODO docstring
 
   @note TODO incomplete
 */
-struct mailexch_type_item {
-  mailexch_type_item_class item_class;
+struct oxws_type_item {
+  oxws_type_item_class item_class;
 
   /* missing: MimeContent */
-  mailexch_type_item_id* item_id;
-  mailexch_type_folder_id* parent_folder_id;
+  oxws_type_item_id* item_id;
+  oxws_type_folder_id* parent_folder_id;
   /* misssing: ItemClass */
   char* subject;
   /* missing: Sensitivity */
-  mailexch_type_body* body;
+  oxws_type_body* body;
   /* missing: Attachments */
   time_t* date_time_received;
-  mailexch_type_optional_int32 size;
+  oxws_type_optional_int32 size;
   /* missing: Categories */
   /* missing: Importance */
   /* missing: InReplyTo */
@@ -144,46 +144,46 @@ struct mailexch_type_item {
   /* missing: LastModifiedName */
   /* missing: LastModifiedTime */
 };
-typedef struct mailexch_type_item mailexch_type_item;
+typedef struct oxws_type_item oxws_type_item;
 
 /*
   @note TODO docstring
 
   @note TODO incomplete
 */
-struct mailexch_type_message {
-  mailexch_type_item item;
+struct oxws_type_message {
+  oxws_type_item item;
 
-  mailexch_type_email_address* sender;
-  carray* to_recipients; /* of mailexch_type_email_address* */
-  carray* cc_recipients; /* of mailexch_type_email_address* */
-  carray* bcc_recipients; /* of mailexch_type_email_address* */
+  oxws_type_email_address* sender;
+  carray* to_recipients; /* of oxws_type_email_address* */
+  carray* cc_recipients; /* of oxws_type_email_address* */
+  carray* bcc_recipients; /* of oxws_type_email_address* */
   /* missing: IsReadReceiptRequested */
   /* missing: IsDeliveryReceiptRequested */
   /* missing: ConversationIndex */
   /* missing: ConversationTopic */
-  mailexch_type_email_address* from;
+  oxws_type_email_address* from;
   /* missing: InternetMessageId */
-  mailexch_type_optional_boolean is_read;
+  oxws_type_optional_boolean is_read;
   /* missing: IsResponseRequested */
   /* missing: References */
   /* missing: ReplyTo */
   /* missing: ReceivedBy */
   /* missing: ReceivedRepresenting */
 };
-typedef struct mailexch_type_message mailexch_type_message;
+typedef struct oxws_type_message oxws_type_message;
 
 
 /* functions */
 
-void mailexch_type_item_id_free(mailexch_type_item_id* id);
-void mailexch_type_folder_id_free(mailexch_type_folder_id* id);
+void oxws_type_item_id_free(oxws_type_item_id* id);
+void oxws_type_folder_id_free(oxws_type_folder_id* id);
 
-void mailexch_type_email_address_free(mailexch_type_email_address* address);
-void mailexch_type_email_address_array_free(carray* array);
+void oxws_type_email_address_free(oxws_type_email_address* address);
+void oxws_type_email_address_array_free(carray* array);
 
-void mailexch_type_item_free(mailexch_type_item* item);
-void mailexch_type_item_array_free(carray* array);
+void oxws_type_item_free(oxws_type_item* item);
+void oxws_type_item_array_free(carray* array);
 
 
 #ifdef __cplusplus

@@ -1,7 +1,7 @@
 /*
  * libEtPan! -- a mail stuff library
  *
- * exhange support: Copyright (C) 2012 Lysann Kessler
+ * Copyright (C) 2012 Lysann Kessler
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,8 +33,8 @@
 #	include <config.h>
 #endif
 
-#include <libetpan/mailexch.h>
-#include <libetpan/mailexch_autodiscover.h>
+#include <libetpan/oxws.h>
+#include <libetpan/oxws_autodiscover.h>
 #include "helper.h"
 #include "types_internal.h"
 
@@ -42,134 +42,134 @@
 #include <string.h>
 
 
-size_t mailexch_test_connection_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
+size_t oxws_test_connection_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
 
 
 /*
-  mailexch structure
+  oxws structure
 */
 
-mailexch* mailexch_new(size_t progr_rate, progress_function* progr_fun) {
-  mailexch* exch = calloc(1, sizeof(* exch));
-  if (exch == NULL)
+oxws* oxws_new(size_t progr_rate, progress_function* progr_fun) {
+  oxws* oxws = calloc(1, sizeof(* oxws));
+  if (oxws == NULL)
     return NULL;
 
-  exch->exch_progr_rate = progr_rate;
-  exch->exch_progr_fun = progr_fun;
+  oxws->progr_rate = progr_rate;
+  oxws->progr_fun = progr_fun;
 
-  exch->state = MAILEXCH_STATE_NEW;
+  oxws->state = OXWS_STATE_NEW;
 
-  exch->internal = mailexch_internal_new();
-  if(exch->internal == NULL) {
-    free(exch);
-    exch = NULL;
+  oxws->internal = oxws_internal_new();
+  if(oxws->internal == NULL) {
+    free(oxws);
+    oxws = NULL;
   }
 
-  return exch;
+  return oxws;
 }
 
-void mailexch_free(mailexch* exch) {
-  if(!exch) return;
+void oxws_free(oxws* oxws) {
+  if(!oxws) return;
 
-  if(exch->connection_settings.as_url)
-    free(exch->connection_settings.as_url);
-  if(exch->connection_settings.oof_url)
-    free(exch->connection_settings.oof_url);
-  if(exch->connection_settings.um_url)
-    free(exch->connection_settings.um_url);
-  if(exch->connection_settings.oab_url)
-    free(exch->connection_settings.oab_url);
+  if(oxws->connection_settings.as_url)
+    free(oxws->connection_settings.as_url);
+  if(oxws->connection_settings.oof_url)
+    free(oxws->connection_settings.oof_url);
+  if(oxws->connection_settings.um_url)
+    free(oxws->connection_settings.um_url);
+  if(oxws->connection_settings.oab_url)
+    free(oxws->connection_settings.oab_url);
 
-  mailexch_internal_free(MAILEXCH_INTERNAL(exch));
+  oxws_internal_free(OXWS_INTERNAL(oxws));
 
-  free(exch);
+  free(oxws);
 }
 
 /*
-  MAILEXCH_COPY_STRING()
+  OXWS_COPY_STRING()
 
   Copy a string from source to dest, using result to indicate success or
   failure. Will (re)allocate dest to fit the source string, and will free dest
   and set it to NULL upon failure or if source is NULL.
-  the function will only attempt to copy if result is MAILEXCH_NO_ERROR in the
+  the function will only attempt to copy if result is OXWS_NO_ERROR in the
   beginning.
 
-  @param result   an int set to either MAILEXCH_NO_ERROR or MAILEXCH_ERROR_*.
-                  Copying is attempted only attempted if it's MAILEXCH_NO_ERROR.
-                  It will be set to MAILEXCH_ERROR_INTERNAL if memory
+  @param result   an int set to either OXWS_NO_ERROR or OXWS_ERROR_*.
+                  Copying is attempted only attempted if it's OXWS_NO_ERROR.
+                  It will be set to OXWS_ERROR_INTERNAL if memory
                   reallocation of dest fails.
-                  If it is not MAILEXCH_NO_ERROR in the end, dest is freed and
+                  If it is not OXWS_NO_ERROR in the end, dest is freed and
                   set to NULL.
   @param dest     copy destination; can be anything that can be passed to
                   realloc() and (if not NULL) free()
   @param source   Copy source; NULL indicates to free and clear the destination
 
 */
-#define MAILEXCH_COPY_STRING(result, dest, source) \
-  if(result == MAILEXCH_NO_ERROR && source) { \
+#define OXWS_COPY_STRING(result, dest, source) \
+  if(result == OXWS_NO_ERROR && source) { \
     (dest) = realloc((dest), strlen(source) + 1); \
     if(!(dest)) { \
-      result = MAILEXCH_ERROR_INTERNAL; \
+      result = OXWS_ERROR_INTERNAL; \
     } else { \
       memcpy((dest), (source), strlen(source) + 1); \
     } \
   } \
-  if(result != MAILEXCH_NO_ERROR || source == NULL) { \
+  if(result != OXWS_NO_ERROR || source == NULL) { \
     if(dest) free(dest); \
     (dest) = NULL; \
   }
 
-mailexch_result mailexch_set_connection_settings(mailexch* exch, mailexch_connection_settings* settings) {
-  if(exch == NULL || settings == NULL)
-    return MAILEXCH_ERROR_INVALID_PARAMETER;
-  if(exch->state != MAILEXCH_STATE_NEW)
-    return MAILEXCH_ERROR_BAD_STATE;
+oxws_result oxws_set_connection_settings(oxws* oxws, oxws_connection_settings* settings) {
+  if(oxws == NULL || settings == NULL)
+    return OXWS_ERROR_INVALID_PARAMETER;
+  if(oxws->state != OXWS_STATE_NEW)
+    return OXWS_ERROR_BAD_STATE;
 
-  int result = MAILEXCH_NO_ERROR;
-  MAILEXCH_COPY_STRING(result, exch->connection_settings.as_url, settings->as_url);
-  MAILEXCH_COPY_STRING(result, exch->connection_settings.oof_url, settings->oof_url);
-  MAILEXCH_COPY_STRING(result, exch->connection_settings.um_url, settings->um_url);
-  MAILEXCH_COPY_STRING(result, exch->connection_settings.oab_url, settings->oab_url);
+  int result = OXWS_NO_ERROR;
+  OXWS_COPY_STRING(result, oxws->connection_settings.as_url, settings->as_url);
+  OXWS_COPY_STRING(result, oxws->connection_settings.oof_url, settings->oof_url);
+  OXWS_COPY_STRING(result, oxws->connection_settings.um_url, settings->um_url);
+  OXWS_COPY_STRING(result, oxws->connection_settings.oab_url, settings->oab_url);
 
-  if(result == MAILEXCH_NO_ERROR)
-    exch->state = MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED;
+  if(result == OXWS_NO_ERROR)
+    oxws->state = OXWS_STATE_CONNECTION_SETTINGS_CONFIGURED;
   return result;
 }
 
-mailexch_result mailexch_autodiscover_connection_settings(mailexch* exch,
+oxws_result oxws_autodiscover_connection_settings(oxws* oxws,
         const char* host, const char* email_address, const char* username,
         const char* password, const char* domain) {
 
-  if(exch == NULL) return MAILEXCH_ERROR_INVALID_PARAMETER;
-  if(exch->state != MAILEXCH_STATE_NEW) return MAILEXCH_ERROR_BAD_STATE;
+  if(oxws == NULL) return OXWS_ERROR_INVALID_PARAMETER;
+  if(oxws->state != OXWS_STATE_NEW) return OXWS_ERROR_BAD_STATE;
 
-  int result = mailexch_autodiscover(host, email_address, username, password, domain, &exch->connection_settings);
+  int result = oxws_autodiscover(host, email_address, username, password, domain, &oxws->connection_settings);
 
-  if(result == MAILEXCH_NO_ERROR)
-    exch->state = MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED;
+  if(result == OXWS_NO_ERROR)
+    oxws->state = OXWS_STATE_CONNECTION_SETTINGS_CONFIGURED;
   return result;
 }
 
 
-mailexch_result mailexch_connect(mailexch* exch, const char* username, const char* password, const char* domain) {
+oxws_result oxws_connect(oxws* oxws, const char* username, const char* password, const char* domain) {
 
-  if(exch == NULL) return MAILEXCH_ERROR_INVALID_PARAMETER;
-  mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
-  if(internal == NULL) return MAILEXCH_ERROR_INTERNAL;
-  if(exch->state != MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED)
-    return MAILEXCH_ERROR_BAD_STATE;
+  if(oxws == NULL) return OXWS_ERROR_INVALID_PARAMETER;
+  oxws_internal* internal = OXWS_INTERNAL(oxws);
+  if(internal == NULL) return OXWS_ERROR_INTERNAL;
+  if(oxws->state != OXWS_STATE_CONNECTION_SETTINGS_CONFIGURED)
+    return OXWS_ERROR_BAD_STATE;
 
   /* We just do a GET on the given URL to test the connection.
      It should give us a response with code 200, and a WSDL in the body. */
 
   /* prepare curl: curl object + credentials */
-  int result = mailexch_prepare_curl(exch, username, password, domain);
-  if(result != MAILEXCH_NO_ERROR) return result;
+  int result = oxws_prepare_curl(oxws, username, password, domain);
+  if(result != OXWS_NO_ERROR) return result;
   CURL* curl = internal->curl;
 
   /* GET url */
   curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
-  curl_easy_setopt(curl, CURLOPT_URL, exch->connection_settings.as_url);
+  curl_easy_setopt(curl, CURLOPT_URL, oxws->connection_settings.as_url);
 
   /* Follow redirects, but only to HTTPS. */
   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
@@ -179,23 +179,23 @@ mailexch_result mailexch_connect(mailexch* exch, const char* username, const cha
 
   /* result */
   uint8_t found_wsdl = 0;
-  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, mailexch_test_connection_write_callback);
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, oxws_test_connection_write_callback);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &found_wsdl);
 
   /* perform request */
   CURLcode curl_code = curl_easy_perform(curl);
   if(curl_code != CURLE_OK) {
-    result = MAILEXCH_ERROR_CONNECT;
+    result = OXWS_ERROR_CONNECT;
   } else {
     long http_response = 0;
     curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_response);
     if(http_response != 200) {
-      result = MAILEXCH_ERROR_CONNECT;
+      result = OXWS_ERROR_CONNECT;
     } else if(!found_wsdl) {
-      result = MAILEXCH_ERROR_NO_EWS;
+      result = OXWS_ERROR_NO_EWS;
     } else {
-      result = MAILEXCH_NO_ERROR;
-      exch->state = MAILEXCH_STATE_CONNECTED;
+      result = OXWS_NO_ERROR;
+      oxws->state = OXWS_STATE_CONNECTED;
     }
   }
 
@@ -206,11 +206,11 @@ mailexch_result mailexch_connect(mailexch* exch, const char* username, const cha
 
 
 /*
-  mailexch structure callbacks
+  oxws structure callbacks
 */
 
 /*
-  mailexch_strnstr()
+  oxws_strnstr()
 
   Find first occurrence of substring in a string's first few bytes.
 
@@ -222,10 +222,10 @@ mailexch_result mailexch_connect(mailexch* exch, const char* username, const cha
           NULL if substr does not occur in the first 'length' bytes of str;
           the beginning of the first occurrence of substr in str otherwise.
 
-  @note The search will not stop on a 0-byte, with i.e. mailexch_strnstr() you
+  @note The search will not stop on a 0-byte, with i.e. oxws_strnstr() you
         can search in strings that are note zero-terminated.
 */
-const char* mailexch_strnstr(const char* str, const char* substr, size_t length) {
+const char* oxws_strnstr(const char* str, const char* substr, size_t length) {
 
   if(str == NULL || substr == NULL) return NULL;
 
@@ -239,7 +239,7 @@ const char* mailexch_strnstr(const char* str, const char* substr, size_t length)
 }
 
 /*
-  mailexch_test_connection_write_callback()
+  oxws_test_connection_write_callback()
 
   A CURL write callback, set via the CURLOPT_WRITEFUNCTION option, that searches
   for WSDL definitions in the HTTP response.
@@ -251,13 +251,13 @@ const char* mailexch_strnstr(const char* str, const char* substr, size_t length)
 
   @see CURL documentation for more information.
 */
-size_t mailexch_test_connection_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
+size_t oxws_test_connection_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
 
   size_t response_length = size*nmemb < 1 ? 0 : size*nmemb;
   uint8_t* found_wsdl = ((uint8_t*)userdata);
 
   if(!*found_wsdl &&
-     mailexch_strnstr(ptr, "wsdl:definitions", response_length) != NULL) {
+     oxws_strnstr(ptr, "wsdl:definitions", response_length) != NULL) {
 
     *found_wsdl = 1;
   }

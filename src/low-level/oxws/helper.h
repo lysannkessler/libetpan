@@ -1,7 +1,7 @@
 /*
  * libEtPan! -- a mail stuff library
  *
- * exhange support: Copyright (C) 2012 Lysann Kessler
+ * Copyright (C) 2012 Lysann Kessler
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,8 +29,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef MAILEXCH_HELPER_H
-#define MAILEXCH_HELPER_H
+#ifndef OXWS_HELPER_H
+#define OXWS_HELPER_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,7 +39,7 @@ extern "C" {
 
 #include <curl/curl.h>
 
-#include <libetpan/mailexch_types.h>
+#include <libetpan/oxws_types.h>
 
 
 #ifndef UNUSED
@@ -47,31 +47,31 @@ extern "C" {
 #endif
 
 /*
-  mailexch_prepare_curl()
+  oxws_prepare_curl()
 
   Create CURL instance for Exchange session and fill it with given user
   credentials, if not already configured.
-  In this case the current state must be MAILEXCH_STATE_NEW or
-  MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED.
+  In this case the current state must be OXWS_STATE_NEW or
+  OXWS_STATE_CONNECTION_SETTINGS_CONFIGURED.
 
-  @param exch     [required] Exchange session object to configure
-  @param username (see mailexch_set_credentials())
-  @param password (see mailexch_set_credentials())
-  @param domain   (see mailexch_set_credentials())
+  @param oxws     [required] Exchange session object to configure
+  @param username (see oxws_set_credentials())
+  @param password (see oxws_set_credentials())
+  @param domain   (see oxws_set_credentials())
 
-  @return - MAILEXCH_ERROR_INVALID_PARAMETER: a required parameter is missing.
-          - MAILEXCH_ERROR_BAD_STATE: the state is not MAILEXCH_STATE_NEW or
-            MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED
-          - MAILEXCH_ERROR_INTERNAL: arbitrary failure
-          - (see mailexch_set_credentials() for other return codes).
+  @return - OXWS_ERROR_INVALID_PARAMETER: a required parameter is missing.
+          - OXWS_ERROR_BAD_STATE: the state is not OXWS_STATE_NEW or
+            OXWS_STATE_CONNECTION_SETTINGS_CONFIGURED
+          - OXWS_ERROR_INTERNAL: arbitrary failure
+          - (see oxws_set_credentials() for other return codes).
           If an error occurs, the CURL object is freed and set to NULL.
 */
-mailexch_result mailexch_prepare_curl(mailexch* exch, const char* username, const char* password, const char* domain);
+oxws_result oxws_prepare_curl(oxws* oxws, const char* username, const char* password, const char* domain);
 
-mailexch_result mailexch_prepare_curl_internal(CURL** curl, const char* username, const char* password, const char* domain);
+oxws_result oxws_prepare_curl_internal(CURL** curl, const char* username, const char* password, const char* domain);
 
 /*
-  mailexch_set_credentials()
+  oxws_set_credentials()
 
   Update credentials of given CURL object.
 
@@ -83,15 +83,15 @@ mailexch_result mailexch_prepare_curl_internal(CURL** curl, const char* username
   @param domain   [optional] domain to use for all further HTTP authentication
                   actions
 
-  @return - MAILEXCH_NO_ERROR indicates success
-          - MAILEXCH_ERROR_INVALID_PARAMETER: a required parameter is missing.
-          - MAILEXCH_ERROR_INTERNAL: arbitrary failure
+  @return - OXWS_NO_ERROR indicates success
+          - OXWS_ERROR_INVALID_PARAMETER: a required parameter is missing.
+          - OXWS_ERROR_INTERNAL: arbitrary failure
 */
-mailexch_result mailexch_set_credentials(CURL* curl, const char* username, const char* password, const char* domain);
+oxws_result oxws_set_credentials(CURL* curl, const char* username, const char* password, const char* domain);
 
 
 /*
-  mailexch_write_response_to_buffer()
+  oxws_write_response_to_buffer()
 
   Configure given Exchange session to write the response of it's next HTTP
   request to the session's response buffer.
@@ -100,33 +100,33 @@ mailexch_result mailexch_set_credentials(CURL* curl, const char* username, const
   estimated, the given size hint will preallocate the response buffer to the
   given size.
 
-  @param exch             [required] Exchange session object to configure
+  @param oxws             [required] Exchange session object to configure
   @param buffer_size_hint preallocate response buffer to this size
 
-  @return - MAILEXCH_NO_ERROR: success
-          - MAILEXCH_ERROR_INVALID_PARAMETER: a required parameter is missing.
-          - MAILEXCH_ERROR_INTERNAL: arbitrary failure
+  @return - OXWS_NO_ERROR: success
+          - OXWS_ERROR_INVALID_PARAMETER: a required parameter is missing.
+          - OXWS_ERROR_INTERNAL: arbitrary failure
 
-  @see mailexch_write_response_to_buffer_callback()
+  @see oxws_write_response_to_buffer_callback()
 */
-mailexch_result mailexch_write_response_to_buffer(mailexch* exch, size_t buffer_size_hint);
+oxws_result oxws_write_response_to_buffer(oxws* oxws, size_t buffer_size_hint);
 
 /*
-  mailexch_write_response_to_buffer_callback()
+  oxws_write_response_to_buffer_callback()
 
   CURL write callback that writes the received response text into the Exchange
   session's response buffer.
 
-  @param userdata [required] pointer to a mailexch structure whose response
+  @param userdata [required] pointer to a oxws structure whose response
                   buffer to update. You must set the CURLOPT_WRITEDATA option
                   to a pointer to the desired session, so it gets passed into
                   this callback by CURL.
 
   @see CURL docs for more information
 
-  @see mailexch_write_response_to_buffer()
+  @see oxws_write_response_to_buffer()
 */
-size_t mailexch_write_response_to_buffer_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
+size_t oxws_write_response_to_buffer_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
 
 
 #ifdef __cplusplus
