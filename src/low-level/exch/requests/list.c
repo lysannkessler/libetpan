@@ -294,7 +294,7 @@ void mailexch_list_sax_handler_characters(void* user_data,
         const xmlChar* chars, int length) {
 
   mailexch_list_sax_context* context = (mailexch_list_sax_context*) user_data;
-  if(context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE__ERROR)return;
+  if(context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE__ERROR) return;
 
   if(context->state == MAILEXCH_LIST_SAX_CONTEXT_STATE_ITEM_SUBJECT) {
     /* TODO check item */
@@ -307,6 +307,14 @@ void mailexch_list_sax_handler_characters(void* user_data,
     }
     context->item->subject = (char*) subject;
   }
+}
+
+void mailexch_list_sax_handler_error(void* user_data, const char* msg, ...) {
+  /* TODO log error message */
+  UNUSED(msg);
+
+  mailexch_list_sax_context* context = (mailexch_list_sax_context*) user_data;
+  context->state = MAILEXCH_LIST_SAX_CONTEXT_STATE__ERROR;
 }
 
 xmlSAXHandler mailexch_list_sax_handler = {
@@ -332,8 +340,8 @@ xmlSAXHandler mailexch_list_sax_handler = {
   NULL, /* processingInstruction */
   NULL, /* comment */
   NULL, /* TODO warning */
-  NULL, /* TODO error */
-  NULL, /* TODO fatalError */
+  mailexch_list_sax_handler_error, /* error */
+  mailexch_list_sax_handler_error, /* fatalError */
   NULL, /* getParameterEntity */
   NULL, /* cdataBlock */
   NULL, /* externalSubset */
