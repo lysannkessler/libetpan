@@ -72,7 +72,8 @@
 
   Try to extract autodiscover information from given URL, and save them in the
   given settings structure.
-  The current state must be MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED.
+  The current state must be MAILEXCH_STATE_NEW or
+  MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED.
 
   @param exch     [required] Exchange session object. Its curl object will be
                   used to perform HTTP requests.
@@ -82,7 +83,7 @@
 
   @return - MAILEXCH_NO_ERROR indicated success
           - MAILEXCH_ERROR_INVALID_PARAMETER: a required parameter is missing.
-          - MAILEXCH_ERROR_BAD_STATE: state is not
+          - MAILEXCH_BAD_STATE: state is not MAILEXCH_STATE_NEW or
             MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED
           - MAILEXCH_ERROR_CONNECT: cannot connect to given URL
           - MAILEXCH_ERROR_AUTODISCOVER_UNAVAILABLE: given URL does not seem to
@@ -192,7 +193,8 @@ mailexch_result mailexch_autodiscover_try_url(mailexch* exch, const char* url, m
     return MAILEXCH_ERROR_INVALID_PARAMETER;
   mailexch_internal* internal = MAILEXCH_INTERNAL(exch);
   if(internal == NULL) return MAILEXCH_ERROR_INTERNAL;
-  if(exch->state != MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED)
+  if(exch->state != MAILEXCH_STATE_NEW &&
+     exch->state != MAILEXCH_STATE_CONNECTION_SETTINGS_CONFIGURED)
     return MAILEXCH_ERROR_BAD_STATE;
 
   curl_easy_setopt(internal->curl, CURLOPT_URL, url);
