@@ -130,6 +130,8 @@ oxws_result oxws_list(oxws* oxws,
   int result = oxws_perform_request_xml(oxws, node_findItem);
   if(sax_context.state == OXWS_LIST_SAX_CONTEXT_STATE__ERROR) {
     result = OXWS_ERROR_INVALID_RESPONSE;
+  } else if (sax_context.state != OXWS_LIST_SAX_CONTEXT_STATE_END_DOCUMENT) {
+    result = OXWS_ERROR_INTERNAL;
   } else if(*list == NULL) {
     result = OXWS_ERROR_INTERNAL;
   }
@@ -148,9 +150,13 @@ oxws_result oxws_list_sax_context_init(oxws_list_sax_context* context, unsigned 
   if(context == NULL || list == NULL)
     return OXWS_ERROR_INVALID_PARAMETER;
 
-  memset(context, 0, sizeof(oxws_list_sax_context));
   context->count = count;
   context->list = list;
+  context->prev_state = OXWS_LIST_SAX_CONTEXT_STATE__NONE;
+  context->state = OXWS_LIST_SAX_CONTEXT_STATE__NONE;
+  context->item = NULL;
+  context->item_node_depth = 0;
+
   return OXWS_NO_ERROR;
 }
 
@@ -173,7 +179,6 @@ void oxws_list_sax_handler_end_document(void* user_data) {
   oxws_list_sax_context* context = (oxws_list_sax_context*) user_data;
   /* TODO check state */
   if(context->state == OXWS_LIST_SAX_CONTEXT_STATE__ERROR) return;
-  context->prev_state = context->state;
   context->state = OXWS_LIST_SAX_CONTEXT_STATE_END_DOCUMENT;
 }
 
@@ -193,7 +198,7 @@ void oxws_list_sax_handler_start_element_ns(void* user_data,
   int attr_index;
 
   /* TODO m:FindItemResponseMessage, m:ResponseCode, m:RootFolder,
-          other item classes, multiple response messages */
+          multiple response messages */
   if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_START_DOCUMENT &&
      xmlStrcmp(ns_uri, OXWS_XML_NS_EXCH_TYPES) == 0 &&
      xmlStrcmp(localname, BAD_CAST "Items") == 0) {
@@ -269,6 +274,13 @@ void oxws_list_sax_handler_end_element_ns(void* user_data,
      xmlStrcmp(localname, BAD_CAST "Subject") == 0) {
     context->state = context->prev_state;
     context->prev_state = OXWS_LIST_SAX_CONTEXT_STATE__NONE;
+
+  } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_START_DOCUMENT &&
+     xmlStrcmp(ns_uri, OXWS_XML_NS_SOAP) == 0 &&
+     xmlStrcmp(localname, BAD_CAST "Envelope") == 0) {
+    /* the end_document callback does not seem to get called. We emulate it
+       using the end of the SOAP Envelope tag */
+    oxws_list_sax_handler_end_document(user_data);
 
   } else {
     /* TODO warn for unknown tags */
