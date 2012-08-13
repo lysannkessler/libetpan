@@ -42,22 +42,22 @@ int main(int argc, char ** argv) {
   puts("INBOX");
   carray* items = NULL;
   result = mailexch_list(exch, MAILEXCH_DISTFOLDER_INBOX, NULL, 10, &items);
+  check_error(result, "could not list items in inbox");
   unsigned int i;
   for(i = 0; i < items->len; i++) {
     mailexch_type_item* item = carray_get(items, i);
     printf("  %s\n", item->subject);
   }
   mailexch_type_item_array_free(items); items = NULL;
-  check_error(result, "could not list items in inbox");
 
   puts("SENT ITEMS");
   result = mailexch_list(exch, MAILEXCH_DISTFOLDER_SENTITEMS, NULL, 10, &items);
+  check_error(result, "could not list sent items");
   for(i = 0; i < items->len; i++) {
     mailexch_type_item* item = carray_get(items, i);
     printf("  %s\n", item->subject);
   }
   mailexch_type_item_array_free(items); items = NULL;
-  check_error(result, "could not list sent items");
 
   mailexch_free(exch);
 
