@@ -210,7 +210,7 @@ void oxws_list_sax_handler_start_element_ns(void* user_data,
     if(xmlStrcmp(ns_uri, OXWS_XML_NS_EXCH_TYPES) == 0 &&
        xmlStrcmp(localname, BAD_CAST "Message") == 0) {
       context->state = OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE;
-      context->item = (oxws_type_item*) calloc(1, sizeof(oxws_type_message));
+      context->item = (oxws_type_item*) oxws_type_message_new();
     } else {
       context->state = OXWS_LIST_SAX_CONTEXT_STATE_ITEM;
       context->item = oxws_type_item_new();
@@ -313,6 +313,7 @@ void oxws_list_sax_handler_characters(void* user_data, const xmlChar* chars, int
   if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_ITEM_SUBJECT) {
     /* TODO check item */
     oxws_type_item_append_to_subject_len(context->item, (const char*) chars, length);
+    /* TODO warn if result != NO_ERROR */
   }
 }
 

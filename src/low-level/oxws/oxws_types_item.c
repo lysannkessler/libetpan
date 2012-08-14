@@ -192,9 +192,11 @@ void oxws_type_email_address_array_free(carray* array) {
 oxws_type_item* oxws_type_item_new() {
   oxws_type_item* item = (oxws_type_item*) calloc(1, sizeof(oxws_type_item));
 
-  if(item != NULL && oxws_type_item_init(item) != OXWS_NO_ERROR) {
-    free(item);
-    item = NULL;
+  if(item != NULL) {
+    if(oxws_type_item_init(item) != OXWS_NO_ERROR) {
+      oxws_type_item_free(item);
+      item = NULL;
+    }
   }
 
   return item;
@@ -203,7 +205,8 @@ oxws_type_item* oxws_type_item_new() {
 oxws_result oxws_type_item_init(oxws_type_item* item) {
   if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
 
-  /* currently no-op */
+  item->item_class = OXWS_TYPE_ITEM_CLASS_ITEM;
+
   return OXWS_NO_ERROR;
 }
 
@@ -432,6 +435,29 @@ oxws_result oxws_type_item_set_date_time_sent(oxws_type_item* item, time_t* date
     if(item->date_time_sent == NULL) return OXWS_ERROR_INTERNAL;
     memcpy(item->date_time_sent, date_time_sent, length);
   }
+
+  return OXWS_NO_ERROR;
+}
+
+
+oxws_type_message* oxws_type_message_new() {
+  oxws_type_message* message = (oxws_type_message*) calloc(1, sizeof(oxws_type_message));
+
+  if(message != NULL) {
+    if(oxws_type_item_init((oxws_type_item*) message) != OXWS_NO_ERROR ||
+       oxws_type_message_init(message) != OXWS_NO_ERROR) {
+      oxws_type_item_free((oxws_type_item*) message);
+      message = NULL;
+    }
+  }
+
+  return message;
+}
+
+oxws_result oxws_type_message_init(oxws_type_message* message) {
+  if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;
+
+  message->item.item_class = OXWS_TYPE_ITEM_CLASS_MESSAGE;
 
   return OXWS_NO_ERROR;
 }

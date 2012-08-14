@@ -336,6 +336,10 @@ struct oxws_type_message {
 };
 typedef struct oxws_type_message oxws_type_message;
 
+oxws_type_message* oxws_type_message_new();
+
+oxws_result oxws_type_message_init(oxws_type_message* message);
+
 
 #ifdef __cplusplus
 }
