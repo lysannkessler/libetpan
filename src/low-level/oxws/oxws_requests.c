@@ -45,7 +45,7 @@ const char* oxws_distfolder_id_name_map[] = {
   "outbox", "sentitems", "tasks", "msgfolderroot", "root", "junkemail",
   "searchfolders", "voicemail"
 };
-const short oxws_distfolder_id_name_map_length =
+const unsigned short oxws_distfolder_id_name_map_length =
   sizeof(oxws_distfolder_id_name_map) / sizeof(const char*);
 
 

@@ -44,7 +44,7 @@ extern "C" {
 
 
 extern const char* oxws_distfolder_id_name_map[];
-extern const short oxws_distfolder_id_name_map_length;
+extern const unsigned short oxws_distfolder_id_name_map_length;
 
 
 /*
