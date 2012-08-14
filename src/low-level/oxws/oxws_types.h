@@ -79,9 +79,9 @@ typedef enum oxws_result oxws_result;
   oxws_result_name_map_length is the number of items in the array.
 */
 extern const char* oxws_result_name_map[];
-extern const short oxws_result_name_map_length;
+extern const unsigned short oxws_result_name_map_length;
 #define OXWS_ERROR_NAME(result) \
-  (((result) < 0 || (result) > oxws_result_name_map_length) ? "<unknown result>" : oxws_result_name_map[result])
+  (((result) > oxws_result_name_map_length) ? "<unknown result>" : oxws_result_name_map[result])
 
 /*
   struct oxws_progress_info

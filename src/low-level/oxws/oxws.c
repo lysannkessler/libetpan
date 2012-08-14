@@ -54,7 +54,7 @@ const char* oxws_result_name_map[] = {
   "ERROR_REQUEST_FAILED",
   "ERROR_INVALID_RESPONSE",
 };
-const short oxws_result_name_map_length =
+const unsigned short oxws_result_name_map_length =
   sizeof(oxws_result_name_map) / sizeof(const char*);
 
 
