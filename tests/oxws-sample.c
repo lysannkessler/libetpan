@@ -5,7 +5,7 @@
 
 
 oxws_result list_items(oxws* oxws, oxws_distinguished_folder_id folder_id);
-static void check_error(int result, char* msg);
+static void check_error(oxws_result result, char* msg);
 
 
 int main(int argc, char ** argv) {
@@ -65,11 +65,11 @@ oxws_result list_items(oxws* oxws, oxws_distinguished_folder_id folder_id) {
   return result;
 }
 
-static void check_error(int result, char* msg) {
+static void check_error(oxws_result result, char* msg) {
   if (result == OXWS_NO_ERROR)
     return;
 
   /* print error and exit */
-  fprintf(stderr, "%s. result: %d\n", msg, result);
+  fprintf(stderr, "%s. result: %s (%d)\n", msg, OXWS_ERROR_NAME(result), result);
   exit(EXIT_FAILURE);
 }

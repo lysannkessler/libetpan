@@ -44,6 +44,8 @@ extern "C" {
 
 
 /*
+  enum oxws_result
+
   Return codes for most of the oxws* functions
 */
 enum oxws_result {
@@ -69,6 +71,17 @@ enum oxws_result {
   OXWS_ERROR_INVALID_RESPONSE,
 };
 typedef enum oxws_result oxws_result;
+
+/*
+  oxws_result_name_map, oxws_result_name_map_length, OXWS_ERROR_NAME()
+
+  Map from oxws_result to a representative result name string.
+  oxws_result_name_map_length is the number of items in the array.
+*/
+extern const char* oxws_result_name_map[];
+extern const short oxws_result_name_map_length;
+#define OXWS_ERROR_NAME(result) \
+  (((result) < 0 || (result) > oxws_result_name_map_length) ? "<unknown result>" : oxws_result_name_map[result])
 
 /*
   struct oxws_progress_info

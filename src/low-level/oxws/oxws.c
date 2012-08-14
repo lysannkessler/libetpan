@@ -43,6 +43,21 @@
 #include <string.h>
 
 
+const char* oxws_result_name_map[] = {
+  "NO_ERROR",
+  "ERROR_INVALID_PARAMETER",
+  "ERROR_BAD_STATE",
+  "ERROR_INTERNAL",
+  "ERROR_CONNECT",
+  "ERROR_NO_EWS",
+  "ERROR_AUTODISCOVER_UNAVAILABLE",
+  "ERROR_REQUEST_FAILED",
+  "ERROR_INVALID_RESPONSE",
+};
+const short oxws_result_name_map_length =
+  sizeof(oxws_result_name_map) / sizeof(const char*);
+
+
 size_t oxws_test_connection_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
 
 
