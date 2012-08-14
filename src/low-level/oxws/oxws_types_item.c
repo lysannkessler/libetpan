@@ -311,6 +311,18 @@ oxws_result oxws_type_item_set_parent_folder_id_fields(oxws_type_item* item, con
     return oxws_type_item_set_parent_folder_id(item, folder_id);
 }
 
+oxws_result oxws_type_item_set_subject_mmap(oxws_type_item* item, MMAPString* string) {
+  if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
+  if(item->subject == string) return OXWS_NO_ERROR;
+
+  if(item->subject != NULL) {
+    mmap_string_free(item->subject);
+  }
+  item->subject = string;
+
+  return OXWS_NO_ERROR;
+}
+
 oxws_result oxws_type_item_set_subject(oxws_type_item* item, const char* string) {
   size_t length = string == NULL ? 0 : strlen(string);
   return oxws_type_item_set_subject_len(item, string, length);

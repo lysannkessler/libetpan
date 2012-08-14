@@ -286,6 +286,8 @@ oxws_result oxws_type_item_set_parent_folder_id(oxws_type_item* item, oxws_type_
 
 oxws_result oxws_type_item_set_parent_folder_id_fields(oxws_type_item* item, const char* id, const char* change_key);
 
+oxws_result oxws_type_item_set_subject_mmap(oxws_type_item* item, MMAPString* string);
+
 oxws_result oxws_type_item_set_subject(oxws_type_item* item, const char* string);
 oxws_result oxws_type_item_set_subject_len(oxws_type_item* item, const char* string, size_t length);
 
