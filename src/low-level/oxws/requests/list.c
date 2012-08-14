@@ -70,10 +70,7 @@ oxws_result oxws_list(oxws* oxws,
               xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"
               Traversal="Shallow">
       <ItemShape>
-        <t:BaseShape>IdOnly</t:BaseShape>
-        <t:AdditionalProperties>
-          <t:FieldURI FieldURI="item:Subject"/>
-        </t:AdditionalProperties>
+        <t:BaseShape>Default</t:BaseShape>
       </ItemShape>
       <IndexedPageItemView BasePoint="Beginning" Offset="0"
                            MaxEntriesReturned="[count]"/> <!-- if count >= 0 -->
@@ -90,10 +87,7 @@ oxws_result oxws_list(oxws* oxws,
   xmlNewProp(node_findItem, BAD_CAST "Traversal", BAD_CAST "Shallow");
 
   xmlNodePtr node_itemShape = xmlNewChild(node_findItem, ns_exch_messages, BAD_CAST "ItemShape", NULL);
-  xmlNewChild(node_itemShape, ns_exch_types, BAD_CAST "BaseShape", BAD_CAST "IdOnly");
-  xmlNodePtr node_props = xmlNewChild(node_itemShape, ns_exch_types, BAD_CAST "AdditionalProperties", NULL);
-  xmlNodePtr node_fieldUri = xmlNewChild(node_props, ns_exch_types, BAD_CAST "FieldURI", NULL);
-  xmlNewProp(node_fieldUri, BAD_CAST "FieldURI", BAD_CAST "item:Subject");
+  xmlNewChild(node_itemShape, ns_exch_types, BAD_CAST "BaseShape", BAD_CAST "Default");
 
   xmlNodePtr node_indexedPageItemView = xmlNewChild(node_findItem, ns_exch_messages, BAD_CAST "IndexedPageItemView", NULL);
   xmlNewProp(node_indexedPageItemView, BAD_CAST "BasePoint", BAD_CAST "Beginning");
