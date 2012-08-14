@@ -68,6 +68,8 @@ enum oxws_list_sax_context_state {
   OXWS_LIST_SAX_CONTEXT_STATE_ITEM,
   /* Inside a message item */
   OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE,
+  /* Inside the Size of any item */
+  OXWS_LIST_SAX_CONTEXT_STATE_ITEM_SIZE,
   /* Inside the Subject tag of any item */
   OXWS_LIST_SAX_CONTEXT_STATE_ITEM_SUBJECT,
   /* End of document has been parsed, used to identify whether the response was
@@ -93,9 +95,9 @@ struct oxws_list_sax_context {
      startDocument. Is not cleared if an error occurs later on. */
   carray** list;
 
-  /* Helper variable containing the one previous state while inside a item
-     subject tag. Once we leave the Subject tag, state is reset to prev_state.
-     This is neccessary because the Subject could be inside an item tag of any
+  /* Helper variable containing the one previous state while inside an item
+     subtag. Once we leave the subtag, state is reset to prev_state.
+     This is neccessary because the subtag could be inside an item tag of any
      class.
      @see oxws_list_sax_context_state */
   oxws_list_sax_context_state prev_state;
@@ -109,6 +111,8 @@ struct oxws_list_sax_context {
      node depth. This is neccessary so we know when to go back to the ITEMS
      state even if we parse unknown tags. */
   unsigned int item_node_depth;
+
+  MMAPString* string;
 };
 typedef struct oxws_list_sax_context oxws_list_sax_context;
 
@@ -162,7 +166,10 @@ void oxws_list_sax_handler_end_document(void* user_data);
                          item_node_depth to 1
   * ITEMS + (any) -> ITEM; allocates item in item and sets item_node_depth to 1
   * MESSAGE/ITEM + t:ItemId -> sets the current item's item_id
-  * MESSAGE/ITEM + t:Subject -> ITEM_SUBJECT; saves old state in prev_state
+  * MESSAGE/ITEM + t:Subject -> ITEM_SUBJECT; saves old state in prev_state;
+                                initializes context->string
+  * MESSAGE/ITEM + t:Size -> ITEM_SIZE; saves old state in prev_state;
+                             initializes context->string
   Always increments item_node_depth if in MESSAGE/ITEM or beneath.
 
   @param user_data [required] the oxws_list_sax_context
@@ -179,7 +186,10 @@ void oxws_list_sax_handler_start_element_ns(void* user_data,
 
   Called on element end. The following state transitions are supported:
   * ITEMS + t:Items -> START_DOCUMENT
-  * ITEM_SUBJECT + t:Subject -> restores prev_state
+  * ITEM_SUBJECT + t:Subject -> restores prev_state; assigns context->string to
+                                subject of context->item
+  * ITEM_SIZE + t:Size -> restores prev_state; assigns context->string to size
+                          of context->item
   * START_DOCUMENT + soap:Envelope -> END_DOCUMENT; this is to work around a bug
                                       where the end_document callback does not
                                       get called, but we still need to signal
@@ -198,9 +208,8 @@ void oxws_list_sax_handler_end_element_ns(void* user_data,
 /*
   oxws_list_sax_handler_characters()
 
-  Called when parsing element text. Depending on the state this does the
-  following:
-  * ITEM_SUBJECT: append the text to the current item's subject string.
+  Called when parsing element text. Appends the given string to context->string
+  if it is initialized.
 
   @param user_data [required] the oxws_list_sax_context
 
