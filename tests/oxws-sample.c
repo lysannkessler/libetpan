@@ -57,7 +57,7 @@ oxws_result list_items(oxws* oxws, oxws_distinguished_folder_id folder_id) {
   unsigned int i;
   for(i = 0; i < items->len; i++) {
     oxws_type_item* item = carray_get(items, i);
-    printf("  %s\n", item->subject);
+    printf("  %s\n", item->subject ? item->subject->str : NULL);
   }
 
   /* clean up */

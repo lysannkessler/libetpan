@@ -213,7 +213,7 @@ void oxws_list_sax_handler_start_element_ns(void* user_data,
       context->item = (oxws_type_item*) calloc(1, sizeof(oxws_type_message));
     } else {
       context->state = OXWS_LIST_SAX_CONTEXT_STATE_ITEM;
-      context->item = (oxws_type_item*) calloc(1, sizeof(oxws_type_item));
+      context->item = oxws_type_item_new();
     }
     context->item_node_depth = 1;
 
@@ -223,18 +223,21 @@ void oxws_list_sax_handler_start_element_ns(void* user_data,
      xmlStrcmp(ns_uri, OXWS_XML_NS_EXCH_TYPES) == 0 &&
      xmlStrcmp(localname, BAD_CAST "ItemId") == 0) {
     /* TODO check item */
-    context->item->item_id = (oxws_type_item_id*) calloc(1, sizeof(oxws_type_item_id));
+    xmlChar* id = NULL, *change_key = NULL;
     for(attr_index = 0; attr_index < nb_attributes; attr_index++) {
       const xmlChar* name = attrs[5 * attr_index + 0];
       const xmlChar* value = attrs[5 * attr_index + 3];
       const xmlChar* end = attrs[5 * attr_index + 4];
       if(xmlStrcmp(name, BAD_CAST "Id") == 0) {
-        context->item->item_id->id = (char*) xmlStrndup(value, end - value);
+        id = xmlStrndup(value, end - value);
       } else if(xmlStrcmp(name, BAD_CAST "ChangeKey") == 0) {
-        context->item->item_id->change_key = (char*) xmlStrndup(value, end - value);
+        change_key = xmlStrndup(value, end - value);
       }
       /* TODO warn for unknown attributes */
     }
+    oxws_type_item_set_item_id_fields(context->item, (char*)id, (char*)change_key);
+    if(id != NULL) xmlFree(id);
+    if(change_key != NULL) xmlFree(change_key);
     context->item_node_depth++;
 
   } else if((context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE ||
@@ -243,6 +246,7 @@ void oxws_list_sax_handler_start_element_ns(void* user_data,
      xmlStrcmp(ns_uri, OXWS_XML_NS_EXCH_TYPES) == 0 &&
      xmlStrcmp(localname, BAD_CAST "Subject") == 0) {
     /* TODO check item */
+    oxws_type_item_set_subject(context->item, NULL);
     context->prev_state = context->state;
     context->state = OXWS_LIST_SAX_CONTEXT_STATE_ITEM_SUBJECT;
     context->item_node_depth++;
@@ -308,14 +312,7 @@ void oxws_list_sax_handler_characters(void* user_data, const xmlChar* chars, int
 
   if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_ITEM_SUBJECT) {
     /* TODO check item */
-    xmlChar* subject = (xmlChar*) context->item->subject;
-    if(subject) {
-      if(length > 0)
-        subject = xmlStrncat(subject, chars, length);
-    } else {
-      subject = xmlStrndup(chars, length);
-    }
-    context->item->subject = (char*) subject;
+    oxws_type_item_append_to_subject_len(context->item, (const char*) chars, length);
   }
 }
 

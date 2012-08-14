@@ -41,7 +41,9 @@ extern "C" {
 #include <stdint.h>
 #include <time.h>
 
+#include <libetpan/oxws_types.h>
 #include <libetpan/carray.h>
+#include <libetpan/mmapstring.h>
 
 
 /*
@@ -92,6 +94,10 @@ typedef struct oxws_type_item_or_folder_id oxws_type_item_or_folder_id;
 typedef struct oxws_type_item_or_folder_id oxws_type_item_id;
 typedef struct oxws_type_item_or_folder_id oxws_type_folder_id;
 
+oxws_type_item_id* oxws_type_item_id_new(const char* id, const char* change_key);
+
+oxws_type_folder_id* oxws_type_folder_id_new(const char* id, const char* change_key);
+
 /*
   oxws_type_item_id_free()
 
@@ -131,10 +137,18 @@ typedef enum oxws_type_body_type oxws_type_body_type;
   Represents the BodyType.
 */
 struct oxws_type_body {
-  char* string;
+  MMAPString* string;
   oxws_type_body_type body_type;
 };
 typedef struct oxws_type_body oxws_type_body;
+
+oxws_type_body* oxws_type_body_new(const char* string, oxws_type_body_type body_type);
+oxws_type_body* oxws_type_body_new_len(const char* string, size_t length, oxws_type_body_type body_type);
+
+void oxws_type_body_free(oxws_type_body* body);
+
+oxws_result oxws_type_body_append(oxws_type_body* body, const char* string);
+oxws_result oxws_type_body_append_len(oxws_type_body* body, const char* string, size_t length);
 
 
 /*
@@ -206,7 +220,7 @@ struct oxws_type_item {
   oxws_type_item_id* item_id;
   oxws_type_folder_id* parent_folder_id;
   /* misssing: ItemClass */
-  char* subject;
+  MMAPString* subject;
   /* missing: Sensitivity */
   oxws_type_body* body;
   /* missing: Attachments */
@@ -237,6 +251,10 @@ struct oxws_type_item {
 };
 typedef struct oxws_type_item oxws_type_item;
 
+oxws_type_item* oxws_type_item_new();
+
+oxws_result oxws_type_item_init(oxws_type_item* item);
+
 /*
   oxws_type_item_free()
 
@@ -259,6 +277,34 @@ void oxws_type_item_free(oxws_type_item* item);
   @see oxws_type_item_free()
 */
 void oxws_type_item_array_free(carray* array);
+
+oxws_result oxws_type_item_set_item_id(oxws_type_item* item, oxws_type_item_id* id);
+
+oxws_result oxws_type_item_set_item_id_fields(oxws_type_item* item, const char* id, const char* change_key);
+
+oxws_result oxws_type_item_set_parent_folder_id(oxws_type_item* item, oxws_type_folder_id* id);
+
+oxws_result oxws_type_item_set_parent_folder_id_fields(oxws_type_item* item, const char* id, const char* change_key);
+
+oxws_result oxws_type_item_set_subject(oxws_type_item* item, const char* string);
+oxws_result oxws_type_item_set_subject_len(oxws_type_item* item, const char* string, size_t length);
+
+oxws_result oxws_type_item_append_to_subject(oxws_type_item* item, const char* string);
+oxws_result oxws_type_item_append_to_subject_len(oxws_type_item* item, const char* string, size_t length);
+
+oxws_result oxws_type_item_set_body(oxws_type_item* item, oxws_type_body* body);
+
+oxws_result oxws_type_item_set_body_fields(oxws_type_item* item, const char* string, oxws_type_body_type body_type);
+oxws_result oxws_type_item_set_body_fields_len(oxws_type_item* item, const char* string, size_t length, oxws_type_body_type body_type);
+
+oxws_result oxws_type_item_append_to_body(oxws_type_item* item, const char* string);
+oxws_result oxws_type_item_append_to_body_len(oxws_type_item* item, const char* string, size_t length);
+
+oxws_result oxws_type_item_set_date_time_received(oxws_type_item* item, time_t* date_time_received);
+
+oxws_result oxws_type_item_set_size(oxws_type_item* item, oxws_type_optional_int32 size);
+
+oxws_result oxws_type_item_set_date_time_sent(oxws_type_item* item, time_t* date_time_sent);
 
 
 /*
