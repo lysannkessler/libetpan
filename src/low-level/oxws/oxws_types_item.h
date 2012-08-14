@@ -44,8 +44,6 @@ extern "C" {
 #include <libetpan/carray.h>
 
 
-/* generic types */
-
 /*
   oxws_type_optional_int32
 
@@ -69,8 +67,6 @@ enum oxws_type_optional_boolean {
 typedef enum oxws_type_optional_boolean oxws_type_optional_boolean;
 
 
-/* structures */
-
 /*
   enum oxws_type_item_class
 
@@ -81,6 +77,7 @@ enum oxws_type_item_class {
   OXWS_TYPE_ITEM_CLASS_MESSAGE, /* oxws_type_message */
 };
 typedef enum oxws_type_item_class oxws_type_item_class;
+
 
 /*
   struct oxws_type_item_or_folder_id
@@ -94,6 +91,25 @@ struct oxws_type_item_or_folder_id {
 typedef struct oxws_type_item_or_folder_id oxws_type_item_or_folder_id;
 typedef struct oxws_type_item_or_folder_id oxws_type_item_id;
 typedef struct oxws_type_item_or_folder_id oxws_type_folder_id;
+
+/*
+  oxws_type_item_id_free()
+
+  Release given item id object.
+
+  @param id [required] object to release
+*/
+void oxws_type_item_id_free(oxws_type_item_id* id);
+
+/*
+  oxws_type_folder_id_free()
+
+  Release given folder id object.
+
+  @param id [required] object to release
+*/
+void oxws_type_folder_id_free(oxws_type_folder_id* id);
+
 
 /*
   enum oxws_type_body_type
@@ -120,6 +136,7 @@ struct oxws_type_body {
 };
 typedef struct oxws_type_body oxws_type_body;
 
+
 /*
   enum oxws_type_mailbox_type.
 
@@ -137,6 +154,7 @@ enum oxws_type_mailbox_type {
 };
 typedef enum oxws_type_mailbox_type oxws_type_mailbox_type;
 
+
 /*
   struct oxws_type_email_address
 
@@ -150,6 +168,28 @@ struct oxws_type_email_address {
   oxws_type_item_id* item_id;
 };
 typedef struct oxws_type_email_address oxws_type_email_address;
+
+/*
+  oxws_type_email_address_free()
+
+  Release given email address object.
+
+  @param address [required] object to release
+*/
+void oxws_type_email_address_free(oxws_type_email_address* address);
+
+/*
+  oxws_type_email_address_array_free()
+
+  Release given array of email address objects. This also releases all contained
+  email address objects using oxws_type_email_address_free().
+
+  @param array [required] array to release
+
+  @see oxws_type_email_address_free()
+*/
+void oxws_type_email_address_array_free(carray* array);
+
 
 /*
   struct oxws_type_item
@@ -198,6 +238,30 @@ struct oxws_type_item {
 typedef struct oxws_type_item oxws_type_item;
 
 /*
+  oxws_type_item_free()
+
+  Release given item object. It will determine the item's class using the
+  item_class property and release all class-specific properties along with the
+  common item properties.
+
+  @param item [required] object to release
+*/
+void oxws_type_item_free(oxws_type_item* item);
+
+/*
+  oxws_type_item_array_free()
+
+  Release given array of item objects. This also releases all contained
+  item objects using oxws_type_item_free().
+
+  @param array [required] array to release
+
+  @see oxws_type_item_free()
+*/
+void oxws_type_item_array_free(carray* array);
+
+
+/*
   struct oxws_type_message
 
   Represents the MessageType.
@@ -225,71 +289,6 @@ struct oxws_type_message {
   /* missing: ReceivedRepresenting */
 };
 typedef struct oxws_type_message oxws_type_message;
-
-
-/* functions */
-
-/*
-  oxws_type_item_id_free()
-
-  Release given item id object.
-
-  @param id [required] object to release
-*/
-void oxws_type_item_id_free(oxws_type_item_id* id);
-
-/*
-  oxws_type_folder_id_free()
-
-  Release given folder id object.
-
-  @param id [required] object to release
-*/
-void oxws_type_folder_id_free(oxws_type_folder_id* id);
-
-/*
-  oxws_type_email_address_free()
-
-  Release given email address object.
-
-  @param address [required] object to release
-*/
-void oxws_type_email_address_free(oxws_type_email_address* address);
-
-/*
-  oxws_type_email_address_array_free()
-
-  Release given array of email address objects. This also releases all contained
-  email address objects using oxws_type_email_address_free().
-
-  @param array [required] array to release
-
-  @see oxws_type_email_address_free()
-*/
-void oxws_type_email_address_array_free(carray* array);
-
-/*
-  oxws_type_item_free()
-
-  Release given item object. It will determine the item's class using the
-  item_class property and release all class-specific properties along with the
-  common item properties.
-
-  @param item [required] object to release
-*/
-void oxws_type_item_free(oxws_type_item* item);
-
-/*
-  oxws_type_item_array_free()
-
-  Release given array of item objects. This also releases all contained
-  item objects using oxws_type_item_free().
-
-  @param array [required] array to release
-
-  @see oxws_type_item_free()
-*/
-void oxws_type_item_array_free(carray* array);
 
 
 #ifdef __cplusplus
