@@ -46,6 +46,10 @@
 #include <libxml/parser.h>
 
 
+#define OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, expected_ns_suffix, expected_name) \
+  (xmlStrcmp(ns_uri, OXWS_XML_NS_##expected_ns_suffix) == 0 && xmlStrcmp(localname, BAD_CAST expected_name) == 0)
+
+
 oxws_result oxws_list(oxws* oxws,
         oxws_distinguished_folder_id distfolder_id, const char* folder_id,
         int count, carray** list) {
@@ -195,14 +199,13 @@ void oxws_list_sax_handler_start_element_ns(void* user_data,
   /* TODO m:FindItemResponseMessage, m:ResponseCode, m:RootFolder,
           multiple response messages */
   if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_START_DOCUMENT &&
-     xmlStrcmp(ns_uri, OXWS_XML_NS_EXCH_TYPES) == 0 &&
-     xmlStrcmp(localname, BAD_CAST "Items") == 0) {
+     OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "Items")) {
     /* TODO check items_node_depth */
     context->state = OXWS_LIST_SAX_CONTEXT_STATE_ITEMS;
 
   } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_ITEMS) {
     if(context->item) { /* TODO warn */ }
-    if(xmlStrcmp(ns_uri, OXWS_XML_NS_EXCH_TYPES) == 0 && xmlStrcmp(localname, BAD_CAST "Message") == 0) {
+    if(OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "Message")) {
       context->state = OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE;
       context->item = (oxws_type_item*) oxws_type_message_new();
     } else {
@@ -211,10 +214,8 @@ void oxws_list_sax_handler_start_element_ns(void* user_data,
     }
     context->item_node_depth = 1;
 
-  } else if((context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE ||
-     context->state == OXWS_LIST_SAX_CONTEXT_STATE_ITEM) &&
-     context->item_node_depth == 1 &&
-     xmlStrcmp(ns_uri, OXWS_XML_NS_EXCH_TYPES) == 0 && xmlStrcmp(localname, BAD_CAST "ItemId") == 0) {
+  } else if(OXWS_LIST_SAX_IS_CONTEXT_STATE_ANY_ITEM_TOP_LEVEL(context) &&
+     OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "ItemId")) {
     /* TODO check item */
     xmlChar* id = NULL, *change_key = NULL;
     for(attr_index = 0; attr_index < nb_attributes; attr_index++) {
@@ -233,10 +234,8 @@ void oxws_list_sax_handler_start_element_ns(void* user_data,
     if(change_key != NULL) xmlFree(change_key);
     context->item_node_depth++;
 
-  } else if((context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE ||
-     context->state == OXWS_LIST_SAX_CONTEXT_STATE_ITEM) &&
-     context->item_node_depth == 1 &&
-     xmlStrcmp(ns_uri, OXWS_XML_NS_EXCH_TYPES) == 0 && xmlStrcmp(localname, BAD_CAST "Subject") == 0) {
+  } else if(OXWS_LIST_SAX_IS_CONTEXT_STATE_ANY_ITEM_TOP_LEVEL(context) &&
+     OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "Subject")) {
     /* TODO check item */
     if(context->string != NULL) mmap_string_free(context->string); /* TODO warn */
     context->string = mmap_string_sized_new(50);
@@ -244,10 +243,8 @@ void oxws_list_sax_handler_start_element_ns(void* user_data,
     context->state = OXWS_LIST_SAX_CONTEXT_STATE_ITEM_SUBJECT;
     context->item_node_depth++;
 
-  } else if((context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE ||
-     context->state == OXWS_LIST_SAX_CONTEXT_STATE_ITEM) &&
-     context->item_node_depth == 1 &&
-     xmlStrcmp(ns_uri, OXWS_XML_NS_EXCH_TYPES) == 0 && xmlStrcmp(localname, BAD_CAST "Size") == 0) {
+  } else if(OXWS_LIST_SAX_IS_CONTEXT_STATE_ANY_ITEM_TOP_LEVEL(context) &&
+     OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "Size")) {
     /* TODO check item */
     if(context->string != NULL) mmap_string_free(context->string); /* TODO warn */
     context->string = mmap_string_sized_new(5);
@@ -273,11 +270,11 @@ void oxws_list_sax_handler_end_element_ns(void* user_data,
   if(context->state == OXWS_LIST_SAX_CONTEXT_STATE__ERROR) return;
 
   if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_ITEMS &&
-     xmlStrcmp(ns_uri, OXWS_XML_NS_EXCH_TYPES) == 0 && xmlStrcmp(localname, BAD_CAST "Items") == 0) {
+     OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "Items")) {
     context->state = OXWS_LIST_SAX_CONTEXT_STATE_START_DOCUMENT;
 
   } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_ITEM_SUBJECT &&
-     xmlStrcmp(ns_uri, OXWS_XML_NS_EXCH_TYPES) == 0 && xmlStrcmp(localname, BAD_CAST "Subject") == 0) {
+     OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "Subject")) {
     /* TODO check item and string */
     oxws_type_item_set_subject_mmap(context->item, context->string);
     /* TODO warn if result != NO_ERROR */
@@ -286,7 +283,7 @@ void oxws_list_sax_handler_end_element_ns(void* user_data,
     context->prev_state = OXWS_LIST_SAX_CONTEXT_STATE__NONE;
 
   } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_ITEM_SIZE &&
-     xmlStrcmp(ns_uri, OXWS_XML_NS_EXCH_TYPES) == 0 && xmlStrcmp(localname, BAD_CAST "Size") == 0) {
+     OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "Size")) {
     /* TODO check context and string */
     int size = atoi(context->string->str);
     oxws_type_item_set_size(context->item, size);
@@ -296,7 +293,7 @@ void oxws_list_sax_handler_end_element_ns(void* user_data,
     context->prev_state = OXWS_LIST_SAX_CONTEXT_STATE__NONE;
 
   } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_START_DOCUMENT &&
-     xmlStrcmp(ns_uri, OXWS_XML_NS_SOAP) == 0 && xmlStrcmp(localname, BAD_CAST "Envelope") == 0) {
+     OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, SOAP, "Envelope")) {
     /* the end_document callback does not seem to get called. We emulate it
        using the end of the SOAP Envelope tag */
     oxws_list_sax_handler_end_document(user_data);

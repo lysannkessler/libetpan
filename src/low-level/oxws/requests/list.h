@@ -78,6 +78,13 @@ enum oxws_list_sax_context_state {
 };
 typedef enum oxws_list_sax_context_state oxws_list_sax_context_state;
 
+#define OXWS_LIST_SAX_IS_CONTEXT_STATE_ANY_ITEM(context) \
+  (context->state == OXWS_LIST_SAX_CONTEXT_STATE_ITEM || \
+   context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE)
+
+#define OXWS_LIST_SAX_IS_CONTEXT_STATE_ANY_ITEM_TOP_LEVEL(context) \
+  (OXWS_LIST_SAX_IS_CONTEXT_STATE_ANY_ITEM(context) && context->item_node_depth == 1)
+
 /*
   struct oxws_list_sax_context
 
