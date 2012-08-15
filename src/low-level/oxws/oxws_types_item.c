@@ -173,6 +173,50 @@ oxws_result oxws_type_body_append_len(oxws_type_body* body, const char* string, 
 }
 
 
+oxws_type_email_address* oxws_type_email_address_new(const char* name, const char* email_address,
+        const char* routing_type, oxws_type_mailbox_type mailbox_type, oxws_type_item_id* item_id) {
+
+  oxws_type_email_address* result = (oxws_type_email_address*) calloc(1, sizeof(oxws_type_email_address));
+  if(result != NULL) {
+    result->mailbox_type = mailbox_type;
+    result->item_id = item_id;
+
+    /* copy name */
+    if(name != NULL) {
+      size_t length = strlen(name) + 1;
+      result->name = (char*) malloc(length);
+      if(result->name == NULL) {
+        oxws_type_email_address_free(result);
+        result = NULL;
+      }
+      memcpy(result->name, name, length);
+    }
+
+    /* copy email_address */
+    if(result != NULL && email_address != NULL) {
+      size_t length = strlen(email_address) + 1;
+      result->email_address = (char*) malloc(length);
+      if(result->email_address == NULL) {
+        oxws_type_email_address_free(result);
+        result = NULL;
+      }
+      memcpy(result->email_address, email_address, length);
+    }
+
+    /* copy routing_type */
+    if(result != NULL && routing_type != NULL) {
+      size_t length = strlen(routing_type) + 1;
+      result->routing_type = (char*) malloc(length);
+      if(result->routing_type == NULL) {
+        oxws_type_email_address_free(result);
+        result = NULL;
+      }
+      memcpy(result->routing_type, routing_type, length);
+    }
+  }
+  return result;
+}
+
 void oxws_type_email_address_free(oxws_type_email_address* address) {
   if(!address) return;
 
@@ -186,6 +230,26 @@ void oxws_type_email_address_free(oxws_type_email_address* address) {
 
 void oxws_type_email_address_array_free(carray* array) {
   return oxws_type_special_array_free(array, (oxws_entry_free) oxws_type_email_address_free);
+}
+
+oxws_result oxws_type_email_address_set_name(oxws_type_email_address* address, const char* name) {
+  if(address == NULL) return OXWS_ERROR_INVALID_PARAMETER;
+
+  if(name == NULL) {
+    /* free */
+    if(address->name != NULL) {
+      free(address->name);
+      address->name = NULL;
+    }
+  } else {
+    /* copy */
+    size_t length = strlen(name) + 1;
+    address->name = realloc(address->name, length);
+    if(address->name == NULL) return OXWS_ERROR_INTERNAL;
+    memcpy(address->name, name, length);
+  }
+
+  return OXWS_NO_ERROR;
 }
 
 
@@ -472,6 +536,36 @@ oxws_result oxws_type_message_init(oxws_type_message* message) {
   message->item.item_class = OXWS_TYPE_ITEM_CLASS_MESSAGE;
 
   return OXWS_NO_ERROR;
+}
+
+oxws_result oxws_type_message_set_from(oxws_type_message* message, oxws_type_email_address* from) {
+  if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;
+
+  if(message->from == from) return OXWS_NO_ERROR;
+  oxws_type_email_address_free(message->from);
+  message->from = from;
+
+  return OXWS_NO_ERROR;
+}
+
+oxws_result oxws_type_message_set_from_fields(oxws_type_message* message, const char* name, const char* email_address,
+        const char* routing_type, oxws_type_mailbox_type mailbox_type, oxws_type_item_id* item_id) {
+
+  oxws_type_email_address* from = oxws_type_email_address_new(name, email_address, routing_type, mailbox_type, item_id);
+  if(from == NULL)
+    return OXWS_ERROR_INTERNAL;
+  else
+    return oxws_type_message_set_from(message, from);
+}
+
+oxws_result oxws_type_message_set_from_name(oxws_type_message* message, const char* name) {
+  if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;
+
+  if(message->from == NULL) {
+    return oxws_type_message_set_from_fields(message, name, NULL, NULL, OXWS_TYPE_MAILBOX_TYPE__NOT_SET, NULL);
+  } else {
+    return oxws_type_email_address_set_name(message->from, name);
+  }
 }
 
 oxws_result oxws_type_message_set_is_read(oxws_type_message* message, oxws_type_optional_boolean is_read) {

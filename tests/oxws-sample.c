@@ -57,16 +57,23 @@ oxws_result list_items(oxws* oxws, oxws_distinguished_folder_id folder_id) {
   unsigned int i;
   for(i = 0; i < items->len; i++) {
     oxws_type_item* item = carray_get(items, i);
-    printf(" - %s\n", item->subject ? item->subject->str : NULL);
+    printf("- %s\n", item->subject ? item->subject->str : NULL);
     if(item->size != OXWS_TYPE_OPTIONAL_INT32__NOT_SET)
-      printf("   * size: %d\n", item->size);
+      printf("  - size: %d\n", item->size);
 
     if(OXWS_TYPE_ITEM_IS_MESSAGE(item)) {
       oxws_type_message* message = (oxws_type_message*) item;
+
       if(message->is_read == OXWS_TYPE_OPTIONAL_BOOLEAN_TRUE) {
-        puts("   * is_read: true");
+        puts("  - is_read: true");
       } else if(message->is_read == OXWS_TYPE_OPTIONAL_BOOLEAN_FALSE) {
-        puts("   * is_read: false");
+        puts("  - is_read: false");
+      }
+
+      if(message->from != NULL) {
+        puts("  - from");
+        if(message->from->name != NULL)
+          printf("    - name: %s\n", message->from->name);
       }
     }
   }

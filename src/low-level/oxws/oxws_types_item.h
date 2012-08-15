@@ -186,6 +186,9 @@ struct oxws_type_email_address {
 };
 typedef struct oxws_type_email_address oxws_type_email_address;
 
+oxws_type_email_address* oxws_type_email_address_new(const char* name, const char* email_address,
+        const char* routing_type, oxws_type_mailbox_type mailbox_type, oxws_type_item_id* item_id);
+
 /*
   oxws_type_email_address_free()
 
@@ -206,6 +209,8 @@ void oxws_type_email_address_free(oxws_type_email_address* address);
   @see oxws_type_email_address_free()
 */
 void oxws_type_email_address_array_free(carray* array);
+
+oxws_result oxws_type_email_address_set_name(oxws_type_email_address* address, const char* name);
 
 
 /*
@@ -344,6 +349,11 @@ typedef struct oxws_type_message oxws_type_message;
 oxws_type_message* oxws_type_message_new();
 
 oxws_result oxws_type_message_init(oxws_type_message* message);
+
+oxws_result oxws_type_message_set_from(oxws_type_message* message, oxws_type_email_address* from);
+oxws_result oxws_type_message_set_from_fields(oxws_type_message* message, const char* name, const char* email_address,
+        const char* routing_type, oxws_type_mailbox_type mailbox_type, oxws_type_item_id* item_id);
+oxws_result oxws_type_message_set_from_name(oxws_type_message* message, const char* name);
 
 oxws_result oxws_type_message_set_is_read(oxws_type_message* message, oxws_type_optional_boolean is_read);
 
