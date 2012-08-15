@@ -80,6 +80,9 @@ enum oxws_type_item_class {
 };
 typedef enum oxws_type_item_class oxws_type_item_class;
 
+#define OXWS_TYPE_ITEM_IS_MESSAGE(item) \
+  ((item)->item_class == OXWS_TYPE_ITEM_CLASS_MESSAGE)
+
 
 /*
   struct oxws_type_item_or_folder_id
