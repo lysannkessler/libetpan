@@ -252,6 +252,62 @@ oxws_result oxws_type_email_address_set_name(oxws_type_email_address* address, c
   return OXWS_NO_ERROR;
 }
 
+oxws_result oxws_type_email_address_set_email_address(oxws_type_email_address* address, const char* email_address) {
+  if(address == NULL) return OXWS_ERROR_INVALID_PARAMETER;
+
+  if(email_address == NULL) {
+    /* free */
+    if(address->email_address != NULL) {
+      free(address->email_address);
+      address->email_address = NULL;
+    }
+  } else {
+    /* copy */
+    size_t length = strlen(email_address) + 1;
+    address->email_address = realloc(address->email_address, length);
+    if(address->email_address == NULL) return OXWS_ERROR_INTERNAL;
+    memcpy(address->email_address, email_address, length);
+  }
+
+  return OXWS_NO_ERROR;
+}
+
+oxws_result oxws_type_email_address_set_routing_type(oxws_type_email_address* address, const char* routing_type) {
+  if(address == NULL) return OXWS_ERROR_INVALID_PARAMETER;
+
+  if(routing_type == NULL) {
+    /* free */
+    if(address->routing_type != NULL) {
+      free(address->routing_type);
+      address->routing_type = NULL;
+    }
+  } else {
+    /* copy */
+    size_t length = strlen(routing_type) + 1;
+    address->routing_type = realloc(address->routing_type, length);
+    if(address->routing_type == NULL) return OXWS_ERROR_INTERNAL;
+    memcpy(address->routing_type, routing_type, length);
+  }
+
+  return OXWS_NO_ERROR;
+}
+
+oxws_result oxws_type_email_address_set_mailbox_type(oxws_type_email_address* address, oxws_type_mailbox_type mailbox_type) {
+  if(address == NULL) return OXWS_ERROR_INVALID_PARAMETER;
+  address->mailbox_type = mailbox_type;
+  return OXWS_NO_ERROR;
+}
+
+oxws_result oxws_type_email_address_set_item_id(oxws_type_email_address* address, oxws_type_item_id* id) {
+  if(address == NULL) return OXWS_ERROR_INVALID_PARAMETER;
+
+  if(address->item_id == id) return OXWS_NO_ERROR;
+  oxws_type_item_id_free(address->item_id);
+  address->item_id = id;
+
+  return OXWS_NO_ERROR;
+}
+
 
 oxws_type_item* oxws_type_item_new() {
   oxws_type_item* item = (oxws_type_item*) calloc(1, sizeof(oxws_type_item));
@@ -560,13 +616,56 @@ oxws_result oxws_type_message_set_from_fields(oxws_type_message* message, const 
 
 oxws_result oxws_type_message_set_from_name(oxws_type_message* message, const char* name) {
   if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-
   if(message->from == NULL) {
     return oxws_type_message_set_from_fields(message, name, NULL, NULL, OXWS_TYPE_MAILBOX_TYPE__NOT_SET, NULL);
   } else {
     return oxws_type_email_address_set_name(message->from, name);
   }
 }
+oxws_result oxws_type_message_set_from_email_address(oxws_type_message* message, const char* email_address) {
+  if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;
+  if(message->from == NULL) {
+    return oxws_type_message_set_from_fields(message, NULL, email_address, NULL, OXWS_TYPE_MAILBOX_TYPE__NOT_SET, NULL);
+  } else {
+    return oxws_type_email_address_set_email_address(message->from, email_address);
+  }
+}
+oxws_result oxws_type_message_set_from_routing_type(oxws_type_message* message, const char* routing_type) {
+  if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;
+  if(message->from == NULL) {
+    return oxws_type_message_set_from_fields(message, NULL, NULL, routing_type, OXWS_TYPE_MAILBOX_TYPE__NOT_SET, NULL);
+  } else {
+    return oxws_type_email_address_set_routing_type(message->from, routing_type);
+  }
+}
+oxws_result oxws_type_message_set_from_mailbox_type(oxws_type_message* message, oxws_type_mailbox_type mailbox_type) {
+  if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;
+  if(message->from == NULL) {
+    return oxws_type_message_set_from_fields(message, NULL, NULL, NULL, mailbox_type, NULL);
+  } else {
+    return oxws_type_email_address_set_mailbox_type(message->from, mailbox_type);
+  }
+}
+
+oxws_result oxws_type_message_set_from_item_id(oxws_type_message* message, oxws_type_item_id* id) {
+  if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;
+
+  if(message->from == NULL) {
+    return oxws_type_message_set_from_fields(message, NULL, NULL, NULL, OXWS_TYPE_MAILBOX_TYPE__NOT_SET, id);
+  } else {
+    return oxws_type_email_address_set_item_id(message->from, id);
+  }
+
+  return OXWS_NO_ERROR;
+}
+oxws_result oxws_type_message_set_from_item_id_fields(oxws_type_message* message, const char* id, const char* change_key) {
+  oxws_type_item_id* item_id = oxws_type_item_id_new(id, change_key);
+  if(item_id == NULL)
+    return OXWS_ERROR_INTERNAL;
+  else
+    return oxws_type_message_set_from_item_id(message, item_id);
+}
+
 
 oxws_result oxws_type_message_set_is_read(oxws_type_message* message, oxws_type_optional_boolean is_read) {
   if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;

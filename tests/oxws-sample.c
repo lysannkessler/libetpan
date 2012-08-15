@@ -71,9 +71,13 @@ oxws_result list_items(oxws* oxws, oxws_distinguished_folder_id folder_id) {
       }
 
       if(message->from != NULL) {
-        puts("  - from");
-        if(message->from->name != NULL)
-          printf("    - name: %s\n", message->from->name);
+        if(message->from->name != NULL && message->from->email_address != NULL) {
+          printf("  - from: %s <%s>\n", message->from->name, message->from->email_address);
+        } else if(message->from->name != NULL) {
+          printf("  - from: %s\n", message->from->name);
+        } else if(message->from->email_address != NULL) {
+          printf("  - from: <%s>\n", message->from->email_address);
+        }
       }
     }
   }

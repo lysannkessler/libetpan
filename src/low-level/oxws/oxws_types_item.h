@@ -211,6 +211,9 @@ void oxws_type_email_address_free(oxws_type_email_address* address);
 void oxws_type_email_address_array_free(carray* array);
 
 oxws_result oxws_type_email_address_set_name(oxws_type_email_address* address, const char* name);
+oxws_result oxws_type_email_address_set_email_address(oxws_type_email_address* address, const char* email_address);
+oxws_result oxws_type_email_address_set_routing_type(oxws_type_email_address* address, const char* routing_type);
+oxws_result oxws_type_email_address_set_mailbox_type(oxws_type_email_address* address, oxws_type_mailbox_type mailbox_type);
 
 
 /*
@@ -287,11 +290,9 @@ void oxws_type_item_free(oxws_type_item* item);
 void oxws_type_item_array_free(carray* array);
 
 oxws_result oxws_type_item_set_item_id(oxws_type_item* item, oxws_type_item_id* id);
-
 oxws_result oxws_type_item_set_item_id_fields(oxws_type_item* item, const char* id, const char* change_key);
 
 oxws_result oxws_type_item_set_parent_folder_id(oxws_type_item* item, oxws_type_folder_id* id);
-
 oxws_result oxws_type_item_set_parent_folder_id_fields(oxws_type_item* item, const char* id, const char* change_key);
 
 oxws_result oxws_type_item_set_subject_mmap(oxws_type_item* item, MMAPString* string);
@@ -354,6 +355,11 @@ oxws_result oxws_type_message_set_from(oxws_type_message* message, oxws_type_ema
 oxws_result oxws_type_message_set_from_fields(oxws_type_message* message, const char* name, const char* email_address,
         const char* routing_type, oxws_type_mailbox_type mailbox_type, oxws_type_item_id* item_id);
 oxws_result oxws_type_message_set_from_name(oxws_type_message* message, const char* name);
+oxws_result oxws_type_message_set_from_email_address(oxws_type_message* message, const char* email_address);
+oxws_result oxws_type_message_set_from_routing_type(oxws_type_message* message, const char* routing_type);
+oxws_result oxws_type_message_set_from_mailbox_type(oxws_type_message* message, oxws_type_mailbox_type mailbox_type);
+oxws_result oxws_type_message_set_from_item_id(oxws_type_message* message, oxws_type_item_id* id);
+oxws_result oxws_type_message_set_from_item_id_fields(oxws_type_message* message, const char* id, const char* change_key);
 
 oxws_result oxws_type_message_set_is_read(oxws_type_message* message, oxws_type_optional_boolean is_read);
 
