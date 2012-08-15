@@ -68,10 +68,15 @@ enum oxws_list_sax_context_state {
   OXWS_LIST_SAX_CONTEXT_STATE_ITEM,
   /* Inside a message item */
   OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE,
+
   /* Inside the Size of any item */
   OXWS_LIST_SAX_CONTEXT_STATE_ITEM_SIZE,
   /* Inside the Subject tag of any item */
   OXWS_LIST_SAX_CONTEXT_STATE_ITEM_SUBJECT,
+
+  /* Inside the IsRead tag of a message */
+  OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_IS_READ,
+
   /* End of document has been parsed, used to identify whether the response was
      parsed completely */
   OXWS_LIST_SAX_CONTEXT_STATE_END_DOCUMENT,

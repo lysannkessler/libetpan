@@ -247,9 +247,18 @@ void oxws_list_sax_handler_start_element_ns(void* user_data,
      OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "Size")) {
     /* TODO check item */
     if(context->string != NULL) mmap_string_free(context->string); /* TODO warn */
-    context->string = mmap_string_sized_new(5);
+    context->string = mmap_string_sized_new(6); /* assume 6 digit number, will expand on demand */
     context->prev_state = context->state;
     context->state = OXWS_LIST_SAX_CONTEXT_STATE_ITEM_SIZE;
+    context->item_node_depth++;
+
+  } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE && context->item_node_depth == 1 &&
+     OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "IsRead")) {
+    /* TODO check item and item class */
+    if(context->string != NULL) mmap_string_free(context->string); /* TODO warn */
+    context->string = mmap_string_sized_new(5); /* true / false / 1 / 0 */
+    context->prev_state = context->state;
+    context->state = OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_IS_READ;
     context->item_node_depth++;
 
   } else if(context->item_node_depth > 0) {
@@ -287,6 +296,22 @@ void oxws_list_sax_handler_end_element_ns(void* user_data,
     /* TODO check context and string */
     int size = atoi(context->string->str);
     oxws_type_item_set_size(context->item, size);
+    /* TODO warn if result != NO_ERROR */
+    mmap_string_free(context->string); context->string = NULL;
+    context->state = context->prev_state;
+    context->prev_state = OXWS_LIST_SAX_CONTEXT_STATE__NONE;
+
+  } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_IS_READ &&
+     OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "IsRead")) {
+    /* TODO check context and string */
+    const char* is_read = context->string->str;
+    if(strcmp(is_read, "true") == 0 || strcmp(is_read, "1") == 0) {
+      oxws_type_message_set_is_read((oxws_type_message*) context->item, OXWS_TYPE_OPTIONAL_BOOLEAN_TRUE);
+    } else if(strcmp(is_read, "false") == 0 || strcmp(is_read, "0") == 0) {
+      oxws_type_message_set_is_read((oxws_type_message*) context->item, OXWS_TYPE_OPTIONAL_BOOLEAN_FALSE);
+    } else {
+      /* TODO warn */
+    }
     /* TODO warn if result != NO_ERROR */
     mmap_string_free(context->string); context->string = NULL;
     context->state = context->prev_state;
