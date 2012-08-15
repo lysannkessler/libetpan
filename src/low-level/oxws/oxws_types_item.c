@@ -474,6 +474,12 @@ oxws_result oxws_type_message_init(oxws_type_message* message) {
   return OXWS_NO_ERROR;
 }
 
+oxws_result oxws_type_message_set_is_read(oxws_type_message* message, oxws_type_optional_boolean is_read) {
+  if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;
+  message->is_read = is_read;
+  return OXWS_NO_ERROR;
+}
+
 
 void oxws_type_special_array_free(carray* array, oxws_entry_free entry_free) {
   if(!array) return;

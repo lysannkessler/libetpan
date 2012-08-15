@@ -342,6 +342,8 @@ oxws_type_message* oxws_type_message_new();
 
 oxws_result oxws_type_message_init(oxws_type_message* message);
 
+oxws_result oxws_type_message_set_is_read(oxws_type_message* message, oxws_type_optional_boolean is_read);
+
 
 #ifdef __cplusplus
 }
