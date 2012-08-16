@@ -232,3 +232,6 @@ size_t oxws_autodiscover_curl_write_callback(char *ptr, size_t size, size_t nmem
   }
 }
 
+// Local variables:
+// c-basic-offset: 2
+// end:
