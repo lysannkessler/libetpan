@@ -230,7 +230,7 @@ struct oxws_type_item {
   /* missing: MimeContent */
   oxws_type_item_id* item_id;
   oxws_type_folder_id* parent_folder_id;
-  /* misssing: ItemClass */
+  char* item_class;
   MMAPString* subject;
   /* missing: Sensitivity */
   oxws_type_body* body;
@@ -294,6 +294,8 @@ oxws_result oxws_type_item_set_item_id_fields(oxws_type_item* item, const char* 
 
 oxws_result oxws_type_item_set_parent_folder_id(oxws_type_item* item, oxws_type_folder_id* id);
 oxws_result oxws_type_item_set_parent_folder_id_fields(oxws_type_item* item, const char* id, const char* change_key);
+
+oxws_result oxws_type_item_set_item_class(oxws_type_item* item, const char* item_class);
 
 oxws_result oxws_type_item_set_subject_mmap(oxws_type_item* item, MMAPString* string);
 

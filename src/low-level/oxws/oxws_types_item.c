@@ -344,6 +344,7 @@ void oxws_type_item_free_members(oxws_type_item* item) {
 
   oxws_type_item_id_free(item->item_id);
   oxws_type_folder_id_free(item->parent_folder_id);
+  if(item->item_class) free(item->item_class);
   if(item->subject) mmap_string_free(item->subject);
   oxws_type_body_free(item->body);
   if(item->date_time_received) free(item->date_time_received);
@@ -429,6 +430,24 @@ oxws_result oxws_type_item_set_parent_folder_id_fields(oxws_type_item* item, con
     return OXWS_ERROR_INTERNAL;
   else
     return oxws_type_item_set_parent_folder_id(item, folder_id);
+}
+
+oxws_result oxws_type_item_set_item_class(oxws_type_item* item, const char* item_class) {
+  if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
+
+  if(item_class == NULL) {
+    /* free */
+    if(item->item_class) free(item->item_class);
+    item->item_class = NULL;
+  } else {
+    /* copy */
+    size_t length = strlen(item_class) + 1;
+    item->item_class = (char*) malloc(length);
+    if(item->item_class == NULL) return OXWS_ERROR_INTERNAL;
+    memcpy(item->item_class, item_class, length);
+  }
+
+  return OXWS_NO_ERROR;
 }
 
 oxws_result oxws_type_item_set_subject_mmap(oxws_type_item* item, MMAPString* string) {
