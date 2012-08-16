@@ -111,7 +111,7 @@ oxws_result oxws_create_item(oxws* oxws, oxws_type_item* item, oxws_message_disp
   }
 
   xmlNodePtr node_items = xmlNewChild(node_create_item, ns_exch_messages, BAD_CAST "Items", NULL);
-  if(item->item_class == OXWS_TYPE_ITEM_CLASS_MESSAGE) {
+  if(item->class_id == OXWS_TYPE_ITEM_CLASS_MESSAGE) {
     oxws_type_message* message = (oxws_type_message*) item;
     /* build message:
       <t:Message>

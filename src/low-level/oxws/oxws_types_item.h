@@ -70,18 +70,18 @@ typedef enum oxws_type_optional_boolean oxws_type_optional_boolean;
 
 
 /*
-  enum oxws_type_item_class
+  enum oxws_type_item_class_id
 
   class of a oxws_type_item
 */
-enum oxws_type_item_class {
+enum oxws_type_item_class_id {
   OXWS_TYPE_ITEM_CLASS_ITEM, /* any item that does not have an own class */
   OXWS_TYPE_ITEM_CLASS_MESSAGE, /* oxws_type_message */
 };
-typedef enum oxws_type_item_class oxws_type_item_class;
+typedef enum oxws_type_item_class_id oxws_type_item_class_id;
 
 #define OXWS_TYPE_ITEM_IS_MESSAGE(item) \
-  ((item)->item_class == OXWS_TYPE_ITEM_CLASS_MESSAGE)
+  ((item)->class_id == OXWS_TYPE_ITEM_CLASS_MESSAGE)
 
 
 /*
@@ -225,7 +225,7 @@ oxws_result oxws_type_email_address_set_mailbox_type(oxws_type_email_address* ad
   @note TODO incomplete
 */
 struct oxws_type_item {
-  oxws_type_item_class item_class; /* TODO rename to not clash with ItemClass */
+  oxws_type_item_class_id class_id; /* TODO rename to not clash with ItemClass */
 
   /* missing: MimeContent */
   oxws_type_item_id* item_id;
@@ -270,7 +270,7 @@ oxws_result oxws_type_item_init(oxws_type_item* item);
   oxws_type_item_free()
 
   Release given item object. It will determine the item's class using the
-  item_class property and release all class-specific properties along with the
+  class_id property and release all class-specific properties along with the
   common item properties.
 
   @param item [required] object to release

@@ -325,7 +325,7 @@ oxws_type_item* oxws_type_item_new() {
 oxws_result oxws_type_item_init(oxws_type_item* item) {
   if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
 
-  item->item_class = OXWS_TYPE_ITEM_CLASS_ITEM;
+  item->class_id = OXWS_TYPE_ITEM_CLASS_ITEM;
 
   return OXWS_NO_ERROR;
 }
@@ -373,10 +373,10 @@ void oxws_type_message_free_members(oxws_type_message* message) {
 void oxws_type_item_free(oxws_type_item* item) {
   if(!item) return;
 
-  oxws_type_item_class item_class = item->item_class;
+  oxws_type_item_class_id class_id = item->class_id;
   oxws_type_item_free_members(item);
 
-  switch(item_class) {
+  switch(class_id) {
     case OXWS_TYPE_ITEM_CLASS_ITEM:
       /* no-op */
       break;
@@ -589,7 +589,7 @@ oxws_type_message* oxws_type_message_new() {
 oxws_result oxws_type_message_init(oxws_type_message* message) {
   if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;
 
-  message->item.item_class = OXWS_TYPE_ITEM_CLASS_MESSAGE;
+  message->item.class_id = OXWS_TYPE_ITEM_CLASS_MESSAGE;
 
   return OXWS_NO_ERROR;
 }
