@@ -42,6 +42,21 @@ int main(int argc, char ** argv) {
   result = list_items(oxws, OXWS_DISTFOLDER_INBOX);
   check_error(result, "could not list items in inbox");
 
+#if 0
+  /* send message and save it to Sent Items */
+  oxws_type_message* message = oxws_type_message_new();
+  oxws_type_item_set_subject((oxws_type_item*) message, "[libetpan test] test");
+  oxws_type_item_set_body_fields((oxws_type_item*) message,
+          "This is just another email ever sent using libetpan's Exchange implementation.\n" \
+          "You may feel annoyed by now! :P\n\n" \
+          "Cheers,\n  Lysann :)",
+          OXWS_TYPE_BODY_TYPE_TEXT);
+  message->to_recipients = carray_new(3);
+  oxws_type_email_address* address = oxws_type_email_address_new(NULL, argv[1], NULL, OXWS_TYPE_MAILBOX_TYPE__NOT_SET, NULL);
+  carray_add(message->to_recipients, address, NULL);
+  oxws_create_item(oxws, (oxws_type_item*) message, OXWS_MESSAGE_DISPOSITION_SEND_AND_SAVE_COPY, OXWS_DISTFOLDER_SENTITEMS, NULL);
+#endif
+
   /* cleanup */
   oxws_free(oxws);
   return 0;

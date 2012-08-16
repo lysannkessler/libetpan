@@ -200,6 +200,24 @@ enum oxws_distinguished_folder_id {
 typedef enum  oxws_distinguished_folder_id oxws_distinguished_folder_id;
 
 
+enum oxws_message_disposition {
+  /* meta key to allow passing optional message disposition as values */
+  OXWS_MESSAGE_DISPOSITION__NONE = -1,
+  /* meta key to catch invalid values */
+  OXWS_MESSAGE_DISPOSITION__MIN = 0,
+
+  OXWS_MESSAGE_DISPOSITION_SAVE_ONLY = 0,
+  OXWS_MESSAGE_DISPOSITION_SEND_ONLY,
+  OXWS_MESSAGE_DISPOSITION_SEND_AND_SAVE_COPY,
+
+  /* meta key to catch invalid values */
+  OXWS_MESSAGE_DISPOSITION__MAX = OXWS_MESSAGE_DISPOSITION_SEND_AND_SAVE_COPY,
+  /* meta key to iterate all keys */
+  OXWS_MESSAGE_DISPOSITION__COUNT,
+};
+typedef enum oxws_message_disposition oxws_message_disposition;
+
+
 #ifdef __cplusplus
 }
 #endif

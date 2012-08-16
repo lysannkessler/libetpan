@@ -126,6 +126,12 @@ oxws_result oxws_list(oxws* oxws,
         oxws_distinguished_folder_id distfolder_id, const char* folder_id,
         int count, carray** list);
 
+/*
+  @note TODO SendMeetingInvitations attribute
+*/
+LIBETPAN_EXPORT
+oxws_result oxws_create_item(oxws* oxws, oxws_type_item* item, oxws_message_disposition message_disposition,
+        oxws_distinguished_folder_id saved_item_distfolder_id, const char* saved_item_folder_id);
 
 #ifdef __cplusplus
 }

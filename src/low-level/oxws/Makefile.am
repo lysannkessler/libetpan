@@ -46,4 +46,4 @@ noinst_LTLIBRARIES = liboxws.la
 liboxws_la_SOURCES = \
   oxws.c types_internal.c oxws_types_item.c \
   helper.c xml.c \
-  oxws_autodiscover.c oxws_requests.c requests/list.c
+  oxws_autodiscover.c oxws_requests.c requests/list.c requests/create_item.c
