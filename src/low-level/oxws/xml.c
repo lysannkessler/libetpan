@@ -73,6 +73,8 @@ oxws_result oxws_prepare_xml_request_method_node(const char* name,
 
 oxws_result oxws_perform_request_xml(oxws* oxws, xmlNodePtr request_body) {
 
+  /* TODO free request_body in case of an error */
+
   if(oxws == NULL || request_body == NULL)
     return OXWS_ERROR_INVALID_PARAMETER;
   oxws_internal* internal = OXWS_INTERNAL(oxws);

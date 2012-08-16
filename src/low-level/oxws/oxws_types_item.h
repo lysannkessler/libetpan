@@ -180,7 +180,7 @@ typedef enum oxws_type_mailbox_type oxws_type_mailbox_type;
 struct oxws_type_email_address {
   char* name;
   char* email_address;
-  char* routing_type;
+  char* routing_type; /* must be SMTP */
   oxws_type_mailbox_type mailbox_type;
   oxws_type_item_id* item_id;
 };
@@ -225,7 +225,7 @@ oxws_result oxws_type_email_address_set_mailbox_type(oxws_type_email_address* ad
   @note TODO incomplete
 */
 struct oxws_type_item {
-  oxws_type_item_class item_class;
+  oxws_type_item_class item_class; /* TODO rename to not clash with ItemClass */
 
   /* missing: MimeContent */
   oxws_type_item_id* item_id;

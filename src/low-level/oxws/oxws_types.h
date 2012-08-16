@@ -171,9 +171,10 @@ typedef struct oxws oxws;
   identifies the folders that can be accessed by these special keys
 */
 enum oxws_distinguished_folder_id {
-  OXWS_DISTFOLDER__NONE = -1, /* meta key to allow passing optional
-                                     distinguished folder id as values */
-  OXWS_DISTFOLDER__MIN = 0,   /* meta key to catch invalid ids */
+  /* meta key to allow passing optional distinguished folder id as values */
+  OXWS_DISTFOLDER__NONE = -1,
+  /* meta key to catch invalid ids */
+  OXWS_DISTFOLDER__MIN = 0,
 
   OXWS_DISTFOLDER_CALENDAR = 0,
   OXWS_DISTFOLDER_CONTACTS,
@@ -191,8 +192,10 @@ enum oxws_distinguished_folder_id {
   OXWS_DISTFOLDER_SEARCHFOLDERS,
   OXWS_DISTFOLDER_VOICEMAIL,
 
-  OXWS_DISTFOLDER__MAX = OXWS_DISTFOLDER_VOICEMAIL, /* meta key to catch invalid ids */
-  OXWS_DISTFOLDER__COUNT, /* meta key to iterate all keys */
+  /* meta key to catch invalid ids */
+  OXWS_DISTFOLDER__MAX = OXWS_DISTFOLDER_VOICEMAIL,
+  /* meta key to iterate all keys */
+  OXWS_DISTFOLDER__COUNT,
 };
 typedef enum  oxws_distinguished_folder_id oxws_distinguished_folder_id;
 

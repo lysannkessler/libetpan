@@ -106,21 +106,24 @@ oxws_result oxws_list(oxws* oxws,
   }
 
   xmlNodePtr node_parentFolderIds = xmlNewChild(node_findItem, ns_exch_messages, BAD_CAST "ParentFolderIds", NULL);
-  if(distfolder_id != OXWS_DISTFOLDER__NONE && distfolder_id >= 0 &&
-     distfolder_id < oxws_distfolder_id_name_map_length) {
+  if(distfolder_id != OXWS_DISTFOLDER__NONE && distfolder_id >= 0 && distfolder_id < oxws_distfolder_id_name_map_length) {
 
     xmlNodePtr node_distinguishedFolderId = xmlNewChild(node_parentFolderIds, ns_exch_types, BAD_CAST "DistinguishedFolderId", NULL);
     xmlNewProp(node_distinguishedFolderId, BAD_CAST "Id", BAD_CAST oxws_distfolder_id_name_map[distfolder_id]);
   } else if(folder_id != NULL) {
     xmlNodePtr node_folderId = xmlNewChild(node_parentFolderIds, ns_exch_types, BAD_CAST "FolderId", NULL);
     xmlNewProp(node_folderId, BAD_CAST "Id", BAD_CAST folder_id);
+  } else {
+    /* TODO warn */
   }
 
   /* configure response XML parser */
+  /* TODO free node_findItem if oxws_list_sax_context_init fails */
   oxws_list_sax_context sax_context;
   if(oxws_list_sax_context_init(&sax_context, count > 0 ? count : 10, list) != OXWS_NO_ERROR ||
      oxws_handle_response_xml(oxws, &oxws_list_sax_handler, &sax_context) != OXWS_NO_ERROR) {
     oxws_release_response_xml_parser(oxws);
+    /* TODO free node */
     return OXWS_ERROR_INTERNAL;
   }
 
