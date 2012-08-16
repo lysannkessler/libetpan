@@ -45,11 +45,10 @@ int main(int argc, char ** argv) {
 #if 0
   /* send message and save it to Sent Items */
   oxws_type_message* message = oxws_type_message_new();
-  oxws_type_item_set_subject((oxws_type_item*) message, "[libetpan test] test");
+  oxws_type_item_set_subject((oxws_type_item*) message, "[libetpan test] message from oxws-sample");
   oxws_type_item_set_body_fields((oxws_type_item*) message,
-          "This is just another email ever sent using libetpan's Exchange implementation.\n" \
-          "You may feel annoyed by now! :P\n\n" \
-          "Cheers,\n  Lysann :)",
+          "This is just another email sent using libetpan's Exchange implementation.\n" \
+          "It's ok to feel annoyed by now :P",
           OXWS_TYPE_BODY_TYPE_TEXT);
   message->to_recipients = carray_new(3);
   oxws_type_email_address* address = oxws_type_email_address_new(NULL, argv[1], NULL, OXWS_TYPE_MAILBOX_TYPE__NOT_SET, NULL);
