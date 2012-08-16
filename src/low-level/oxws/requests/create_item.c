@@ -121,7 +121,9 @@ oxws_result oxws_create_item(oxws* oxws, oxws_type_item* item, oxws_message_disp
     */
     /* TODO check for required properties */
     xmlNodePtr node_message = xmlNewChild(node_items, ns_exch_types, BAD_CAST "Message", NULL);
-    xmlNewChild(node_message, ns_exch_types, BAD_CAST "ItemClass", BAD_CAST "IPM.Note"); /* TODO use configured ItemClass property as override */
+    xmlChar* item_class = BAD_CAST "IPM.Note";
+    if(item->item_class != NULL) item_class = BAD_CAST item->item_class;
+    xmlNewChild(node_message, ns_exch_types, BAD_CAST "ItemClass", item_class);
 
     if(message->item.subject != NULL)
       xmlNewChild(node_message, ns_exch_types, BAD_CAST "Subject", BAD_CAST message->item.subject->str);
