@@ -225,7 +225,7 @@ oxws_result oxws_type_email_address_set_mailbox_type(oxws_type_email_address* ad
   @note TODO incomplete
 */
 struct oxws_type_item {
-  oxws_type_item_class_id class_id; /* TODO rename to not clash with ItemClass */
+  oxws_type_item_class_id class_id;
 
   /* missing: MimeContent */
   oxws_type_item_id* item_id;
