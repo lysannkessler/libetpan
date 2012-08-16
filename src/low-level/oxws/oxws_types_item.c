@@ -344,7 +344,7 @@ void oxws_type_item_free_members(oxws_type_item* item) {
 
   oxws_type_item_id_free(item->item_id);
   oxws_type_folder_id_free(item->parent_folder_id);
-  if(item->subject) free(item->subject);
+  if(item->subject) mmap_string_free(item->subject);
   oxws_type_body_free(item->body);
   if(item->date_time_received) free(item->date_time_received);
   if(item->date_time_sent) free(item->date_time_sent);
