@@ -344,7 +344,7 @@ void oxws_list_sax_handler_end_element_ns(void* user_data,
   } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_ITEM_SUBJECT &&
      OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "Subject")) {
     /* TODO check item and string */
-    oxws_item_set_subject_mmap(context->item, context->string);
+    oxws_item_set_subject(context->item, context->string);
     /* TODO warn if result != NO_ERROR */
     context->string = NULL; /* not freed because it is assigned to context->item->subject now */
     context->state = context->prev_state;

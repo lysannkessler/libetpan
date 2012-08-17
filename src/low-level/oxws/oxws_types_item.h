@@ -44,6 +44,7 @@ extern "C" {
 #include <libetpan/oxws_types.h>
 #include <libetpan/carray.h>
 #include <libetpan/mmapstring.h>
+#include <libetpan/oxws_setters.h>
 
 
 /*
@@ -67,6 +68,23 @@ enum oxws_optional_boolean {
   OXWS_OPTIONAL_BOOLEAN_FALSE    =  0,
 };
 typedef enum oxws_optional_boolean oxws_optional_boolean;
+
+
+/*
+  oxws_time_t, oxws_time_t_free()
+
+  These are here so we can use the OXWS_SETTER_* macros for time attributes.
+*/
+typedef time_t oxws_time_t;
+#define oxws_time_t_free free
+
+/*
+  oxws_MMAPString, oxws_MMAPString_free()
+
+  These are here so we can use the OXWS_SETTER_* macros for MMAPString attributes.
+*/
+typedef MMAPString oxws_MMAPString;
+#define oxws_MMAPString_free mmap_string_free
 
 
 /*
@@ -208,10 +226,11 @@ void oxws_email_address_free(oxws_email_address* address);
 */
 void oxws_email_address_array_free(carray* array);
 
-oxws_result oxws_email_address_set_name(oxws_email_address* address, const char* name);
-oxws_result oxws_email_address_set_email_address(oxws_email_address* address, const char* email_address);
-oxws_result oxws_email_address_set_routing_type(oxws_email_address* address, const char* routing_type);
-oxws_result oxws_email_address_set_mailbox_type(oxws_email_address* address, oxws_mailbox_type mailbox_type);
+OXWS_SETTER_STRING_DECL(email_address, address, name);
+OXWS_SETTER_STRING_DECL(email_address, address, email_address);
+OXWS_SETTER_STRING_DECL(email_address, address, routing_type);
+OXWS_SETTER_VALUE_DECL(email_address, address, mailbox_type, mailbox_type);
+OXWS_SETTER_OBJECT_DECL(email_address, address, item_id, item_id);
 
 
 /*
@@ -262,8 +281,6 @@ typedef struct oxws_item oxws_item;
 
 oxws_item* oxws_item_new();
 
-oxws_result oxws_item_init(oxws_item* item);
-
 /*
   oxws_item_free()
 
@@ -287,35 +304,22 @@ void oxws_item_free(oxws_item* item);
 */
 void oxws_item_array_free(carray* array);
 
-oxws_result oxws_item_set_item_id(oxws_item* item, oxws_item_id* id);
-oxws_result oxws_item_set_item_id_fields(oxws_item* item, const char* id, const char* change_key);
+OXWS_SETTER_OBJECT_DECL(item, item, item_id, item_id);
+OXWS_SETTER_OBJECT_FIELDS_DECL(item, item, item_id, item_id, CONCAT_MACRO_ARGS2(const char* id, const char* change_key));
 
-oxws_result oxws_item_set_parent_folder_id(oxws_item* item, oxws_folder_id* id);
-oxws_result oxws_item_set_parent_folder_id_fields(oxws_item* item, const char* id, const char* change_key);
+OXWS_SETTER_OBJECT_DECL(item, item, folder_id, parent_folder_id);
+OXWS_SETTER_OBJECT_FIELDS_DECL(item, item, folder_id, parent_folder_id, CONCAT_MACRO_ARGS2(const char* id, const char* change_key));
 
-oxws_result oxws_item_set_item_class(oxws_item* item, const char* item_class);
+OXWS_SETTER_STRING_DECL(item, item, item_class);
 
-oxws_result oxws_item_set_subject_mmap(oxws_item* item, MMAPString* string);
+OXWS_SETTER_OBJECT_DECL(item, item, MMAPString, subject);
 
-oxws_result oxws_item_set_subject(oxws_item* item, const char* string);
-oxws_result oxws_item_set_subject_len(oxws_item* item, const char* string, size_t length);
+OXWS_SETTER_OBJECT_DECL(item, item, body, body);
+OXWS_SETTER_OBJECT_FIELDS_DECL(item, item, body, body, CONCAT_MACRO_ARGS2(const char* string, oxws_body_type body_type));
 
-oxws_result oxws_item_append_to_subject(oxws_item* item, const char* string);
-oxws_result oxws_item_append_to_subject_len(oxws_item* item, const char* string, size_t length);
-
-oxws_result oxws_item_set_body(oxws_item* item, oxws_body* body);
-
-oxws_result oxws_item_set_body_fields(oxws_item* item, const char* string, oxws_body_type body_type);
-oxws_result oxws_item_set_body_fields_len(oxws_item* item, const char* string, size_t length, oxws_body_type body_type);
-
-oxws_result oxws_item_append_to_body(oxws_item* item, const char* string);
-oxws_result oxws_item_append_to_body_len(oxws_item* item, const char* string, size_t length);
-
-oxws_result oxws_item_set_date_time_received(oxws_item* item, time_t* date_time_received);
-
-oxws_result oxws_item_set_size(oxws_item* item, oxws_optional_int32 size);
-
-oxws_result oxws_item_set_date_time_sent(oxws_item* item, time_t* date_time_sent);
+OXWS_SETTER_OBJECT_DECL(item, item, time_t, date_time_received);
+OXWS_SETTER_VALUE_DECL(item, item, optional_int32, size);
+OXWS_SETTER_OBJECT_DECL(item, item, time_t, date_time_sent);
 
 
 /*
@@ -349,9 +353,7 @@ typedef struct oxws_message oxws_message;
 
 oxws_message* oxws_message_new();
 
-oxws_result oxws_message_init(oxws_message* message);
-
-oxws_result oxws_message_set_from(oxws_message* message, oxws_email_address* from);
+OXWS_SETTER_OBJECT_DECL(message, message, email_address, from);
 oxws_result oxws_message_set_from_fields(oxws_message* message, const char* name, const char* email_address,
         const char* routing_type, oxws_mailbox_type mailbox_type, oxws_item_id* item_id);
 oxws_result oxws_message_set_from_name(oxws_message* message, const char* name);
@@ -361,7 +363,7 @@ oxws_result oxws_message_set_from_mailbox_type(oxws_message* message, oxws_mailb
 oxws_result oxws_message_set_from_item_id(oxws_message* message, oxws_item_id* id);
 oxws_result oxws_message_set_from_item_id_fields(oxws_message* message, const char* id, const char* change_key);
 
-oxws_result oxws_message_set_is_read(oxws_message* message, oxws_optional_boolean is_read);
+OXWS_SETTER_VALUE_DECL(message, message, optional_boolean, is_read);
 
 
 #ifdef __cplusplus

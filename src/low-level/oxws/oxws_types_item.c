@@ -64,34 +64,20 @@ void oxws_special_array_free(carray* array, oxws_entry_free entry_free);
 
 
 oxws_item_or_folder_id* oxws_item_or_folder_id_new(const char* id, const char* change_key) {
-  oxws_item_or_folder_id* result = (oxws_item_or_folder_id*)
+  oxws_item_or_folder_id* result_id = (oxws_item_or_folder_id*)
     calloc(1, sizeof(oxws_item_or_folder_id));
 
-  if(result != NULL) {
-    /* copy id */
-    if(id != NULL) {
-      size_t length = strlen(id) + 1;
-      result->id = (char*) malloc(length);
-      if(result->id == NULL) {
-        oxws_item_id_free(result);
-        result = NULL;
-      }
-      memcpy(result->id, id, length);
-    }
-
-    /* copy change_key */
-    if(result != NULL && change_key != NULL) {
-      size_t length = strlen(change_key) + 1;
-      result->change_key = (char*) malloc(length);
-      if(result->change_key == NULL) {
-        oxws_item_id_free(result);
-        result = NULL;
-      }
-      memcpy(result->change_key, change_key, length);
+  if(result_id != NULL) {
+    int result = OXWS_NO_ERROR;
+    OXWS_COPY_STRING(result, result_id->id, id);
+    OXWS_COPY_STRING(result, result_id->change_key, change_key);
+    if(result != OXWS_NO_ERROR) {
+      oxws_item_id_free(result_id);
+      result_id = NULL;
     }
   }
 
-  return result;
+  return result_id;
 }
 oxws_item_id* oxws_item_id_new(const char* id, const char* change_key) {
   return oxws_item_or_folder_id_new(id, change_key);
@@ -177,45 +163,21 @@ oxws_result oxws_body_append_len(oxws_body* body, const char* string, size_t len
 oxws_email_address* oxws_email_address_new(const char* name, const char* email_address,
         const char* routing_type, oxws_mailbox_type mailbox_type, oxws_item_id* item_id) {
 
-  oxws_email_address* result = (oxws_email_address*) calloc(1, sizeof(oxws_email_address));
-  if(result != NULL) {
-    result->mailbox_type = mailbox_type;
-    result->item_id = item_id;
+  oxws_email_address* result_addr = (oxws_email_address*) calloc(1, sizeof(oxws_email_address));
+  if(result_addr != NULL) {
+    result_addr->mailbox_type = mailbox_type;
+    result_addr->item_id = item_id;
 
-    /* copy name */
-    if(name != NULL) {
-      size_t length = strlen(name) + 1;
-      result->name = (char*) malloc(length);
-      if(result->name == NULL) {
-        oxws_email_address_free(result);
-        result = NULL;
-      }
-      memcpy(result->name, name, length);
-    }
-
-    /* copy email_address */
-    if(result != NULL && email_address != NULL) {
-      size_t length = strlen(email_address) + 1;
-      result->email_address = (char*) malloc(length);
-      if(result->email_address == NULL) {
-        oxws_email_address_free(result);
-        result = NULL;
-      }
-      memcpy(result->email_address, email_address, length);
-    }
-
-    /* copy routing_type */
-    if(result != NULL && routing_type != NULL) {
-      size_t length = strlen(routing_type) + 1;
-      result->routing_type = (char*) malloc(length);
-      if(result->routing_type == NULL) {
-        oxws_email_address_free(result);
-        result = NULL;
-      }
-      memcpy(result->routing_type, routing_type, length);
+    int result = OXWS_NO_ERROR;
+    OXWS_COPY_STRING(result, result_addr->name, name);
+    OXWS_COPY_STRING(result, result_addr->email_address, email_address);
+    OXWS_COPY_STRING(result, result_addr->routing_type, routing_type);
+    if(result != OXWS_NO_ERROR) {
+      oxws_email_address_free(result_addr);
+      result_addr = NULL;
     }
   }
-  return result;
+  return result_addr;
 }
 
 void oxws_email_address_free(oxws_email_address* address) {
@@ -231,96 +193,18 @@ void oxws_email_address_array_free(carray* array) {
   return oxws_special_array_free(array, (oxws_entry_free) oxws_email_address_free);
 }
 
-oxws_result oxws_email_address_set_name(oxws_email_address* address, const char* name) {
-  if(address == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-
-  if(name == NULL) {
-    /* free */
-    free(address->name);
-    address->name = NULL;
-  } else {
-    /* copy */
-    size_t length = strlen(name) + 1;
-    address->name = realloc(address->name, length);
-    if(address->name == NULL) return OXWS_ERROR_INTERNAL;
-    memcpy(address->name, name, length);
-  }
-
-  return OXWS_NO_ERROR;
-}
-
-oxws_result oxws_email_address_set_email_address(oxws_email_address* address, const char* email_address) {
-  if(address == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-
-  if(email_address == NULL) {
-    /* free */
-    free(address->email_address);
-    address->email_address = NULL;
-  } else {
-    /* copy */
-    size_t length = strlen(email_address) + 1;
-    address->email_address = realloc(address->email_address, length);
-    if(address->email_address == NULL) return OXWS_ERROR_INTERNAL;
-    memcpy(address->email_address, email_address, length);
-  }
-
-  return OXWS_NO_ERROR;
-}
-
-oxws_result oxws_email_address_set_routing_type(oxws_email_address* address, const char* routing_type) {
-  if(address == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-
-  if(routing_type == NULL) {
-    /* free */
-    free(address->routing_type);
-    address->routing_type = NULL;
-  } else {
-    /* copy */
-    size_t length = strlen(routing_type) + 1;
-    address->routing_type = realloc(address->routing_type, length);
-    if(address->routing_type == NULL) return OXWS_ERROR_INTERNAL;
-    memcpy(address->routing_type, routing_type, length);
-  }
-
-  return OXWS_NO_ERROR;
-}
-
-oxws_result oxws_email_address_set_mailbox_type(oxws_email_address* address, oxws_mailbox_type mailbox_type) {
-  if(address == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-  address->mailbox_type = mailbox_type;
-  return OXWS_NO_ERROR;
-}
-
-oxws_result oxws_email_address_set_item_id(oxws_email_address* address, oxws_item_id* id) {
-  if(address == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-
-  if(address->item_id == id) return OXWS_NO_ERROR;
-  oxws_item_id_free(address->item_id);
-  address->item_id = id;
-
-  return OXWS_NO_ERROR;
-}
+OXWS_SETTER_STRING_DEF(email_address, address, name);
+OXWS_SETTER_STRING_DEF(email_address, address, email_address);
+OXWS_SETTER_STRING_DEF(email_address, address, routing_type);
+OXWS_SETTER_VALUE_DEF(email_address, address, mailbox_type, mailbox_type);
+OXWS_SETTER_OBJECT_DEF(email_address, address, item_id, item_id);
 
 
 oxws_item* oxws_item_new() {
   oxws_item* item = (oxws_item*) calloc(1, sizeof(oxws_item));
-
-  if(item != NULL) {
-    if(oxws_item_init(item) != OXWS_NO_ERROR) {
-      oxws_item_free(item);
-      item = NULL;
-    }
-  }
-
+  if(item != NULL)
+    item->class_id = OXWS_ITEM_CLASS_ITEM;
   return item;
-}
-
-oxws_result oxws_item_init(oxws_item* item) {
-  if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-
-  item->class_id = OXWS_ITEM_CLASS_ITEM;
-
-  return OXWS_NO_ERROR;
 }
 
 /*
@@ -387,230 +271,38 @@ void oxws_item_array_free(carray* array) {
   return oxws_special_array_free(array, (oxws_entry_free) oxws_item_free);
 }
 
-oxws_result oxws_item_set_item_id(oxws_item* item, oxws_item_id* id) {
-  if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
+OXWS_SETTER_OBJECT_DEF(item, item, item_id, item_id);
+OXWS_SETTER_OBJECT_FIELDS_DEF(item, item, item_id, item_id,
+  CONCAT_MACRO_ARGS2(const char* id, const char* change_key),
+  CONCAT_MACRO_ARGS2(id, change_key));
 
-  if(item->item_id == id) return OXWS_NO_ERROR;
-  oxws_item_id_free(item->item_id);
-  item->item_id = id;
+OXWS_SETTER_OBJECT_DEF(item, item, folder_id, parent_folder_id);
+OXWS_SETTER_OBJECT_FIELDS_DEF(item, item, folder_id, parent_folder_id,
+  CONCAT_MACRO_ARGS2(const char* id, const char* change_key),
+  CONCAT_MACRO_ARGS2(id, change_key));
 
-  return OXWS_NO_ERROR;
-}
+OXWS_SETTER_STRING_DEF(item, item, item_class);
 
-oxws_result oxws_item_set_item_id_fields(oxws_item* item, const char* id, const char* change_key) {
-  oxws_item_id* item_id = oxws_item_id_new(id, change_key);
-  if(item_id == NULL)
-    return OXWS_ERROR_INTERNAL;
-  else
-    return oxws_item_set_item_id(item, item_id);
-}
+OXWS_SETTER_OBJECT_DEF(item, item, MMAPString, subject);
 
-oxws_result oxws_item_set_parent_folder_id(oxws_item* item, oxws_folder_id* id) {
-  if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
+OXWS_SETTER_OBJECT_DEF(item, item, body, body);
+OXWS_SETTER_OBJECT_FIELDS_DEF(item, item, body, body,
+  CONCAT_MACRO_ARGS2(const char* string, oxws_body_type body_type),
+  CONCAT_MACRO_ARGS2(string, body_type));
 
-  if(item->parent_folder_id == id) return OXWS_NO_ERROR;
-  oxws_folder_id_free(item->parent_folder_id);
-  item->parent_folder_id = id;
-
-  return OXWS_NO_ERROR;
-}
-
-oxws_result oxws_item_set_parent_folder_id_fields(oxws_item* item, const char* id, const char* change_key) {
-  oxws_folder_id* folder_id = oxws_folder_id_new(id, change_key);
-  if(folder_id == NULL)
-    return OXWS_ERROR_INTERNAL;
-  else
-    return oxws_item_set_parent_folder_id(item, folder_id);
-}
-
-oxws_result oxws_item_set_item_class(oxws_item* item, const char* item_class) {
-  if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-
-  if(item_class == NULL) {
-    /* free */
-    free(item->item_class);
-    item->item_class = NULL;
-  } else {
-    /* copy */
-    size_t length = strlen(item_class) + 1;
-    item->item_class = (char*) malloc(length);
-    if(item->item_class == NULL) return OXWS_ERROR_INTERNAL;
-    memcpy(item->item_class, item_class, length);
-  }
-
-  return OXWS_NO_ERROR;
-}
-
-oxws_result oxws_item_set_subject_mmap(oxws_item* item, MMAPString* string) {
-  if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-
-  if(item->subject == string) return OXWS_NO_ERROR;
-  mmap_string_free(item->subject);
-  item->subject = string;
-
-  return OXWS_NO_ERROR;
-}
-
-oxws_result oxws_item_set_subject(oxws_item* item, const char* string) {
-  size_t length = string == NULL ? 0 : strlen(string);
-  return oxws_item_set_subject_len(item, string, length);
-}
-
-oxws_result oxws_item_set_subject_len(oxws_item* item, const char* string, size_t length) {
-  if(item == NULL || (string == NULL && length > 0))
-    return OXWS_ERROR_INVALID_PARAMETER;
-
-  if(string == NULL) {
-    mmap_string_free(item->subject);
-    item->subject = NULL;
-  } else {
-    if(item->subject == NULL) {
-      item->subject = mmap_string_new_len(string, length);
-      if(item->subject == NULL) return OXWS_ERROR_INTERNAL;
-    } else {
-      mmap_string_truncate(item->subject, 0);
-      mmap_string_append_len(item->subject, string, length);
-    }
-  }
-
-  return OXWS_NO_ERROR;
-}
-
-oxws_result oxws_item_append_to_subject(oxws_item* item, const char* string) {
-  if(string == NULL) return OXWS_NO_ERROR;
-  return oxws_item_append_to_subject_len(item, string, strlen(string));
-}
-
-/* TODO refactor: extract method (see oxws_body_append_len) */
-oxws_result oxws_item_append_to_subject_len(oxws_item* item, const char* string, size_t length) {
-  if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-  if(length == 0) return OXWS_NO_ERROR;
-  if(string == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-
-  if(item->subject == NULL) {
-    /* TODO warn */
-    /* create new string */
-    item->subject = mmap_string_new_len(string, length);
-    if(item->subject == NULL) return OXWS_ERROR_INTERNAL;
-  } else {
-    /* append */
-    mmap_string_append_len(item->subject, string, length);
-  }
-
-  return OXWS_NO_ERROR;
-}
-
-oxws_result oxws_item_set_body(oxws_item* item, oxws_body* body) {
-  if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-
-  if(item->body == body) return OXWS_NO_ERROR;
-  oxws_body_free(item->body);
-  item->body = body;
-
-  return OXWS_NO_ERROR;
-}
-
-oxws_result oxws_item_set_body_fields(oxws_item* item, const char* string, oxws_body_type body_type) {
-  oxws_body* body = oxws_body_new(string, body_type);
-  if(body == NULL)
-    return OXWS_ERROR_INTERNAL;
-  else
-    return oxws_item_set_body(item, body);
-}
-
-oxws_result oxws_item_set_body_fields_len(oxws_item* item, const char* string, size_t length, oxws_body_type body_type) {
-  oxws_body* body = oxws_body_new_len(string, length, body_type);
-  if(body == NULL)
-    return OXWS_ERROR_INTERNAL;
-  else
-    return oxws_item_set_body(item, body);
-}
-
-oxws_result oxws_item_append_to_body(oxws_item* item, const char* string) {
-  if(string == NULL) return OXWS_NO_ERROR;
-  return oxws_item_append_to_body_len(item, string, strlen(string));
-}
-
-oxws_result oxws_item_append_to_body_len(oxws_item* item, const char* string, size_t length) {
-  if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-
-  if(item->body != NULL) {
-    return oxws_body_append_len(item->body, string, length);
-  } else {
-    return oxws_item_set_body_fields_len(item, string, length, OXWS_BODY_TYPE__NOT_SET);
-  }
-}
-
-oxws_result oxws_item_set_date_time_received(oxws_item* item, time_t* date_time_received) {
-  if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-
-  if(date_time_received == NULL) {
-    free(item->date_time_received);
-    item->date_time_received = NULL;
-  } else {
-    size_t length = sizeof(time_t);
-    item->date_time_received = realloc(item->date_time_received, length);
-    if(item->date_time_received == NULL) return OXWS_ERROR_INTERNAL;
-    memcpy(item->date_time_received, date_time_received, length);
-  }
-
-  return OXWS_NO_ERROR;
-}
-
-oxws_result oxws_item_set_size(oxws_item* item, oxws_optional_int32 size) {
-  if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-  item->size = size;
-  return OXWS_NO_ERROR;
-}
-
-oxws_result oxws_item_set_date_time_sent(oxws_item* item, time_t* date_time_sent) {
-  if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-
-  if(date_time_sent == NULL) {
-    free(item->date_time_sent);
-    item->date_time_sent = NULL;
-  } else {
-    size_t length = sizeof(time_t);
-    item->date_time_sent = realloc(item->date_time_sent, length);
-    if(item->date_time_sent == NULL) return OXWS_ERROR_INTERNAL;
-    memcpy(item->date_time_sent, date_time_sent, length);
-  }
-
-  return OXWS_NO_ERROR;
-}
+OXWS_SETTER_OBJECT_DEF(item, item, time_t, date_time_received);
+OXWS_SETTER_VALUE_DEF(item, item, optional_int32, size);
+OXWS_SETTER_OBJECT_DEF(item, item, time_t, date_time_sent);
 
 
 oxws_message* oxws_message_new() {
   oxws_message* message = (oxws_message*) calloc(1, sizeof(oxws_message));
-
-  if(message != NULL) {
-    if(oxws_item_init((oxws_item*) message) != OXWS_NO_ERROR ||
-       oxws_message_init(message) != OXWS_NO_ERROR) {
-      oxws_item_free((oxws_item*) message);
-      message = NULL;
-    }
-  }
-
+  if(message != NULL)
+    message->item.class_id = OXWS_ITEM_CLASS_MESSAGE;
   return message;
 }
 
-oxws_result oxws_message_init(oxws_message* message) {
-  if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-
-  message->item.class_id = OXWS_ITEM_CLASS_MESSAGE;
-
-  return OXWS_NO_ERROR;
-}
-
-oxws_result oxws_message_set_from(oxws_message* message, oxws_email_address* from) {
-  if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-
-  if(message->from == from) return OXWS_NO_ERROR;
-  oxws_email_address_free(message->from);
-  message->from = from;
-
-  return OXWS_NO_ERROR;
-}
+OXWS_SETTER_OBJECT_DEF(message, message, email_address, from);
 
 oxws_result oxws_message_set_from_fields(oxws_message* message, const char* name, const char* email_address,
         const char* routing_type, oxws_mailbox_type mailbox_type, oxws_item_id* item_id) {
@@ -674,12 +366,7 @@ oxws_result oxws_message_set_from_item_id_fields(oxws_message* message, const ch
     return oxws_message_set_from_item_id(message, item_id);
 }
 
-
-oxws_result oxws_message_set_is_read(oxws_message* message, oxws_optional_boolean is_read) {
-  if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-  message->is_read = is_read;
-  return OXWS_NO_ERROR;
-}
+OXWS_SETTER_VALUE_DEF(message, message, optional_boolean, is_read);
 
 
 void oxws_special_array_free(carray* array, oxws_entry_free entry_free) {

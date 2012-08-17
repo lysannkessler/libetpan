@@ -94,40 +94,6 @@ void oxws_free(oxws* oxws) {
   free(oxws);
 }
 
-/*
-  OXWS_COPY_STRING()
-
-  Copy a string from source to dest, using result to indicate success or
-  failure. Will (re)allocate dest to fit the source string, and will free dest
-  and set it to NULL upon failure or if source is NULL.
-  the function will only attempt to copy if result is OXWS_NO_ERROR in the
-  beginning.
-
-  @param result   an int set to either OXWS_NO_ERROR or OXWS_ERROR_*.
-                  Copying is attempted only attempted if it's OXWS_NO_ERROR.
-                  It will be set to OXWS_ERROR_INTERNAL if memory
-                  reallocation of dest fails.
-                  If it is not OXWS_NO_ERROR in the end, dest is freed and
-                  set to NULL.
-  @param dest     copy destination; can be anything that can be passed to
-                  realloc() and (if not NULL) free()
-  @param source   Copy source; NULL indicates to free and clear the destination
-
-*/
-#define OXWS_COPY_STRING(result, dest, source) \
-  if(result == OXWS_NO_ERROR && source) { \
-    (dest) = realloc((dest), strlen(source) + 1); \
-    if(!(dest)) { \
-      result = OXWS_ERROR_INTERNAL; \
-    } else { \
-      memcpy((dest), (source), strlen(source) + 1); \
-    } \
-  } \
-  if(result != OXWS_NO_ERROR || source == NULL) { \
-    free(dest); \
-    (dest) = NULL; \
-  }
-
 oxws_result oxws_set_connection_settings(oxws* oxws, oxws_connection_settings* settings) {
   if(oxws == NULL || settings == NULL)
     return OXWS_ERROR_INVALID_PARAMETER;

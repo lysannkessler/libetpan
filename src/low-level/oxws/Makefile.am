@@ -31,7 +31,7 @@
 include $(top_srcdir)/rules.mk
 
 etpaninclude_HEADERS = \
-  oxws.h oxws_types.h oxws_types_item.h \
+  oxws.h oxws_setters.h oxws_types.h oxws_types_item.h \
   oxws_autodiscover.h oxws_requests.h
 
 AM_CPPFLAGS = -Werror \
