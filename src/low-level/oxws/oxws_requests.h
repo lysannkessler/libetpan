@@ -77,7 +77,7 @@ oxws_result oxws_prepare_for_requests(oxws* oxws);
 
 
 /*
-  oxws_list()
+  oxws_find_item()
 
   Fetch most recent 'count' items from the folder identified by either its
   folder id or its distinguished folder id (if available).
@@ -122,7 +122,7 @@ oxws_result oxws_prepare_for_requests(oxws* oxws);
   @note TODO configure which fields to request
 */
 LIBETPAN_EXPORT
-oxws_result oxws_list(oxws* oxws,
+oxws_result oxws_find_item(oxws* oxws,
         oxws_distinguished_folder_id distfolder_id, const char* folder_id,
         int count, carray** list);
 

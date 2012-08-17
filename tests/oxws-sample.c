@@ -71,7 +71,7 @@ int main(int argc, char ** argv) {
 oxws_result list_items(oxws* oxws, oxws_distinguished_folder_id folder_id) {
   /* perform request */
   carray* items = NULL;
-  oxws_result result = oxws_list(oxws, folder_id, NULL, 10, &items);
+  oxws_result result = oxws_find_item(oxws, folder_id, NULL, 10, &items);
   if(result != OXWS_NO_ERROR) return result;
 
   /* list all items */
