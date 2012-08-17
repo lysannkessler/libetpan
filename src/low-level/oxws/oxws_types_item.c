@@ -160,24 +160,8 @@ oxws_result oxws_body_append_len(oxws_body* body, const char* string, size_t len
 }
 
 
-oxws_email_address* oxws_email_address_new(const char* name, const char* email_address,
-        const char* routing_type, oxws_mailbox_type mailbox_type, oxws_item_id* item_id) {
-
-  oxws_email_address* result_addr = (oxws_email_address*) calloc(1, sizeof(oxws_email_address));
-  if(result_addr != NULL) {
-    result_addr->mailbox_type = mailbox_type;
-    result_addr->item_id = item_id;
-
-    int result = OXWS_NO_ERROR;
-    OXWS_COPY_STRING(result, result_addr->name, name);
-    OXWS_COPY_STRING(result, result_addr->email_address, email_address);
-    OXWS_COPY_STRING(result, result_addr->routing_type, routing_type);
-    if(result != OXWS_NO_ERROR) {
-      oxws_email_address_free(result_addr);
-      result_addr = NULL;
-    }
-  }
-  return result_addr;
+oxws_email_address* oxws_email_address_new() {
+  return (oxws_email_address*) calloc(1, sizeof(oxws_email_address));
 }
 
 void oxws_email_address_free(oxws_email_address* address) {
@@ -198,6 +182,9 @@ OXWS_SETTER_STRING_DEF(email_address, address, email_address);
 OXWS_SETTER_STRING_DEF(email_address, address, routing_type);
 OXWS_SETTER_VALUE_DEF(email_address, address, mailbox_type, mailbox_type);
 OXWS_SETTER_OBJECT_DEF(email_address, address, item_id, item_id);
+OXWS_SETTER_OBJECT_FIELDS_DEF(email_address, address, item_id, item_id,
+  CONCAT_MACRO_ARGS2(const char* id, const char* change_key),
+  CONCAT_MACRO_ARGS2(id, change_key));
 
 
 oxws_item* oxws_item_new() {
@@ -303,69 +290,6 @@ oxws_message* oxws_message_new() {
 }
 
 OXWS_SETTER_OBJECT_DEF(message, message, email_address, from);
-
-oxws_result oxws_message_set_from_fields(oxws_message* message, const char* name, const char* email_address,
-        const char* routing_type, oxws_mailbox_type mailbox_type, oxws_item_id* item_id) {
-
-  oxws_email_address* from = oxws_email_address_new(name, email_address, routing_type, mailbox_type, item_id);
-  if(from == NULL)
-    return OXWS_ERROR_INTERNAL;
-  else
-    return oxws_message_set_from(message, from);
-}
-
-oxws_result oxws_message_set_from_name(oxws_message* message, const char* name) {
-  if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-  if(message->from == NULL) {
-    return oxws_message_set_from_fields(message, name, NULL, NULL, OXWS_MAILBOX_TYPE__NOT_SET, NULL);
-  } else {
-    return oxws_email_address_set_name(message->from, name);
-  }
-}
-oxws_result oxws_message_set_from_email_address(oxws_message* message, const char* email_address) {
-  if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-  if(message->from == NULL) {
-    return oxws_message_set_from_fields(message, NULL, email_address, NULL, OXWS_MAILBOX_TYPE__NOT_SET, NULL);
-  } else {
-    return oxws_email_address_set_email_address(message->from, email_address);
-  }
-}
-oxws_result oxws_message_set_from_routing_type(oxws_message* message, const char* routing_type) {
-  if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-  if(message->from == NULL) {
-    return oxws_message_set_from_fields(message, NULL, NULL, routing_type, OXWS_MAILBOX_TYPE__NOT_SET, NULL);
-  } else {
-    return oxws_email_address_set_routing_type(message->from, routing_type);
-  }
-}
-oxws_result oxws_message_set_from_mailbox_type(oxws_message* message, oxws_mailbox_type mailbox_type) {
-  if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-  if(message->from == NULL) {
-    return oxws_message_set_from_fields(message, NULL, NULL, NULL, mailbox_type, NULL);
-  } else {
-    return oxws_email_address_set_mailbox_type(message->from, mailbox_type);
-  }
-}
-
-oxws_result oxws_message_set_from_item_id(oxws_message* message, oxws_item_id* id) {
-  if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-
-  if(message->from == NULL) {
-    return oxws_message_set_from_fields(message, NULL, NULL, NULL, OXWS_MAILBOX_TYPE__NOT_SET, id);
-  } else {
-    return oxws_email_address_set_item_id(message->from, id);
-  }
-
-  return OXWS_NO_ERROR;
-}
-oxws_result oxws_message_set_from_item_id_fields(oxws_message* message, const char* id, const char* change_key) {
-  oxws_item_id* item_id = oxws_item_id_new(id, change_key);
-  if(item_id == NULL)
-    return OXWS_ERROR_INTERNAL;
-  else
-    return oxws_message_set_from_item_id(message, item_id);
-}
-
 OXWS_SETTER_VALUE_DEF(message, message, optional_boolean, is_read);
 
 

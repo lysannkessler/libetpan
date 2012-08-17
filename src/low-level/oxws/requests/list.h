@@ -69,19 +69,25 @@ enum oxws_list_sax_context_state {
   /* Inside a message item */
   OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE,
 
+  /* Inside the ItemId of any item */
+  OXWS_LIST_SAX_CONTEXT_STATE_ITEM_ITEM_ID,
   /* Inside the Size of any item */
   OXWS_LIST_SAX_CONTEXT_STATE_ITEM_SIZE,
   /* Inside the Subject tag of any item */
   OXWS_LIST_SAX_CONTEXT_STATE_ITEM_SUBJECT,
 
+  /* Inside the From tag of a message. We could also be deeper in the graph, see
+     the OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX* states */
   OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM,
-  OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM_MAILBOX,
-  OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM_MAILBOX_NAME,
-  OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM_MAILBOX_EMAIL_ADDRESS,
-  OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM_MAILBOX_ROUTING_TYPE,
-  OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM_MAILBOX_MAILBOX_TYPE,
   /* Inside the IsRead tag of a message */
   OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_IS_READ,
+
+  OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX,
+  OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX_NAME,
+  OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX_EMAIL_ADDRESS,
+  OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX_ROUTING_TYPE,
+  OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX_MAILBOX_TYPE,
+  OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX_ITEM_ID,
 
   /* End of document has been parsed, used to identify whether the response was
      parsed completely */
@@ -95,6 +101,9 @@ typedef enum oxws_list_sax_context_state oxws_list_sax_context_state;
 
 #define OXWS_LIST_SAX_IS_CONTEXT_STATE_ANY_ITEM_TOP_LEVEL(context) \
   (OXWS_LIST_SAX_IS_CONTEXT_STATE_ANY_ITEM(context) && context->item_node_depth == 1)
+
+#define OXWS_LIST_SAX_IS_CONTEXT_STATE_ANY_EMAIL_ADDRESS(context) \
+  (context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM)
 
 /*
   struct oxws_list_sax_context
@@ -131,6 +140,7 @@ struct oxws_list_sax_context {
   unsigned int item_node_depth;
 
   MMAPString* string;
+  oxws_email_address* email_address;
 };
 typedef struct oxws_list_sax_context oxws_list_sax_context;
 

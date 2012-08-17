@@ -150,15 +150,9 @@ oxws_result oxws_list(oxws* oxws,
 oxws_result oxws_list_sax_context_init(oxws_list_sax_context* context, unsigned int count, carray** list) {
   if(context == NULL || list == NULL)
     return OXWS_ERROR_INVALID_PARAMETER;
-
+  memset(context, 0, sizeof(oxws_list_sax_context));
   context->count = count;
   context->list = list;
-  context->prev_state = OXWS_LIST_SAX_CONTEXT_STATE__NONE;
-  context->state = OXWS_LIST_SAX_CONTEXT_STATE__NONE;
-  context->item = NULL;
-  context->item_node_depth = 0;
-  context->string = NULL;
-
   return OXWS_NO_ERROR;
 }
 
@@ -207,7 +201,9 @@ void oxws_list_sax_handler_start_element_ns(void* user_data,
     context->state = OXWS_LIST_SAX_CONTEXT_STATE_ITEMS;
 
   } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_ITEMS) {
-    if(context->item) { /* TODO warn */ }
+    if(context->item != NULL || context->item_node_depth != 0) {
+      /* TODO warn */
+    }
     if(OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "Message")) {
       context->state = OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE;
       context->item = (oxws_item*) oxws_message_new();
@@ -215,7 +211,7 @@ void oxws_list_sax_handler_start_element_ns(void* user_data,
       context->state = OXWS_LIST_SAX_CONTEXT_STATE_ITEM;
       context->item = oxws_item_new();
     }
-    context->item_node_depth = 1;
+    context->item_node_depth = 0;
 
   } else if(OXWS_LIST_SAX_IS_CONTEXT_STATE_ANY_ITEM_TOP_LEVEL(context) &&
      OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "ItemId")) {
@@ -234,7 +230,8 @@ void oxws_list_sax_handler_start_element_ns(void* user_data,
     }
     oxws_item_set_item_id_fields(context->item, (char*)id, (char*)change_key);
     xmlFree(id); xmlFree(change_key);
-    context->item_node_depth++;
+    context->prev_state = context->state;
+    context->state = OXWS_LIST_SAX_CONTEXT_STATE_ITEM_ITEM_ID;
 
   } else if(OXWS_LIST_SAX_IS_CONTEXT_STATE_ANY_ITEM_TOP_LEVEL(context) &&
      OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "Subject")) {
@@ -243,7 +240,6 @@ void oxws_list_sax_handler_start_element_ns(void* user_data,
     context->string = mmap_string_sized_new(50);
     context->prev_state = context->state;
     context->state = OXWS_LIST_SAX_CONTEXT_STATE_ITEM_SUBJECT;
-    context->item_node_depth++;
 
   } else if(OXWS_LIST_SAX_IS_CONTEXT_STATE_ANY_ITEM_TOP_LEVEL(context) &&
      OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "Size")) {
@@ -252,49 +248,48 @@ void oxws_list_sax_handler_start_element_ns(void* user_data,
     context->string = mmap_string_sized_new(6); /* assume 6 digit number, will expand on demand */
     context->prev_state = context->state;
     context->state = OXWS_LIST_SAX_CONTEXT_STATE_ITEM_SIZE;
-    context->item_node_depth++;
 
   } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE && context->item_node_depth == 1 &&
      OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "From")) {
     /* TODO check item */
+    if(context->email_address != NULL) oxws_email_address_free(context->email_address); /* TODO warn */
+    context->email_address = oxws_email_address_new();
     context->state = OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM;
-    context->item_node_depth++;
-  } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM &&
+  } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE && context->item_node_depth == 1 &&
+     OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "IsRead")) {
+    /* TODO check item and item class */
+    if(context->string != NULL) mmap_string_free(context->string); /* TODO warn */
+    context->string = mmap_string_sized_new(5); /* true / false / 1 / 0 */
+    context->prev_state = context->state;
+    context->state = OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_IS_READ;
+
+  } else if(OXWS_LIST_SAX_IS_CONTEXT_STATE_ANY_EMAIL_ADDRESS(context) &&
      OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "Mailbox")) {
-    /* TODO check item */
-    context->state = OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM_MAILBOX;
-    context->item_node_depth++;
-  } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM_MAILBOX &&
+    context->prev_state = context->state;
+    context->state = OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX;
+  } else if(context->state == OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX &&
      OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "Name")) {
-    /* TODO check item */
     if(context->string != NULL) mmap_string_free(context->string); /* TODO warn */
     context->string = mmap_string_sized_new(20);
-    context->state = OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM_MAILBOX_NAME;
-    context->item_node_depth++;
-  } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM_MAILBOX &&
+    context->state = OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX_NAME;
+  } else if(context->state == OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX &&
      OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "EmailAddress")) {
-    /* TODO check item */
     if(context->string != NULL) mmap_string_free(context->string); /* TODO warn */
     context->string = mmap_string_sized_new(40);
-    context->state = OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM_MAILBOX_EMAIL_ADDRESS;
-    context->item_node_depth++;
-  } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM_MAILBOX &&
+    context->state = OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX_EMAIL_ADDRESS;
+  } else if(context->state == OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX &&
      OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "RoutingType")) {
-    /* TODO check item */
     if(context->string != NULL) mmap_string_free(context->string); /* TODO warn */
     context->string = mmap_string_sized_new(4); /* SMTP */
-    context->state = OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM_MAILBOX_ROUTING_TYPE;
-    context->item_node_depth++;
-  } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM_MAILBOX &&
+    context->state = OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX_ROUTING_TYPE;
+  } else if(context->state == OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX &&
      OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "MailboxType")) {
-    /* TODO check item */
     if(context->string != NULL) mmap_string_free(context->string); /* TODO warn */
     context->string = mmap_string_sized_new(12); /* Mailbox/PublicDL/PrivateDL/Contact/PublicFolder */
-    context->state = OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM_MAILBOX_MAILBOX_TYPE;
-    context->item_node_depth++;
-  } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM_MAILBOX &&
+    context->state = OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX_MAILBOX_TYPE;
+  } else if(context->state == OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX &&
      OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "ItemId")) {
-    /* TODO check item */
+    /* TODO check email_address */
     xmlChar* id = NULL, *change_key = NULL;
     for(attr_index = 0; attr_index < nb_attributes; attr_index++) {
       const xmlChar* name = attrs[5 * attr_index + 0];
@@ -307,26 +302,18 @@ void oxws_list_sax_handler_start_element_ns(void* user_data,
       }
       /* TODO warn for unknown attributes */
     }
-    oxws_message_set_from_item_id_fields((oxws_message*) context->item, (char*)id, (char*)change_key);
+    oxws_email_address_set_item_id_fields(context->email_address, (char*)id, (char*)change_key);
     xmlFree(id); xmlFree(change_key);
-    context->item_node_depth++;
-
-  } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE && context->item_node_depth == 1 &&
-     OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "IsRead")) {
-    /* TODO check item and item class */
-    if(context->string != NULL) mmap_string_free(context->string); /* TODO warn */
-    context->string = mmap_string_sized_new(5); /* true / false / 1 / 0 */
     context->prev_state = context->state;
-    context->state = OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_IS_READ;
-    context->item_node_depth++;
-
-  } else if(context->item_node_depth > 0) {
-    context->item_node_depth++;
+    context->state = OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX_ITEM_ID;
 
   } else {
     /* TODO warn for unknown tags */
     /* TODO go to error state for invalid state-tag combinations */
   }
+
+  if(context->item != NULL)
+    context->item_node_depth++;
 }
 
 void oxws_list_sax_handler_end_element_ns(void* user_data,
@@ -337,19 +324,39 @@ void oxws_list_sax_handler_end_element_ns(void* user_data,
   oxws_list_sax_context* context = (oxws_list_sax_context*) user_data;
   if(context->state == OXWS_LIST_SAX_CONTEXT_STATE__ERROR) return;
 
-  if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_ITEMS &&
+  if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_START_DOCUMENT &&
+     OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, SOAP, "Envelope")) {
+    /* the end_document callback does not seem to get called. We emulate it
+       using the end of the SOAP Envelope tag */
+    oxws_list_sax_handler_end_document(user_data);
+
+  } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_ITEMS &&
      OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "Items")) {
     context->state = OXWS_LIST_SAX_CONTEXT_STATE_START_DOCUMENT;
 
+  /* TODO warn if context->item != NULL && context->item_node_depth <= 0 */
+  } else if(context->item != NULL && context->item_node_depth == 1) {
+    /* end of current item, add it to the result list */
+    /* TODO check item */
+    carray_add(*context->list, context->item, NULL);
+    context->item = NULL;
+    /* not freeing the item on purpose, because it's in the list now */
+    context->state = OXWS_LIST_SAX_CONTEXT_STATE_ITEMS;
+    context->item_node_depth = 0;
+
+  } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_ITEM_ITEM_ID &&
+     OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "ItemId")) {
+    /* no-op */
+    context->state = context->prev_state;
+    context->prev_state = OXWS_LIST_SAX_CONTEXT_STATE__NONE;
   } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_ITEM_SUBJECT &&
      OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "Subject")) {
     /* TODO check item and string */
     oxws_item_set_subject(context->item, context->string);
     /* TODO warn if result != NO_ERROR */
-    context->string = NULL; /* not freed because it is assigned to context->item->subject now */
+    context->string = NULL; /* not freed because it is assigned to the item now */
     context->state = context->prev_state;
     context->prev_state = OXWS_LIST_SAX_CONTEXT_STATE__NONE;
-
   } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_ITEM_SIZE &&
      OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "Size")) {
     /* TODO check context and string */
@@ -362,49 +369,11 @@ void oxws_list_sax_handler_end_element_ns(void* user_data,
 
   } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM &&
      OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "From")) {
+    /* TODO check item and email_address */
+    oxws_message_set_from((oxws_message*) context->item, context->email_address);
+    /* TODO warn if result != NO_ERROR */
+    context->email_address = NULL; /* not freed because it is assigned to the item now */
     context->state = OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE;
-  } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM_MAILBOX &&
-     OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "Mailbox")) {
-    context->state = OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM;
-  } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM_MAILBOX_NAME &&
-     OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "Name")) {
-    /* TODO check context and string */
-    oxws_message_set_from_name((oxws_message*) context->item, context->string->str);
-    /* TODO warn if result != NO_ERROR */
-    mmap_string_free(context->string); context->string = NULL;
-    context->state = OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM_MAILBOX;
-  } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM_MAILBOX_EMAIL_ADDRESS &&
-     OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "EmailAddress")) {
-    /* TODO check context and string */
-    oxws_message_set_from_email_address((oxws_message*) context->item, context->string->str);
-    /* TODO warn if result != NO_ERROR */
-    mmap_string_free(context->string); context->string = NULL;
-    context->state = OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM_MAILBOX;
-  } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM_MAILBOX_ROUTING_TYPE &&
-     OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "RoutingType")) {
-    /* TODO check context and string */
-    oxws_message_set_from_routing_type((oxws_message*) context->item, context->string->str);
-    /* TODO warn if result != NO_ERROR */
-    mmap_string_free(context->string); context->string = NULL;
-    context->state = OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM_MAILBOX;
-  } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM_MAILBOX_MAILBOX_TYPE &&
-     OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "MailboxType")) {
-    /* TODO check context and string */
-    oxws_mailbox_type mailbox_type = OXWS_MAILBOX_TYPE__NOT_SET;
-    if(strcmp(context->string->str, "Mailbox") == 0) mailbox_type = OXWS_MAILBOX_TYPE_MAILBOX;
-    else if(strcmp(context->string->str, "PublicDL") == 0) mailbox_type = OXWS_MAILBOX_TYPE_PUBLIC_DL;
-    else if(strcmp(context->string->str, "PrivateDL") == 0) mailbox_type = OXWS_MAILBOX_TYPE_PRIVATE_DL;
-    else if(strcmp(context->string->str, "Contact") == 0) mailbox_type = OXWS_MAILBOX_TYPE_CONTACT;
-    else if(strcmp(context->string->str, "PublicFolder") == 0) mailbox_type = OXWS_MAILBOX_TYPE_PUBLIC_FOLDER;
-    if(mailbox_type == OXWS_MAILBOX_TYPE__NOT_SET) {
-      /* TODO warn */
-    } else {
-      oxws_message_set_from_mailbox_type((oxws_message*) context->item, mailbox_type);
-      /* TODO warn if result != NO_ERROR */
-    }
-    mmap_string_free(context->string); context->string = NULL;
-    context->state = OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM_MAILBOX;
-
   } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_IS_READ &&
      OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "IsRead")) {
     /* TODO check context and string */
@@ -421,28 +390,60 @@ void oxws_list_sax_handler_end_element_ns(void* user_data,
     context->state = context->prev_state;
     context->prev_state = OXWS_LIST_SAX_CONTEXT_STATE__NONE;
 
-  } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_START_DOCUMENT &&
-     OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, SOAP, "Envelope")) {
-    /* the end_document callback does not seem to get called. We emulate it
-       using the end of the SOAP Envelope tag */
-    oxws_list_sax_handler_end_document(user_data);
+  } else if(context->state == OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX &&
+     OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "Mailbox")) {
+    context->state = OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE_FROM;
+  } else if(context->state == OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX_NAME &&
+     OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "Name")) {
+    /* TODO check email_address and string */
+    oxws_email_address_set_name(context->email_address, context->string->str);
+    /* TODO warn if result != NO_ERROR */
+    mmap_string_free(context->string); context->string = NULL;
+    context->state = OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX;
+  } else if(context->state == OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX_EMAIL_ADDRESS &&
+     OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "EmailAddress")) {
+    /* TODO check email_address and string */
+    oxws_email_address_set_email_address(context->email_address, context->string->str);
+    /* TODO warn if result != NO_ERROR */
+    mmap_string_free(context->string); context->string = NULL;
+    context->state = OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX;
+  } else if(context->state == OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX_ROUTING_TYPE &&
+     OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "RoutingType")) {
+    /* TODO check email_address and string */
+    oxws_email_address_set_routing_type(context->email_address, context->string->str);
+    /* TODO warn if result != NO_ERROR */
+    mmap_string_free(context->string); context->string = NULL;
+    context->state = OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX;
+  } else if(context->state == OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX_MAILBOX_TYPE &&
+     OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "MailboxType")) {
+    /* TODO check email_address and string */
+    oxws_mailbox_type mailbox_type = OXWS_MAILBOX_TYPE__NOT_SET;
+    if(strcmp(context->string->str, "Mailbox") == 0) mailbox_type = OXWS_MAILBOX_TYPE_MAILBOX;
+    else if(strcmp(context->string->str, "PublicDL") == 0) mailbox_type = OXWS_MAILBOX_TYPE_PUBLIC_DL;
+    else if(strcmp(context->string->str, "PrivateDL") == 0) mailbox_type = OXWS_MAILBOX_TYPE_PRIVATE_DL;
+    else if(strcmp(context->string->str, "Contact") == 0) mailbox_type = OXWS_MAILBOX_TYPE_CONTACT;
+    else if(strcmp(context->string->str, "PublicFolder") == 0) mailbox_type = OXWS_MAILBOX_TYPE_PUBLIC_FOLDER;
+    if(mailbox_type == OXWS_MAILBOX_TYPE__NOT_SET) {
+      /* TODO warn */
+    } else {
+      oxws_email_address_set_mailbox_type(context->email_address, mailbox_type);
+      /* TODO warn if result != NO_ERROR */
+    }
+    mmap_string_free(context->string); context->string = NULL;
+    context->state = OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX;
+  } else if(context->state == OXWS_LIST_SAX_CONTEXT_INNER_STATE_MAILBOX_ITEM_ID &&
+     OXWS_LIST_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "ItemId")) {
+    /* no-op */
+    context->state = context->prev_state;
+    context->prev_state = OXWS_LIST_SAX_CONTEXT_STATE__NONE;
 
   } else {
     /* TODO warn for unknown tags */
     /* TODO go to error state for invalid state-tag combinations */
   }
 
-  if(context->item_node_depth > 0) {
-    context->item_node_depth--;
-    if(context->item_node_depth == 0) {
-      /* end of current item, add it to the result list */
-      /* TODO check item */
-      carray_add(*context->list, context->item, NULL);
-      context->item = NULL;
-      /* not freeing the item on purpose, because it's in the list now */
-      context->state = OXWS_LIST_SAX_CONTEXT_STATE_ITEMS;
-    }
-  }
+  if(context->item != NULL)
+    context->item_node_depth--; /* TODO warn if item_node_depth == 0 */
 }
 
 void oxws_list_sax_handler_characters(void* user_data, const xmlChar* chars, int length) {
