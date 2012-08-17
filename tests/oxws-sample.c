@@ -44,16 +44,16 @@ int main(int argc, char ** argv) {
 
 #if 0
   /* send message and save it to Sent Items */
-  oxws_type_message* message = oxws_type_message_new();
-  oxws_type_item_set_subject((oxws_type_item*) message, "[libetpan test] message from oxws-sample");
-  oxws_type_item_set_body_fields((oxws_type_item*) message,
+  oxws_message* message = oxws_message_new();
+  oxws_item_set_subject((oxws_item*) message, "[libetpan test] message from oxws-sample");
+  oxws_item_set_body_fields((oxws_item*) message,
           "This is just another email sent using libetpan's Exchange implementation.\n" \
           "It's ok to feel annoyed by now :P",
-          OXWS_TYPE_BODY_TYPE_TEXT);
+          OXWS_BODY_TYPE_TEXT);
   message->to_recipients = carray_new(3);
-  oxws_type_email_address* address = oxws_type_email_address_new(NULL, argv[1], NULL, OXWS_TYPE_MAILBOX_TYPE__NOT_SET, NULL);
+  oxws_email_address* address = oxws_email_address_new(NULL, argv[1], NULL, OXWS_MAILBOX_TYPE__NOT_SET, NULL);
   carray_add(message->to_recipients, address, NULL);
-  oxws_create_item(oxws, (oxws_type_item*) message, OXWS_MESSAGE_DISPOSITION_SEND_AND_SAVE_COPY, OXWS_DISTFOLDER_SENTITEMS, NULL);
+  oxws_create_item(oxws, (oxws_item*) message, OXWS_MESSAGE_DISPOSITION_SEND_AND_SAVE_COPY, OXWS_DISTFOLDER_SENTITEMS, NULL);
 #endif
 
   /* cleanup */
@@ -70,17 +70,17 @@ oxws_result list_items(oxws* oxws, oxws_distinguished_folder_id folder_id) {
   /* list all items */
   unsigned int i;
   for(i = 0; i < items->len; i++) {
-    oxws_type_item* item = carray_get(items, i);
+    oxws_item* item = carray_get(items, i);
     printf("- %s\n", item->subject ? item->subject->str : NULL);
-    if(item->size != OXWS_TYPE_OPTIONAL_INT32__NOT_SET)
+    if(item->size != OXWS_OPTIONAL_INT32__NOT_SET)
       printf("  - size: %d\n", item->size);
 
-    if(OXWS_TYPE_ITEM_IS_MESSAGE(item)) {
-      oxws_type_message* message = (oxws_type_message*) item;
+    if(OXWS_ITEM_IS_MESSAGE(item)) {
+      oxws_message* message = (oxws_message*) item;
 
-      if(message->is_read == OXWS_TYPE_OPTIONAL_BOOLEAN_TRUE) {
+      if(message->is_read == OXWS_OPTIONAL_BOOLEAN_TRUE) {
         puts("  - is_read: true");
-      } else if(message->is_read == OXWS_TYPE_OPTIONAL_BOOLEAN_FALSE) {
+      } else if(message->is_read == OXWS_OPTIONAL_BOOLEAN_FALSE) {
         puts("  - is_read: false");
       }
 
@@ -97,7 +97,7 @@ oxws_result list_items(oxws* oxws, oxws_distinguished_folder_id folder_id) {
   }
 
   /* clean up */
-  oxws_type_item_array_free(items);
+  oxws_item_array_free(items);
   return result;
 }
 

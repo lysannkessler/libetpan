@@ -48,7 +48,7 @@
 typedef void (*oxws_entry_free) (void*);
 
 /*
-  oxws_type_special_array_free()
+  oxws_special_array_free()
 
   Free an array of objects, but use the given function to release each object
   contained in the array first.
@@ -57,12 +57,12 @@ typedef void (*oxws_entry_free) (void*);
   @param entry_free [optional] function to be used to release the objects. If
                     given, it will be called with each object as parameter.
 */
-void oxws_type_special_array_free(carray* array, oxws_entry_free entry_free);
+void oxws_special_array_free(carray* array, oxws_entry_free entry_free);
 
 
-oxws_type_item_or_folder_id* oxws_type_item_or_folder_id_new(const char* id, const char* change_key) {
-  oxws_type_item_or_folder_id* result = (oxws_type_item_or_folder_id*)
-    calloc(1, sizeof(oxws_type_item_or_folder_id));
+oxws_item_or_folder_id* oxws_item_or_folder_id_new(const char* id, const char* change_key) {
+  oxws_item_or_folder_id* result = (oxws_item_or_folder_id*)
+    calloc(1, sizeof(oxws_item_or_folder_id));
 
   if(result != NULL) {
     /* copy id */
@@ -70,7 +70,7 @@ oxws_type_item_or_folder_id* oxws_type_item_or_folder_id_new(const char* id, con
       size_t length = strlen(id) + 1;
       result->id = (char*) malloc(length);
       if(result->id == NULL) {
-        oxws_type_item_id_free(result);
+        oxws_item_id_free(result);
         result = NULL;
       }
       memcpy(result->id, id, length);
@@ -81,7 +81,7 @@ oxws_type_item_or_folder_id* oxws_type_item_or_folder_id_new(const char* id, con
       size_t length = strlen(change_key) + 1;
       result->change_key = (char*) malloc(length);
       if(result->change_key == NULL) {
-        oxws_type_item_id_free(result);
+        oxws_item_id_free(result);
         result = NULL;
       }
       memcpy(result->change_key, change_key, length);
@@ -90,24 +90,24 @@ oxws_type_item_or_folder_id* oxws_type_item_or_folder_id_new(const char* id, con
 
   return result;
 }
-oxws_type_item_id* oxws_type_item_id_new(const char* id, const char* change_key) {
-  return oxws_type_item_or_folder_id_new(id, change_key);
+oxws_item_id* oxws_item_id_new(const char* id, const char* change_key) {
+  return oxws_item_or_folder_id_new(id, change_key);
 }
-oxws_type_folder_id* oxws_type_folder_id_new(const char* id, const char* change_key) {
-  return oxws_type_item_or_folder_id_new(id, change_key);
+oxws_folder_id* oxws_folder_id_new(const char* id, const char* change_key) {
+  return oxws_item_or_folder_id_new(id, change_key);
 }
 
 /*
-  oxws_type_item_or_folder_id_free()
+  oxws_item_or_folder_id_free()
 
   Release given item or folder id object.
 
   @param id [required] object to release
 
-  @see oxws_type_item_id_free
-  @see oxws_type_folder_id_free
+  @see oxws_item_id_free
+  @see oxws_folder_id_free
 */
-void oxws_type_item_or_folder_id_free(oxws_type_item_or_folder_id* id) {
+void oxws_item_or_folder_id_free(oxws_item_or_folder_id* id) {
   if(!id) return;
 
   if(id->id) free(id->id);
@@ -115,21 +115,21 @@ void oxws_type_item_or_folder_id_free(oxws_type_item_or_folder_id* id) {
 
   free(id);
 }
-void oxws_type_item_id_free(oxws_type_item_id* id) {
-  return oxws_type_item_or_folder_id_free(id);
+void oxws_item_id_free(oxws_item_id* id) {
+  return oxws_item_or_folder_id_free(id);
 }
-void oxws_type_folder_id_free(oxws_type_folder_id* id) {
-  return oxws_type_item_or_folder_id_free(id);
+void oxws_folder_id_free(oxws_folder_id* id) {
+  return oxws_item_or_folder_id_free(id);
 }
 
 
-oxws_type_body* oxws_type_body_new(const char* string, oxws_type_body_type body_type) {
+oxws_body* oxws_body_new(const char* string, oxws_body_type body_type) {
   size_t length = string == NULL ? 0 : strlen(string);
-  return oxws_type_body_new_len(string, length, body_type);
+  return oxws_body_new_len(string, length, body_type);
 }
 
-oxws_type_body* oxws_type_body_new_len(const char* string, size_t length, oxws_type_body_type body_type) {
-  oxws_type_body* result = (oxws_type_body*) malloc(sizeof(oxws_type_body));
+oxws_body* oxws_body_new_len(const char* string, size_t length, oxws_body_type body_type) {
+  oxws_body* result = (oxws_body*) malloc(sizeof(oxws_body));
 
   if(result != NULL) {
     result->body_type = body_type;
@@ -143,18 +143,18 @@ oxws_type_body* oxws_type_body_new_len(const char* string, size_t length, oxws_t
   return result;
 }
 
-void oxws_type_body_free(oxws_type_body* body) {
+void oxws_body_free(oxws_body* body) {
   if(body == NULL) return;
   if(body->string) mmap_string_free(body->string);
   free(body);
 }
 
-oxws_result oxws_type_body_append(oxws_type_body* body, const char* string) {
+oxws_result oxws_body_append(oxws_body* body, const char* string) {
   if(string == NULL) return OXWS_NO_ERROR;
-  return oxws_type_body_append_len(body, string, strlen(string));
+  return oxws_body_append_len(body, string, strlen(string));
 }
 
-oxws_result oxws_type_body_append_len(oxws_type_body* body, const char* string, size_t length) {
+oxws_result oxws_body_append_len(oxws_body* body, const char* string, size_t length) {
   if(body == NULL) return OXWS_ERROR_INVALID_PARAMETER;
   if(length == 0) return OXWS_NO_ERROR;
   if(string == NULL) return OXWS_ERROR_INVALID_PARAMETER;
@@ -173,10 +173,10 @@ oxws_result oxws_type_body_append_len(oxws_type_body* body, const char* string, 
 }
 
 
-oxws_type_email_address* oxws_type_email_address_new(const char* name, const char* email_address,
-        const char* routing_type, oxws_type_mailbox_type mailbox_type, oxws_type_item_id* item_id) {
+oxws_email_address* oxws_email_address_new(const char* name, const char* email_address,
+        const char* routing_type, oxws_mailbox_type mailbox_type, oxws_item_id* item_id) {
 
-  oxws_type_email_address* result = (oxws_type_email_address*) calloc(1, sizeof(oxws_type_email_address));
+  oxws_email_address* result = (oxws_email_address*) calloc(1, sizeof(oxws_email_address));
   if(result != NULL) {
     result->mailbox_type = mailbox_type;
     result->item_id = item_id;
@@ -186,7 +186,7 @@ oxws_type_email_address* oxws_type_email_address_new(const char* name, const cha
       size_t length = strlen(name) + 1;
       result->name = (char*) malloc(length);
       if(result->name == NULL) {
-        oxws_type_email_address_free(result);
+        oxws_email_address_free(result);
         result = NULL;
       }
       memcpy(result->name, name, length);
@@ -197,7 +197,7 @@ oxws_type_email_address* oxws_type_email_address_new(const char* name, const cha
       size_t length = strlen(email_address) + 1;
       result->email_address = (char*) malloc(length);
       if(result->email_address == NULL) {
-        oxws_type_email_address_free(result);
+        oxws_email_address_free(result);
         result = NULL;
       }
       memcpy(result->email_address, email_address, length);
@@ -208,7 +208,7 @@ oxws_type_email_address* oxws_type_email_address_new(const char* name, const cha
       size_t length = strlen(routing_type) + 1;
       result->routing_type = (char*) malloc(length);
       if(result->routing_type == NULL) {
-        oxws_type_email_address_free(result);
+        oxws_email_address_free(result);
         result = NULL;
       }
       memcpy(result->routing_type, routing_type, length);
@@ -217,22 +217,22 @@ oxws_type_email_address* oxws_type_email_address_new(const char* name, const cha
   return result;
 }
 
-void oxws_type_email_address_free(oxws_type_email_address* address) {
+void oxws_email_address_free(oxws_email_address* address) {
   if(!address) return;
 
   if(address->name) free(address->name);
   if(address->email_address) free(address->email_address);
   if(address->routing_type) free(address->routing_type);
-  if(address->item_id) oxws_type_item_id_free(address->item_id);
+  if(address->item_id) oxws_item_id_free(address->item_id);
 
   free(address);
 }
 
-void oxws_type_email_address_array_free(carray* array) {
-  return oxws_type_special_array_free(array, (oxws_entry_free) oxws_type_email_address_free);
+void oxws_email_address_array_free(carray* array) {
+  return oxws_special_array_free(array, (oxws_entry_free) oxws_email_address_free);
 }
 
-oxws_result oxws_type_email_address_set_name(oxws_type_email_address* address, const char* name) {
+oxws_result oxws_email_address_set_name(oxws_email_address* address, const char* name) {
   if(address == NULL) return OXWS_ERROR_INVALID_PARAMETER;
 
   if(name == NULL) {
@@ -252,7 +252,7 @@ oxws_result oxws_type_email_address_set_name(oxws_type_email_address* address, c
   return OXWS_NO_ERROR;
 }
 
-oxws_result oxws_type_email_address_set_email_address(oxws_type_email_address* address, const char* email_address) {
+oxws_result oxws_email_address_set_email_address(oxws_email_address* address, const char* email_address) {
   if(address == NULL) return OXWS_ERROR_INVALID_PARAMETER;
 
   if(email_address == NULL) {
@@ -272,7 +272,7 @@ oxws_result oxws_type_email_address_set_email_address(oxws_type_email_address* a
   return OXWS_NO_ERROR;
 }
 
-oxws_result oxws_type_email_address_set_routing_type(oxws_type_email_address* address, const char* routing_type) {
+oxws_result oxws_email_address_set_routing_type(oxws_email_address* address, const char* routing_type) {
   if(address == NULL) return OXWS_ERROR_INVALID_PARAMETER;
 
   if(routing_type == NULL) {
@@ -292,29 +292,29 @@ oxws_result oxws_type_email_address_set_routing_type(oxws_type_email_address* ad
   return OXWS_NO_ERROR;
 }
 
-oxws_result oxws_type_email_address_set_mailbox_type(oxws_type_email_address* address, oxws_type_mailbox_type mailbox_type) {
+oxws_result oxws_email_address_set_mailbox_type(oxws_email_address* address, oxws_mailbox_type mailbox_type) {
   if(address == NULL) return OXWS_ERROR_INVALID_PARAMETER;
   address->mailbox_type = mailbox_type;
   return OXWS_NO_ERROR;
 }
 
-oxws_result oxws_type_email_address_set_item_id(oxws_type_email_address* address, oxws_type_item_id* id) {
+oxws_result oxws_email_address_set_item_id(oxws_email_address* address, oxws_item_id* id) {
   if(address == NULL) return OXWS_ERROR_INVALID_PARAMETER;
 
   if(address->item_id == id) return OXWS_NO_ERROR;
-  oxws_type_item_id_free(address->item_id);
+  oxws_item_id_free(address->item_id);
   address->item_id = id;
 
   return OXWS_NO_ERROR;
 }
 
 
-oxws_type_item* oxws_type_item_new() {
-  oxws_type_item* item = (oxws_type_item*) calloc(1, sizeof(oxws_type_item));
+oxws_item* oxws_item_new() {
+  oxws_item* item = (oxws_item*) calloc(1, sizeof(oxws_item));
 
   if(item != NULL) {
-    if(oxws_type_item_init(item) != OXWS_NO_ERROR) {
-      oxws_type_item_free(item);
+    if(oxws_item_init(item) != OXWS_NO_ERROR) {
+      oxws_item_free(item);
       item = NULL;
     }
   }
@@ -322,67 +322,67 @@ oxws_type_item* oxws_type_item_new() {
   return item;
 }
 
-oxws_result oxws_type_item_init(oxws_type_item* item) {
+oxws_result oxws_item_init(oxws_item* item) {
   if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
 
-  item->class_id = OXWS_TYPE_ITEM_CLASS_ITEM;
+  item->class_id = OXWS_ITEM_CLASS_ITEM;
 
   return OXWS_NO_ERROR;
 }
 
 /*
-  oxws_type_item_free_members()
+  oxws_item_free_members()
 
-  Free all members of given object which are specific to oxws_type_item.
+  Free all members of given object which are specific to oxws_item.
 
   @param item [required] item whose members to release
 
-  @see oxws_type_item_free
+  @see oxws_item_free
 */
-void oxws_type_item_free_members(oxws_type_item* item) {
+void oxws_item_free_members(oxws_item* item) {
   if(!item) return;
 
-  oxws_type_item_id_free(item->item_id);
-  oxws_type_folder_id_free(item->parent_folder_id);
+  oxws_item_id_free(item->item_id);
+  oxws_folder_id_free(item->parent_folder_id);
   if(item->item_class) free(item->item_class);
   if(item->subject) mmap_string_free(item->subject);
-  oxws_type_body_free(item->body);
+  oxws_body_free(item->body);
   if(item->date_time_received) free(item->date_time_received);
   if(item->date_time_sent) free(item->date_time_sent);
 }
 
 /*
-  oxws_type_message_free_members()
+  oxws_message_free_members()
 
-  Free all members of given object which are specific to oxws_type_message.
+  Free all members of given object which are specific to oxws_message.
   This will leave other members untouched.
 
   @param message [required] message whose members to release
 
-  @see oxws_type_item_free
+  @see oxws_item_free
 */
-void oxws_type_message_free_members(oxws_type_message* message) {
+void oxws_message_free_members(oxws_message* message) {
   if(!message) return;
 
-  oxws_type_email_address_free(message->sender);
-  oxws_type_email_address_array_free(message->to_recipients);
-  oxws_type_email_address_array_free(message->cc_recipients);
-  oxws_type_email_address_array_free(message->bcc_recipients);
-  oxws_type_email_address_free(message->from);
+  oxws_email_address_free(message->sender);
+  oxws_email_address_array_free(message->to_recipients);
+  oxws_email_address_array_free(message->cc_recipients);
+  oxws_email_address_array_free(message->bcc_recipients);
+  oxws_email_address_free(message->from);
 }
 
-void oxws_type_item_free(oxws_type_item* item) {
+void oxws_item_free(oxws_item* item) {
   if(!item) return;
 
-  oxws_type_item_class_id class_id = item->class_id;
-  oxws_type_item_free_members(item);
+  oxws_item_class_id class_id = item->class_id;
+  oxws_item_free_members(item);
 
   switch(class_id) {
-    case OXWS_TYPE_ITEM_CLASS_ITEM:
+    case OXWS_ITEM_CLASS_ITEM:
       /* no-op */
       break;
-    case OXWS_TYPE_ITEM_CLASS_MESSAGE:
-      oxws_type_message_free_members((oxws_type_message*) item);
+    case OXWS_ITEM_CLASS_MESSAGE:
+      oxws_message_free_members((oxws_message*) item);
       break;
     default:
       /* TODO: warn */
@@ -392,47 +392,47 @@ void oxws_type_item_free(oxws_type_item* item) {
   free(item);
 }
 
-void oxws_type_item_array_free(carray* array) {
-  return oxws_type_special_array_free(array, (oxws_entry_free) oxws_type_item_free);
+void oxws_item_array_free(carray* array) {
+  return oxws_special_array_free(array, (oxws_entry_free) oxws_item_free);
 }
 
-oxws_result oxws_type_item_set_item_id(oxws_type_item* item, oxws_type_item_id* id) {
+oxws_result oxws_item_set_item_id(oxws_item* item, oxws_item_id* id) {
   if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
 
   if(item->item_id == id) return OXWS_NO_ERROR;
-  oxws_type_item_id_free(item->item_id);
+  oxws_item_id_free(item->item_id);
   item->item_id = id;
 
   return OXWS_NO_ERROR;
 }
 
-oxws_result oxws_type_item_set_item_id_fields(oxws_type_item* item, const char* id, const char* change_key) {
-  oxws_type_item_id* item_id = oxws_type_item_id_new(id, change_key);
+oxws_result oxws_item_set_item_id_fields(oxws_item* item, const char* id, const char* change_key) {
+  oxws_item_id* item_id = oxws_item_id_new(id, change_key);
   if(item_id == NULL)
     return OXWS_ERROR_INTERNAL;
   else
-    return oxws_type_item_set_item_id(item, item_id);
+    return oxws_item_set_item_id(item, item_id);
 }
 
-oxws_result oxws_type_item_set_parent_folder_id(oxws_type_item* item, oxws_type_folder_id* id) {
+oxws_result oxws_item_set_parent_folder_id(oxws_item* item, oxws_folder_id* id) {
   if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
 
   if(item->parent_folder_id == id) return OXWS_NO_ERROR;
-  oxws_type_folder_id_free(item->parent_folder_id);
+  oxws_folder_id_free(item->parent_folder_id);
   item->parent_folder_id = id;
 
   return OXWS_NO_ERROR;
 }
 
-oxws_result oxws_type_item_set_parent_folder_id_fields(oxws_type_item* item, const char* id, const char* change_key) {
-  oxws_type_folder_id* folder_id = oxws_type_folder_id_new(id, change_key);
+oxws_result oxws_item_set_parent_folder_id_fields(oxws_item* item, const char* id, const char* change_key) {
+  oxws_folder_id* folder_id = oxws_folder_id_new(id, change_key);
   if(folder_id == NULL)
     return OXWS_ERROR_INTERNAL;
   else
-    return oxws_type_item_set_parent_folder_id(item, folder_id);
+    return oxws_item_set_parent_folder_id(item, folder_id);
 }
 
-oxws_result oxws_type_item_set_item_class(oxws_type_item* item, const char* item_class) {
+oxws_result oxws_item_set_item_class(oxws_item* item, const char* item_class) {
   if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
 
   if(item_class == NULL) {
@@ -450,7 +450,7 @@ oxws_result oxws_type_item_set_item_class(oxws_type_item* item, const char* item
   return OXWS_NO_ERROR;
 }
 
-oxws_result oxws_type_item_set_subject_mmap(oxws_type_item* item, MMAPString* string) {
+oxws_result oxws_item_set_subject_mmap(oxws_item* item, MMAPString* string) {
   if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
   if(item->subject == string) return OXWS_NO_ERROR;
 
@@ -462,12 +462,12 @@ oxws_result oxws_type_item_set_subject_mmap(oxws_type_item* item, MMAPString* st
   return OXWS_NO_ERROR;
 }
 
-oxws_result oxws_type_item_set_subject(oxws_type_item* item, const char* string) {
+oxws_result oxws_item_set_subject(oxws_item* item, const char* string) {
   size_t length = string == NULL ? 0 : strlen(string);
-  return oxws_type_item_set_subject_len(item, string, length);
+  return oxws_item_set_subject_len(item, string, length);
 }
 
-oxws_result oxws_type_item_set_subject_len(oxws_type_item* item, const char* string, size_t length) {
+oxws_result oxws_item_set_subject_len(oxws_item* item, const char* string, size_t length) {
   if(item == NULL || (string == NULL && length > 0))
     return OXWS_ERROR_INVALID_PARAMETER;
 
@@ -487,13 +487,13 @@ oxws_result oxws_type_item_set_subject_len(oxws_type_item* item, const char* str
   return OXWS_NO_ERROR;
 }
 
-oxws_result oxws_type_item_append_to_subject(oxws_type_item* item, const char* string) {
+oxws_result oxws_item_append_to_subject(oxws_item* item, const char* string) {
   if(string == NULL) return OXWS_NO_ERROR;
-  return oxws_type_item_append_to_subject_len(item, string, strlen(string));
+  return oxws_item_append_to_subject_len(item, string, strlen(string));
 }
 
-/* TODO refactor: extract method (see oxws_type_body_append_len) */
-oxws_result oxws_type_item_append_to_subject_len(oxws_type_item* item, const char* string, size_t length) {
+/* TODO refactor: extract method (see oxws_body_append_len) */
+oxws_result oxws_item_append_to_subject_len(oxws_item* item, const char* string, size_t length) {
   if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
   if(length == 0) return OXWS_NO_ERROR;
   if(string == NULL) return OXWS_ERROR_INVALID_PARAMETER;
@@ -511,48 +511,48 @@ oxws_result oxws_type_item_append_to_subject_len(oxws_type_item* item, const cha
   return OXWS_NO_ERROR;
 }
 
-oxws_result oxws_type_item_set_body(oxws_type_item* item, oxws_type_body* body) {
+oxws_result oxws_item_set_body(oxws_item* item, oxws_body* body) {
   if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
 
   if(item->body == body) return OXWS_NO_ERROR;
-  oxws_type_body_free(item->body);
+  oxws_body_free(item->body);
   item->body = body;
 
   return OXWS_NO_ERROR;
 }
 
-oxws_result oxws_type_item_set_body_fields(oxws_type_item* item, const char* string, oxws_type_body_type body_type) {
-  oxws_type_body* body = oxws_type_body_new(string, body_type);
+oxws_result oxws_item_set_body_fields(oxws_item* item, const char* string, oxws_body_type body_type) {
+  oxws_body* body = oxws_body_new(string, body_type);
   if(body == NULL)
     return OXWS_ERROR_INTERNAL;
   else
-    return oxws_type_item_set_body(item, body);
+    return oxws_item_set_body(item, body);
 }
 
-oxws_result oxws_type_item_set_body_fields_len(oxws_type_item* item, const char* string, size_t length, oxws_type_body_type body_type) {
-  oxws_type_body* body = oxws_type_body_new_len(string, length, body_type);
+oxws_result oxws_item_set_body_fields_len(oxws_item* item, const char* string, size_t length, oxws_body_type body_type) {
+  oxws_body* body = oxws_body_new_len(string, length, body_type);
   if(body == NULL)
     return OXWS_ERROR_INTERNAL;
   else
-    return oxws_type_item_set_body(item, body);
+    return oxws_item_set_body(item, body);
 }
 
-oxws_result oxws_type_item_append_to_body(oxws_type_item* item, const char* string) {
+oxws_result oxws_item_append_to_body(oxws_item* item, const char* string) {
   if(string == NULL) return OXWS_NO_ERROR;
-  return oxws_type_item_append_to_body_len(item, string, strlen(string));
+  return oxws_item_append_to_body_len(item, string, strlen(string));
 }
 
-oxws_result oxws_type_item_append_to_body_len(oxws_type_item* item, const char* string, size_t length) {
+oxws_result oxws_item_append_to_body_len(oxws_item* item, const char* string, size_t length) {
   if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
 
   if(item->body != NULL) {
-    return oxws_type_body_append_len(item->body, string, length);
+    return oxws_body_append_len(item->body, string, length);
   } else {
-    return oxws_type_item_set_body_fields_len(item, string, length, OXWS_TYPE_BODY_TYPE__NOT_SET);
+    return oxws_item_set_body_fields_len(item, string, length, OXWS_BODY_TYPE__NOT_SET);
   }
 }
 
-oxws_result oxws_type_item_set_date_time_received(oxws_type_item* item, time_t* date_time_received) {
+oxws_result oxws_item_set_date_time_received(oxws_item* item, time_t* date_time_received) {
   if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
 
   if(date_time_received == NULL) {
@@ -568,13 +568,13 @@ oxws_result oxws_type_item_set_date_time_received(oxws_type_item* item, time_t* 
   return OXWS_NO_ERROR;
 }
 
-oxws_result oxws_type_item_set_size(oxws_type_item* item, oxws_type_optional_int32 size) {
+oxws_result oxws_item_set_size(oxws_item* item, oxws_optional_int32 size) {
   if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
   item->size = size;
   return OXWS_NO_ERROR;
 }
 
-oxws_result oxws_type_item_set_date_time_sent(oxws_type_item* item, time_t* date_time_sent) {
+oxws_result oxws_item_set_date_time_sent(oxws_item* item, time_t* date_time_sent) {
   if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
 
   if(date_time_sent == NULL) {
@@ -591,13 +591,13 @@ oxws_result oxws_type_item_set_date_time_sent(oxws_type_item* item, time_t* date
 }
 
 
-oxws_type_message* oxws_type_message_new() {
-  oxws_type_message* message = (oxws_type_message*) calloc(1, sizeof(oxws_type_message));
+oxws_message* oxws_message_new() {
+  oxws_message* message = (oxws_message*) calloc(1, sizeof(oxws_message));
 
   if(message != NULL) {
-    if(oxws_type_item_init((oxws_type_item*) message) != OXWS_NO_ERROR ||
-       oxws_type_message_init(message) != OXWS_NO_ERROR) {
-      oxws_type_item_free((oxws_type_item*) message);
+    if(oxws_item_init((oxws_item*) message) != OXWS_NO_ERROR ||
+       oxws_message_init(message) != OXWS_NO_ERROR) {
+      oxws_item_free((oxws_item*) message);
       message = NULL;
     }
   }
@@ -605,102 +605,102 @@ oxws_type_message* oxws_type_message_new() {
   return message;
 }
 
-oxws_result oxws_type_message_init(oxws_type_message* message) {
+oxws_result oxws_message_init(oxws_message* message) {
   if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;
 
-  message->item.class_id = OXWS_TYPE_ITEM_CLASS_MESSAGE;
+  message->item.class_id = OXWS_ITEM_CLASS_MESSAGE;
 
   return OXWS_NO_ERROR;
 }
 
-oxws_result oxws_type_message_set_from(oxws_type_message* message, oxws_type_email_address* from) {
+oxws_result oxws_message_set_from(oxws_message* message, oxws_email_address* from) {
   if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;
 
   if(message->from == from) return OXWS_NO_ERROR;
-  oxws_type_email_address_free(message->from);
+  oxws_email_address_free(message->from);
   message->from = from;
 
   return OXWS_NO_ERROR;
 }
 
-oxws_result oxws_type_message_set_from_fields(oxws_type_message* message, const char* name, const char* email_address,
-        const char* routing_type, oxws_type_mailbox_type mailbox_type, oxws_type_item_id* item_id) {
+oxws_result oxws_message_set_from_fields(oxws_message* message, const char* name, const char* email_address,
+        const char* routing_type, oxws_mailbox_type mailbox_type, oxws_item_id* item_id) {
 
-  oxws_type_email_address* from = oxws_type_email_address_new(name, email_address, routing_type, mailbox_type, item_id);
+  oxws_email_address* from = oxws_email_address_new(name, email_address, routing_type, mailbox_type, item_id);
   if(from == NULL)
     return OXWS_ERROR_INTERNAL;
   else
-    return oxws_type_message_set_from(message, from);
+    return oxws_message_set_from(message, from);
 }
 
-oxws_result oxws_type_message_set_from_name(oxws_type_message* message, const char* name) {
+oxws_result oxws_message_set_from_name(oxws_message* message, const char* name) {
   if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;
   if(message->from == NULL) {
-    return oxws_type_message_set_from_fields(message, name, NULL, NULL, OXWS_TYPE_MAILBOX_TYPE__NOT_SET, NULL);
+    return oxws_message_set_from_fields(message, name, NULL, NULL, OXWS_MAILBOX_TYPE__NOT_SET, NULL);
   } else {
-    return oxws_type_email_address_set_name(message->from, name);
+    return oxws_email_address_set_name(message->from, name);
   }
 }
-oxws_result oxws_type_message_set_from_email_address(oxws_type_message* message, const char* email_address) {
+oxws_result oxws_message_set_from_email_address(oxws_message* message, const char* email_address) {
   if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;
   if(message->from == NULL) {
-    return oxws_type_message_set_from_fields(message, NULL, email_address, NULL, OXWS_TYPE_MAILBOX_TYPE__NOT_SET, NULL);
+    return oxws_message_set_from_fields(message, NULL, email_address, NULL, OXWS_MAILBOX_TYPE__NOT_SET, NULL);
   } else {
-    return oxws_type_email_address_set_email_address(message->from, email_address);
+    return oxws_email_address_set_email_address(message->from, email_address);
   }
 }
-oxws_result oxws_type_message_set_from_routing_type(oxws_type_message* message, const char* routing_type) {
+oxws_result oxws_message_set_from_routing_type(oxws_message* message, const char* routing_type) {
   if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;
   if(message->from == NULL) {
-    return oxws_type_message_set_from_fields(message, NULL, NULL, routing_type, OXWS_TYPE_MAILBOX_TYPE__NOT_SET, NULL);
+    return oxws_message_set_from_fields(message, NULL, NULL, routing_type, OXWS_MAILBOX_TYPE__NOT_SET, NULL);
   } else {
-    return oxws_type_email_address_set_routing_type(message->from, routing_type);
+    return oxws_email_address_set_routing_type(message->from, routing_type);
   }
 }
-oxws_result oxws_type_message_set_from_mailbox_type(oxws_type_message* message, oxws_type_mailbox_type mailbox_type) {
+oxws_result oxws_message_set_from_mailbox_type(oxws_message* message, oxws_mailbox_type mailbox_type) {
   if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;
   if(message->from == NULL) {
-    return oxws_type_message_set_from_fields(message, NULL, NULL, NULL, mailbox_type, NULL);
+    return oxws_message_set_from_fields(message, NULL, NULL, NULL, mailbox_type, NULL);
   } else {
-    return oxws_type_email_address_set_mailbox_type(message->from, mailbox_type);
+    return oxws_email_address_set_mailbox_type(message->from, mailbox_type);
   }
 }
 
-oxws_result oxws_type_message_set_from_item_id(oxws_type_message* message, oxws_type_item_id* id) {
+oxws_result oxws_message_set_from_item_id(oxws_message* message, oxws_item_id* id) {
   if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;
 
   if(message->from == NULL) {
-    return oxws_type_message_set_from_fields(message, NULL, NULL, NULL, OXWS_TYPE_MAILBOX_TYPE__NOT_SET, id);
+    return oxws_message_set_from_fields(message, NULL, NULL, NULL, OXWS_MAILBOX_TYPE__NOT_SET, id);
   } else {
-    return oxws_type_email_address_set_item_id(message->from, id);
+    return oxws_email_address_set_item_id(message->from, id);
   }
 
   return OXWS_NO_ERROR;
 }
-oxws_result oxws_type_message_set_from_item_id_fields(oxws_type_message* message, const char* id, const char* change_key) {
-  oxws_type_item_id* item_id = oxws_type_item_id_new(id, change_key);
+oxws_result oxws_message_set_from_item_id_fields(oxws_message* message, const char* id, const char* change_key) {
+  oxws_item_id* item_id = oxws_item_id_new(id, change_key);
   if(item_id == NULL)
     return OXWS_ERROR_INTERNAL;
   else
-    return oxws_type_message_set_from_item_id(message, item_id);
+    return oxws_message_set_from_item_id(message, item_id);
 }
 
 
-oxws_result oxws_type_message_set_is_read(oxws_type_message* message, oxws_type_optional_boolean is_read) {
+oxws_result oxws_message_set_is_read(oxws_message* message, oxws_optional_boolean is_read) {
   if(message == NULL) return OXWS_ERROR_INVALID_PARAMETER;
   message->is_read = is_read;
   return OXWS_NO_ERROR;
 }
 
 
-void oxws_type_special_array_free(carray* array, oxws_entry_free entry_free) {
+void oxws_special_array_free(carray* array, oxws_entry_free entry_free) {
   if(!array) return;
 
   /* free entries */
   if(entry_free) {
     unsigned int i;
     for(i = 0; i < array->len; i++) {
-      oxws_type_item* item = (oxws_type_item*) carray_get(array, i);
+      oxws_item* item = (oxws_item*) carray_get(array, i);
       entry_free(item);
     }
   }

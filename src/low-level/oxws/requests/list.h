@@ -124,7 +124,7 @@ struct oxws_list_sax_context {
 
   /* If we are currently inside an item tag, this is the item being parsed. It
      will be appended to the list once we leave the current item tag. */
-  oxws_type_item* item;
+  oxws_item* item;
   /* If we are inside a item tag of any class, this value counts the current
      node depth. This is neccessary so we know when to go back to the ITEMS
      state even if we parse unknown tags. */

@@ -47,7 +47,7 @@
 #include <libxml/parser.h>
 
 
-oxws_result oxws_create_item(oxws* oxws, oxws_type_item* item, oxws_message_disposition message_disposition,
+oxws_result oxws_create_item(oxws* oxws, oxws_item* item, oxws_message_disposition message_disposition,
         oxws_distinguished_folder_id saved_item_distfolder_id, const char* saved_item_folder_id) {
 
   /* check parameters */
@@ -111,8 +111,8 @@ oxws_result oxws_create_item(oxws* oxws, oxws_type_item* item, oxws_message_disp
   }
 
   xmlNodePtr node_items = xmlNewChild(node_create_item, ns_exch_messages, BAD_CAST "Items", NULL);
-  if(item->class_id == OXWS_TYPE_ITEM_CLASS_MESSAGE) {
-    oxws_type_message* message = (oxws_type_message*) item;
+  if(item->class_id == OXWS_ITEM_CLASS_MESSAGE) {
+    oxws_message* message = (oxws_message*) item;
     /* build message:
       <t:Message>
         <t:ItemClass>IPM.Note</t:ItemClass>
@@ -130,11 +130,11 @@ oxws_result oxws_create_item(oxws* oxws, oxws_type_item* item, oxws_message_disp
     if(message->item.body != NULL) {
       const xmlChar* body = message->item.body->string == NULL ? NULL : BAD_CAST message->item.body->string->str;
       xmlNodePtr node_body = xmlNewChild(node_message, ns_exch_types, BAD_CAST "Body", body);
-      if(message->item.body->body_type != OXWS_TYPE_BODY_TYPE__NOT_SET) {
+      if(message->item.body->body_type != OXWS_BODY_TYPE__NOT_SET) {
         const xmlChar* body_type = NULL;
-        if(message->item.body->body_type == OXWS_TYPE_BODY_TYPE_HTML)
+        if(message->item.body->body_type == OXWS_BODY_TYPE_HTML)
           body_type = BAD_CAST "HTML";
-        else if(message->item.body->body_type == OXWS_TYPE_BODY_TYPE_TEXT)
+        else if(message->item.body->body_type == OXWS_BODY_TYPE_TEXT)
           body_type = BAD_CAST "Text";
         if(body_type != NULL) {
           xmlNewProp(node_body, BAD_CAST "BodyType", body_type);
@@ -147,7 +147,7 @@ oxws_result oxws_create_item(oxws* oxws, oxws_type_item* item, oxws_message_disp
       xmlNodePtr node_to_recipients = xmlNewChild(node_message, ns_exch_types, BAD_CAST "ToRecipients", NULL);
       size_t i;
       for(i = 0; i < message->to_recipients->len; i++) {
-        oxws_type_email_address* address = (oxws_type_email_address*) carray_get(message->to_recipients, i);
+        oxws_email_address* address = (oxws_email_address*) carray_get(message->to_recipients, i);
         xmlNodePtr node_mailbox = xmlNewChild(node_to_recipients, ns_exch_types, BAD_CAST "Mailbox", NULL);
         if(address->name != NULL)
           xmlNewChild(node_mailbox, ns_exch_types, BAD_CAST "Name", BAD_CAST address->name);

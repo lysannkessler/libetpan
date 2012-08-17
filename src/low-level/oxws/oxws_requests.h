@@ -90,7 +90,7 @@ oxws_result oxws_prepare_for_requests(oxws* oxws);
   @param folder_id     [optional] folder if of folder whose items to list
   @param count         number of items to list; will list all available items
                        if count < 0
-  @param list          [required] result list of oxws_type_item*
+  @param list          [required] result list of oxws_item*
 
   @return - OXWS_NO_ERROR indicates success; *list points to a result list
           - OXWS_ERROR_INVALID_PARAMETER indicates one of the following:
@@ -109,8 +109,8 @@ oxws_result oxws_prepare_for_requests(oxws* oxws);
         folder_id is ignored and the folder specified by distfolder_id is used
         for the request.
   @note Upon error, *list is set to NULL.
-        Upon success, *list points to a list of oxws_type_item*. The caller
-        must free the list with oxws_type_item_array_free(*list).
+        Upon success, *list points to a list of oxws_item*. The caller
+        must free the list with oxws_item_array_free(*list).
 
   @note for implementation see requests/list.c
 
@@ -130,7 +130,7 @@ oxws_result oxws_list(oxws* oxws,
   @note TODO SendMeetingInvitations attribute
 */
 LIBETPAN_EXPORT
-oxws_result oxws_create_item(oxws* oxws, oxws_type_item* item, oxws_message_disposition message_disposition,
+oxws_result oxws_create_item(oxws* oxws, oxws_item* item, oxws_message_disposition message_disposition,
         oxws_distinguished_folder_id saved_item_distfolder_id, const char* saved_item_folder_id);
 
 #ifdef __cplusplus
