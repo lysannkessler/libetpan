@@ -233,8 +233,7 @@ void oxws_list_sax_handler_start_element_ns(void* user_data,
       /* TODO warn for unknown attributes */
     }
     oxws_item_set_item_id_fields(context->item, (char*)id, (char*)change_key);
-    if(id != NULL) xmlFree(id);
-    if(change_key != NULL) xmlFree(change_key);
+    xmlFree(id); xmlFree(change_key);
     context->item_node_depth++;
 
   } else if(OXWS_LIST_SAX_IS_CONTEXT_STATE_ANY_ITEM_TOP_LEVEL(context) &&
@@ -309,8 +308,7 @@ void oxws_list_sax_handler_start_element_ns(void* user_data,
       /* TODO warn for unknown attributes */
     }
     oxws_message_set_from_item_id_fields((oxws_message*) context->item, (char*)id, (char*)change_key);
-    if(id != NULL) xmlFree(id);
-    if(change_key != NULL) xmlFree(change_key);
+    xmlFree(id); xmlFree(change_key);
     context->item_node_depth++;
 
   } else if(context->state == OXWS_LIST_SAX_CONTEXT_STATE_MESSAGE && context->item_node_depth == 1 &&

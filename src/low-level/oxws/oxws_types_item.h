@@ -106,7 +106,7 @@ oxws_folder_id* oxws_folder_id_new(const char* id, const char* change_key);
 
   Release given item id object.
 
-  @param id [required] object to release
+  @param id [optional] object to release
 */
 void oxws_item_id_free(oxws_item_id* id);
 
@@ -115,7 +115,7 @@ void oxws_item_id_free(oxws_item_id* id);
 
   Release given folder id object.
 
-  @param id [required] object to release
+  @param id [optional] object to release
 */
 void oxws_folder_id_free(oxws_folder_id* id);
 
@@ -194,7 +194,7 @@ oxws_email_address* oxws_email_address_new(const char* name, const char* email_a
 
   Release given email address object.
 
-  @param address [required] object to release
+  @param address [optional] object to release
 */
 void oxws_email_address_free(oxws_email_address* address);
 
@@ -204,7 +204,7 @@ void oxws_email_address_free(oxws_email_address* address);
   Release given array of email address objects. This also releases all contained
   email address objects using oxws_email_address_free().
 
-  @param array [required] array to release
+  @param array [optional] array to release
 
   @see oxws_email_address_free()
 */
@@ -273,7 +273,7 @@ oxws_result oxws_item_init(oxws_item* item);
   class_id property and release all class-specific properties along with the
   common item properties.
 
-  @param item [required] object to release
+  @param item [optional] object to release
 */
 void oxws_item_free(oxws_item* item);
 
@@ -283,7 +283,7 @@ void oxws_item_free(oxws_item* item);
   Release given array of item objects. This also releases all contained
   item objects using oxws_item_free().
 
-  @param array [required] array to release
+  @param array [optional] array to release
 
   @see oxws_item_free()
 */

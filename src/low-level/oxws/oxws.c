@@ -82,16 +82,12 @@ oxws* oxws_new() {
 }
 
 void oxws_free(oxws* oxws) {
-  if(!oxws) return;
+  if(oxws == NULL) return;
 
-  if(oxws->connection_settings.as_url)
-    free(oxws->connection_settings.as_url);
-  if(oxws->connection_settings.oof_url)
-    free(oxws->connection_settings.oof_url);
-  if(oxws->connection_settings.um_url)
-    free(oxws->connection_settings.um_url);
-  if(oxws->connection_settings.oab_url)
-    free(oxws->connection_settings.oab_url);
+  free(oxws->connection_settings.as_url);
+  free(oxws->connection_settings.oof_url);
+  free(oxws->connection_settings.um_url);
+  free(oxws->connection_settings.oab_url);
 
   oxws_internal_free(OXWS_INTERNAL(oxws));
 
@@ -128,7 +124,7 @@ void oxws_free(oxws* oxws) {
     } \
   } \
   if(result != OXWS_NO_ERROR || source == NULL) { \
-    if(dest) free(dest); \
+    free(dest); \
     (dest) = NULL; \
   }
 

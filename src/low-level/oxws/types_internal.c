@@ -48,17 +48,19 @@ oxws_internal* oxws_internal_new() {
 }
 
 void oxws_internal_free(oxws_internal* internal) {
-  if(!internal) return;
+  if(internal == NULL) return;
 
   if(internal->curl)
     curl_easy_cleanup(internal->curl);
   if(internal->curl_headers)
     curl_slist_free_all(internal->curl_headers);
 
-  if(internal->response_buffer)
-    mmap_string_free(internal->response_buffer);
-  if(internal->response_xml_parser)
+  mmap_string_free(internal->response_buffer);
+  if(internal->response_xml_parser) {
+    if(internal->response_xml_parser->myDoc)
+      xmlFreeDoc(internal->response_xml_parser->myDoc);
     xmlFreeParserCtxt(internal->response_xml_parser);
+  }
 
   free(internal);
 }

@@ -44,6 +44,9 @@
   oxws_entry_free
 
   Defines a function that releases a given object.
+
+  @param entry [optional] object to free. This function does nothing if entry
+               is NULL.
 */
 typedef void (*oxws_entry_free) (void*);
 
@@ -53,7 +56,7 @@ typedef void (*oxws_entry_free) (void*);
   Free an array of objects, but use the given function to release each object
   contained in the array first.
 
-  @param array      [required] array to release
+  @param array      [optional] array to release
   @param entry_free [optional] function to be used to release the objects. If
                     given, it will be called with each object as parameter.
 */
@@ -102,17 +105,15 @@ oxws_folder_id* oxws_folder_id_new(const char* id, const char* change_key) {
 
   Release given item or folder id object.
 
-  @param id [required] object to release
+  @param id [optional] object to release
 
   @see oxws_item_id_free
   @see oxws_folder_id_free
 */
 void oxws_item_or_folder_id_free(oxws_item_or_folder_id* id) {
-  if(!id) return;
-
-  if(id->id) free(id->id);
-  if(id->change_key) free(id->change_key);
-
+  if(id == NULL) return;
+  free(id->id);
+  free(id->change_key);
   free(id);
 }
 void oxws_item_id_free(oxws_item_id* id) {
@@ -218,13 +219,11 @@ oxws_email_address* oxws_email_address_new(const char* name, const char* email_a
 }
 
 void oxws_email_address_free(oxws_email_address* address) {
-  if(!address) return;
-
-  if(address->name) free(address->name);
-  if(address->email_address) free(address->email_address);
-  if(address->routing_type) free(address->routing_type);
-  if(address->item_id) oxws_item_id_free(address->item_id);
-
+  if(address == NULL) return;
+  free(address->name);
+  free(address->email_address);
+  free(address->routing_type);
+  oxws_item_id_free(address->item_id);
   free(address);
 }
 
@@ -237,10 +236,8 @@ oxws_result oxws_email_address_set_name(oxws_email_address* address, const char*
 
   if(name == NULL) {
     /* free */
-    if(address->name != NULL) {
-      free(address->name);
-      address->name = NULL;
-    }
+    free(address->name);
+    address->name = NULL;
   } else {
     /* copy */
     size_t length = strlen(name) + 1;
@@ -257,10 +254,8 @@ oxws_result oxws_email_address_set_email_address(oxws_email_address* address, co
 
   if(email_address == NULL) {
     /* free */
-    if(address->email_address != NULL) {
-      free(address->email_address);
-      address->email_address = NULL;
-    }
+    free(address->email_address);
+    address->email_address = NULL;
   } else {
     /* copy */
     size_t length = strlen(email_address) + 1;
@@ -277,10 +272,8 @@ oxws_result oxws_email_address_set_routing_type(oxws_email_address* address, con
 
   if(routing_type == NULL) {
     /* free */
-    if(address->routing_type != NULL) {
-      free(address->routing_type);
-      address->routing_type = NULL;
-    }
+    free(address->routing_type);
+    address->routing_type = NULL;
   } else {
     /* copy */
     size_t length = strlen(routing_type) + 1;
@@ -335,20 +328,19 @@ oxws_result oxws_item_init(oxws_item* item) {
 
   Free all members of given object which are specific to oxws_item.
 
-  @param item [required] item whose members to release
+  @param item [optional] item whose members to release
 
   @see oxws_item_free
 */
 void oxws_item_free_members(oxws_item* item) {
-  if(!item) return;
-
+  if(item == NULL) return;
   oxws_item_id_free(item->item_id);
   oxws_folder_id_free(item->parent_folder_id);
-  if(item->item_class) free(item->item_class);
-  if(item->subject) mmap_string_free(item->subject);
+  free(item->item_class);
+  mmap_string_free(item->subject);
   oxws_body_free(item->body);
-  if(item->date_time_received) free(item->date_time_received);
-  if(item->date_time_sent) free(item->date_time_sent);
+  free(item->date_time_received);
+  free(item->date_time_sent);
 }
 
 /*
@@ -357,13 +349,12 @@ void oxws_item_free_members(oxws_item* item) {
   Free all members of given object which are specific to oxws_message.
   This will leave other members untouched.
 
-  @param message [required] message whose members to release
+  @param message [optional] message whose members to release
 
   @see oxws_item_free
 */
 void oxws_message_free_members(oxws_message* message) {
-  if(!message) return;
-
+  if(message == NULL) return;
   oxws_email_address_free(message->sender);
   oxws_email_address_array_free(message->to_recipients);
   oxws_email_address_array_free(message->cc_recipients);
@@ -372,7 +363,7 @@ void oxws_message_free_members(oxws_message* message) {
 }
 
 void oxws_item_free(oxws_item* item) {
-  if(!item) return;
+  if(item == NULL) return;
 
   oxws_item_class_id class_id = item->class_id;
   oxws_item_free_members(item);
@@ -437,7 +428,7 @@ oxws_result oxws_item_set_item_class(oxws_item* item, const char* item_class) {
 
   if(item_class == NULL) {
     /* free */
-    if(item->item_class) free(item->item_class);
+    free(item->item_class);
     item->item_class = NULL;
   } else {
     /* copy */
@@ -452,11 +443,9 @@ oxws_result oxws_item_set_item_class(oxws_item* item, const char* item_class) {
 
 oxws_result oxws_item_set_subject_mmap(oxws_item* item, MMAPString* string) {
   if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-  if(item->subject == string) return OXWS_NO_ERROR;
 
-  if(item->subject != NULL) {
-    mmap_string_free(item->subject);
-  }
+  if(item->subject == string) return OXWS_NO_ERROR;
+  mmap_string_free(item->subject);
   item->subject = string;
 
   return OXWS_NO_ERROR;
@@ -694,7 +683,7 @@ oxws_result oxws_message_set_is_read(oxws_message* message, oxws_optional_boolea
 
 
 void oxws_special_array_free(carray* array, oxws_entry_free entry_free) {
-  if(!array) return;
+  if(array == NULL) return;
 
   /* free entries */
   if(entry_free) {
