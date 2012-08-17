@@ -77,17 +77,17 @@ enum oxws_find_item_sax_context_state {
   OXWS_FIND_ITEM_SAX_CONTEXT_STATE_ITEM_SUBJECT,
 
   /* Inside the From tag of a message. We could also be deeper in the graph, see
-     the OXWS_FIND_ITEM_SAX_CONTEXT_INNER_STATE_MAILBOX* states */
+     the OXWS_FIND_ITEM_SAX_CONTEXT_STATE_INNER_MAILBOX* states */
   OXWS_FIND_ITEM_SAX_CONTEXT_STATE_MESSAGE_FROM,
   /* Inside the IsRead tag of a message */
   OXWS_FIND_ITEM_SAX_CONTEXT_STATE_MESSAGE_IS_READ,
 
-  OXWS_FIND_ITEM_SAX_CONTEXT_INNER_STATE_MAILBOX,
-  OXWS_FIND_ITEM_SAX_CONTEXT_INNER_STATE_MAILBOX_NAME,
-  OXWS_FIND_ITEM_SAX_CONTEXT_INNER_STATE_MAILBOX_EMAIL_ADDRESS,
-  OXWS_FIND_ITEM_SAX_CONTEXT_INNER_STATE_MAILBOX_ROUTING_TYPE,
-  OXWS_FIND_ITEM_SAX_CONTEXT_INNER_STATE_MAILBOX_MAILBOX_TYPE,
-  OXWS_FIND_ITEM_SAX_CONTEXT_INNER_STATE_MAILBOX_ITEM_ID,
+  OXWS_FIND_ITEM_SAX_CONTEXT_STATE_INNER_MAILBOX,
+  OXWS_FIND_ITEM_SAX_CONTEXT_STATE_INNER_MAILBOX_NAME,
+  OXWS_FIND_ITEM_SAX_CONTEXT_STATE_INNER_MAILBOX_EMAIL_ADDRESS,
+  OXWS_FIND_ITEM_SAX_CONTEXT_STATE_INNER_MAILBOX_ROUTING_TYPE,
+  OXWS_FIND_ITEM_SAX_CONTEXT_STATE_INNER_MAILBOX_MAILBOX_TYPE,
+  OXWS_FIND_ITEM_SAX_CONTEXT_STATE_INNER_MAILBOX_ITEM_ID,
 
   /* End of document has been parsed, used to identify whether the response was
      parsed completely */
@@ -95,15 +95,6 @@ enum oxws_find_item_sax_context_state {
 };
 typedef enum oxws_find_item_sax_context_state oxws_find_item_sax_context_state;
 
-#define OXWS_FIND_ITEM_SAX_IS_CONTEXT_STATE_ANY_ITEM(context) \
-  (context->state == OXWS_FIND_ITEM_SAX_CONTEXT_STATE_ITEM || \
-   context->state == OXWS_FIND_ITEM_SAX_CONTEXT_STATE_MESSAGE)
-
-#define OXWS_FIND_ITEM_SAX_IS_CONTEXT_STATE_ANY_ITEM_TOP_LEVEL(context) \
-  (OXWS_FIND_ITEM_SAX_IS_CONTEXT_STATE_ANY_ITEM(context) && context->item_node_depth == 1)
-
-#define OXWS_FIND_ITEM_SAX_IS_CONTEXT_STATE_ANY_EMAIL_ADDRESS(context) \
-  (context->state == OXWS_FIND_ITEM_SAX_CONTEXT_STATE_MESSAGE_FROM)
 
 /*
   struct oxws_find_item_sax_context
@@ -158,6 +149,46 @@ typedef struct oxws_find_item_sax_context oxws_find_item_sax_context;
           - OXWS_NO_ERROR: success
 */
 oxws_result oxws_find_item_sax_context_init(oxws_find_item_sax_context* context, unsigned int count, carray** list);
+
+
+/*
+  routines for SAX context state testing and modification
+*/
+
+#define OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS(context, test_state) \
+  ((context)->state == OXWS_FIND_ITEM_SAX_CONTEXT_STATE_##test_state)
+
+#define OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS_ERROR(context) \
+  OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS(context, _ERROR)
+
+#define OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS_ANY_ITEM(context) \
+  (OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS(context, ITEM) || \
+   OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS(context, MESSAGE))
+
+#define OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS_ANY_ITEM_TOP_LEVEL(context) \
+  (OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS_ANY_ITEM(context) && context->item_node_depth == 1)
+
+#define OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS_MESSAGE_TOP_LEVEL(context) \
+  (OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS(context, MESSAGE) && context->item_node_depth == 1)
+
+#define OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS_ANY_EMAIL_ADDRESS(context) \
+  OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS(context, MESSAGE_FROM)
+
+
+#define OXWS_FIND_ITEM_SAX_CONTEXT_SET_STATE(context, new_state) \
+  (context)->state = OXWS_FIND_ITEM_SAX_CONTEXT_STATE_##new_state
+
+#define OXWS_FIND_ITEM_SAX_CONTEXT_PUSH_STATE(context, new_state) \
+  { \
+    (context)->prev_state = (context)->state; \
+    OXWS_FIND_ITEM_SAX_CONTEXT_SET_STATE(context, new_state); \
+  }
+
+#define OXWS_FIND_ITEM_SAX_CONTEXT_POP_STATE(context) \
+  { \
+    (context)->state = (context)->prev_state; \
+    (context)->prev_state = OXWS_FIND_ITEM_SAX_CONTEXT_STATE__NONE; \
+  }
 
 
 /*
