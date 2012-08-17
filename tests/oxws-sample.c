@@ -56,6 +56,13 @@ int main(int argc, char ** argv) {
   oxws_create_item(oxws, (oxws_item*) message, OXWS_MESSAGE_DISPOSITION_SEND_AND_SAVE_COPY, OXWS_DISTFOLDER_SENTITEMS, NULL);
 #endif
 
+#if 0
+  /* list items in Sent Items */
+  puts("SENT ITEMS");
+  result = list_items(oxws, OXWS_DISTFOLDER_SENTITEMS);
+  check_error(result, "could not list sent items");
+#endif
+
   /* cleanup */
   oxws_free(oxws);
   return 0;
