@@ -60,3 +60,6 @@ readmsg_simple_SOURCES = $(READMSGCOMMON) readmsg-simple.c
 readmsg_uid_SOURCES = $(READMSGCOMMON) readmsg-uid.c
 
 fetch_attachment_SOURCES = $(READMSGCOMMON) fetch-attachment.c
+
+oxws_sample_CFLAGS = $(AM_CFLAGS) -Werror
+
