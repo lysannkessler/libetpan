@@ -63,8 +63,8 @@ typedef int32_t oxws_optional_int32;
 */
 enum oxws_optional_boolean {
   OXWS_OPTIONAL_BOOLEAN__NOT_SET = -1,
-  OXWS_OPTIONAL_BOOLEAN_TRUE     = 1,
-  OXWS_OPTIONAL_BOOLEAN_FALSE    = 0,
+  OXWS_OPTIONAL_BOOLEAN_TRUE     =  1,
+  OXWS_OPTIONAL_BOOLEAN_FALSE    =  0,
 };
 typedef enum oxws_optional_boolean oxws_optional_boolean;
 
@@ -127,9 +127,8 @@ void oxws_folder_id_free(oxws_folder_id* id);
   value is OXWS_BODY_TYPE__NOT_SET.
 */
 enum oxws_body_type {
-  OXWS_BODY_TYPE__NOT_SET,
-
-  OXWS_BODY_TYPE_HTML,
+  OXWS_BODY_TYPE__NOT_SET = -1,
+  OXWS_BODY_TYPE_HTML     =  0,
   OXWS_BODY_TYPE_TEXT,
 };
 typedef enum oxws_body_type oxws_body_type;
@@ -161,9 +160,8 @@ oxws_result oxws_body_append_len(oxws_body* body, const char* string, size_t len
   value is OXWS_MAILBOX_TYPE__NOT_SET.
 */
 enum oxws_mailbox_type {
-  OXWS_MAILBOX_TYPE__NOT_SET,
-
-  OXWS_MAILBOX_TYPE_MAILBOX,
+  OXWS_MAILBOX_TYPE__NOT_SET = -1,
+  OXWS_MAILBOX_TYPE_MAILBOX  =  0,
   OXWS_MAILBOX_TYPE_PUBLIC_DL,
   OXWS_MAILBOX_TYPE_PRIVATE_DL,
   OXWS_MAILBOX_TYPE_CONTACT,
