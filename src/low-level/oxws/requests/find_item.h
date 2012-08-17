@@ -152,44 +152,126 @@ oxws_result oxws_find_item_sax_context_init(oxws_find_item_sax_context* context,
 
 
 /*
-  routines for SAX context state testing and modification
+  routines for SAX context state testing and modification, and context preparation
 */
 
-#define OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS(context, test_state) \
-  ((context)->state == OXWS_FIND_ITEM_SAX_CONTEXT_STATE_##test_state)
+#define OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS(test_state) \
+  (context->state == OXWS_FIND_ITEM_SAX_CONTEXT_STATE_##test_state)
 
-#define OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS_ERROR(context) \
-  OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS(context, _ERROR)
+#define OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS_ERROR() \
+  OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS(_ERROR)
 
-#define OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS_ANY_ITEM(context) \
-  (OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS(context, ITEM) || \
-   OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS(context, MESSAGE))
+#define OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS_ANY_ITEM() \
+  (OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS(ITEM) || \
+   OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS(MESSAGE))
 
-#define OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS_ANY_ITEM_TOP_LEVEL(context) \
-  (OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS_ANY_ITEM(context) && context->item_node_depth == 1)
+#define OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS_ANY_ITEM_TOP_LEVEL() \
+  (OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS_ANY_ITEM() && context->item_node_depth == 1)
 
-#define OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS_MESSAGE_TOP_LEVEL(context) \
-  (OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS(context, MESSAGE) && context->item_node_depth == 1)
+#define OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS_ANY_EMAIL_ADDRESS() \
+  OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS(MESSAGE_FROM)
 
-#define OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS_ANY_EMAIL_ADDRESS(context) \
-  OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS(context, MESSAGE_FROM)
+#define OXWS_FIND_ITEM_SAX_CONTEXT_STATE_MATCHES_TAG(test_state, tag_ns, tag_name) \
+  (OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS(test_state) && \
+  OXWS_FIND_ITEM_SAX_IS_NS_NODE(ns_uri, localname, tag_ns, tag_name))
 
 
-#define OXWS_FIND_ITEM_SAX_CONTEXT_SET_STATE(context, new_state) \
-  (context)->state = OXWS_FIND_ITEM_SAX_CONTEXT_STATE_##new_state
+#define OXWS_FIND_ITEM_SAX_CONTEXT_SET_STATE(new_state) \
+  context->state = OXWS_FIND_ITEM_SAX_CONTEXT_STATE_##new_state
 
-#define OXWS_FIND_ITEM_SAX_CONTEXT_PUSH_STATE(context, new_state) \
+#define OXWS_FIND_ITEM_SAX_CONTEXT_PUSH_STATE(new_state) \
   { \
-    (context)->prev_state = (context)->state; \
-    OXWS_FIND_ITEM_SAX_CONTEXT_SET_STATE(context, new_state); \
+    context->prev_state = context->state; \
+    OXWS_FIND_ITEM_SAX_CONTEXT_SET_STATE(new_state); \
   }
 
-#define OXWS_FIND_ITEM_SAX_CONTEXT_POP_STATE(context) \
+#define OXWS_FIND_ITEM_SAX_CONTEXT_POP_STATE() \
   { \
-    (context)->state = (context)->prev_state; \
-    (context)->prev_state = OXWS_FIND_ITEM_SAX_CONTEXT_STATE__NONE; \
+    context->state = context->prev_state; \
+    context->prev_state = OXWS_FIND_ITEM_SAX_CONTEXT_STATE__NONE; \
   }
 
+
+#define OXWS_FIND_ITEM_SAX_CONTEXT_PREPARE_STRING(initial_length) \
+  { \
+    if(context->string != NULL) { \
+      /* TODO warn */ \
+      mmap_string_free(context->string); \
+    } \
+    context->string = mmap_string_sized_new(initial_length); \
+  }
+
+#define OXWS_FIND_ITEM_SAX_CONTEXT_PREPARE_EMAIL_ADDRESS() \
+  { \
+    if(context->email_address != NULL) { \
+      /* TODO warn */ \
+      oxws_email_address_free(context->email_address); \
+    } \
+    context->email_address = oxws_email_address_new(); \
+  }
+
+
+#define OXWS_FIND_ITEM_SAX_CONTEXT_FREE_STRING() \
+  { \
+    mmap_string_free(context->string); \
+    context->string = NULL; \
+  }
+
+#define OXWS_FIND_ITEM_SAX_CONTEXT_ASSIGN_STRING_TO_ITEM(property) \
+  { \
+    /* TODO check item and string */ \
+    oxws_item_set_##property(context->item, context->string); \
+    /* TODO warn if result != NO_ERROR */ \
+    context->string = NULL; /* not freed because it is assigned to the item now */ \
+  }
+
+#define OXWS_FIND_ITEM_SAX_CONTEXT_ASSIGN_CSTRING_TO_ITEM(property) \
+  { \
+    /* TODO check item and string */ \
+    oxws_item_set_##property(context->item, context->string->str); \
+    /* TODO warn if result != NO_ERROR */ \
+    OXWS_FIND_ITEM_SAX_CONTEXT_FREE_STRING(); \
+  }
+
+#define OXWS_FIND_ITEM_SAX_CONTEXT_ASSIGN_CSTRING_TO_EMAIL_ADDRESS(property) \
+  { \
+    /* TODO check email_address and string */ \
+    oxws_email_address_set_##property(context->email_address, context->string->str); \
+    /* TODO warn if result != NO_ERROR */ \
+    context->string = NULL; /* not freed because it is assigned to the address now */ \
+  }
+
+#define OXWS_FIND_ITEM_SAX_CONTEXT_ASSIGN_EMAIL_ADDRESS_TO_ITEM(property) \
+  { \
+    /* TODO check item and email_address */ \
+    oxws_item_set_##property(context->item, context->email_address); \
+    /* TODO warn if result != NO_ERROR */ \
+    context->email_address = NULL; /* not freed because it is assigned to the item now */ \
+  }
+
+#define OXWS_FIND_ITEM_SAX_CONTEXT_ASSIGN_EMAIL_ADDRESS_TO_MESSAGE(property) \
+  { \
+    /* TODO check item and email_address */ \
+    oxws_message_set_##property((oxws_message*) context->item, context->email_address); \
+    /* TODO warn if result != NO_ERROR */ \
+    context->email_address = NULL; /* not freed because it is assigned to the item now */ \
+  }
+
+#define OXWS_FIND_ITEM_SAX_CONTEXT_PARSE_ITEM_ID(id, change_key) \
+  { \
+    int attr_index; \
+    for(attr_index = 0; attr_index < nb_attributes; attr_index++) { \
+      const xmlChar* name = attrs[5 * attr_index + 0]; \
+      const xmlChar* value = attrs[5 * attr_index + 3]; \
+      const xmlChar* end = attrs[5 * attr_index + 4]; \
+      if(xmlStrcmp(name, BAD_CAST "Id") == 0) { \
+        id = xmlStrndup(value, end - value); \
+      } else if(xmlStrcmp(name, BAD_CAST "ChangeKey") == 0) { \
+        change_key = xmlStrndup(value, end - value); \
+      } \
+      /* TODO warn for unknown attributes */ \
+    } \
+  }
 
 /*
   SAX handlers
