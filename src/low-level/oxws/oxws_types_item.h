@@ -162,13 +162,10 @@ struct oxws_body {
 };
 typedef struct oxws_body oxws_body;
 
-oxws_body* oxws_body_new(const char* string, oxws_body_type body_type);
-oxws_body* oxws_body_new_len(const char* string, size_t length, oxws_body_type body_type);
+oxws_body* oxws_body_new(MMAPString* string, oxws_body_type body_type);
+oxws_body* oxws_body_new_cstring(const char* string, oxws_body_type body_type);
 
 void oxws_body_free(oxws_body* body);
-
-oxws_result oxws_body_append(oxws_body* body, const char* string);
-oxws_result oxws_body_append_len(oxws_body* body, const char* string, size_t length);
 
 
 /*
@@ -313,9 +310,11 @@ OXWS_SETTER_OBJECT_FIELDS_DECL(item, item, folder_id, parent_folder_id, CONCAT_M
 OXWS_SETTER_STRING_DECL(item, item, item_class);
 
 OXWS_SETTER_OBJECT_DECL(item, item, MMAPString, subject);
+oxws_result oxws_item_set_subject_cstring(oxws_item* item, const char* string);
 
 OXWS_SETTER_OBJECT_DECL(item, item, body, body);
-OXWS_SETTER_OBJECT_FIELDS_DECL(item, item, body, body, CONCAT_MACRO_ARGS2(const char* string, oxws_body_type body_type));
+OXWS_SETTER_OBJECT_FIELDS_DECL(item, item, body, body, CONCAT_MACRO_ARGS2(MMAPString* string, oxws_body_type body_type));
+oxws_result oxws_item_set_body_fields_cstring(oxws_item* item, const char* string, oxws_body_type body_type);
 
 OXWS_SETTER_OBJECT_DECL(item, item, time_t, date_time_received);
 OXWS_SETTER_VALUE_DECL(item, item, optional_int32, size);

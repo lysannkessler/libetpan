@@ -110,53 +110,25 @@ void oxws_folder_id_free(oxws_folder_id* id) {
 }
 
 
-oxws_body* oxws_body_new(const char* string, oxws_body_type body_type) {
-  size_t length = string == NULL ? 0 : strlen(string);
-  return oxws_body_new_len(string, length, body_type);
-}
-
-oxws_body* oxws_body_new_len(const char* string, size_t length, oxws_body_type body_type) {
+oxws_body* oxws_body_new(MMAPString* string, oxws_body_type body_type) {
   oxws_body* result = (oxws_body*) malloc(sizeof(oxws_body));
-
   if(result != NULL) {
     result->body_type = body_type;
-    result->string = mmap_string_new_len(string, length);
-    if(result->string == NULL) {
-      free(result);
-      result = NULL;
-    }
+    result->string = string;
   }
-
   return result;
+}
+
+oxws_body* oxws_body_new_cstring(const char* string, oxws_body_type body_type) {
+  MMAPString* mmap_string = mmap_string_new(string);
+  if(mmap_string == NULL) return NULL;
+  return oxws_body_new(mmap_string, body_type);
 }
 
 void oxws_body_free(oxws_body* body) {
   if(body == NULL) return;
   if(body->string) mmap_string_free(body->string);
   free(body);
-}
-
-oxws_result oxws_body_append(oxws_body* body, const char* string) {
-  if(string == NULL) return OXWS_NO_ERROR;
-  return oxws_body_append_len(body, string, strlen(string));
-}
-
-oxws_result oxws_body_append_len(oxws_body* body, const char* string, size_t length) {
-  if(body == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-  if(length == 0) return OXWS_NO_ERROR;
-  if(string == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-
-  if(body->string == NULL) {
-    /* TODO warn */
-    /* create new string */
-    body->string = mmap_string_new_len(string, length);
-    if(body->string == NULL) return OXWS_ERROR_INTERNAL;
-  } else {
-    /* append */
-    mmap_string_append_len(body->string, string, length);
-  }
-
-  return OXWS_NO_ERROR;
 }
 
 
@@ -271,11 +243,30 @@ OXWS_SETTER_OBJECT_FIELDS_DEF(item, item, folder_id, parent_folder_id,
 OXWS_SETTER_STRING_DEF(item, item, item_class);
 
 OXWS_SETTER_OBJECT_DEF(item, item, MMAPString, subject);
+oxws_result oxws_item_set_subject_cstring(oxws_item* item, const char* string) {
+  if(item == NULL) return OXWS_ERROR_INVALID_PARAMETER;
+
+  if(string == NULL) {
+    return oxws_item_set_subject(item, NULL);
+  } else if(item->subject == NULL) {
+    MMAPString* mmap_string = mmap_string_new(string);
+    if(mmap_string == NULL) return OXWS_ERROR_INTERNAL;
+    return oxws_item_set_subject(item, mmap_string);
+  } else {
+    mmap_string_assign(item->subject, string);
+    return OXWS_NO_ERROR;
+  }
+}
 
 OXWS_SETTER_OBJECT_DEF(item, item, body, body);
 OXWS_SETTER_OBJECT_FIELDS_DEF(item, item, body, body,
-  CONCAT_MACRO_ARGS2(const char* string, oxws_body_type body_type),
+  CONCAT_MACRO_ARGS2(MMAPString* string, oxws_body_type body_type),
   CONCAT_MACRO_ARGS2(string, body_type));
+oxws_result oxws_item_set_body_fields_cstring(oxws_item* item, const char* string, oxws_body_type body_type) {
+  MMAPString* mmap_string = mmap_string_new(string);
+  if(mmap_string == NULL) return OXWS_ERROR_INTERNAL;
+  return oxws_item_set_body_fields(item, mmap_string, body_type);
+}
 
 OXWS_SETTER_OBJECT_DEF(item, item, time_t, date_time_received);
 OXWS_SETTER_VALUE_DEF(item, item, optional_int32, size);

@@ -37,21 +37,24 @@ int main(int argc, char ** argv) {
   result = oxws_connect(oxws, argv[2], argv[3], NULL);
   check_error(result, "could not connect");
 
+#if 1
   /* list items in Inbox */
   puts("INBOX");
   result = list_items(oxws, OXWS_DISTFOLDER_INBOX);
   check_error(result, "could not list items in inbox");
+#endif
 
 #if 0
   /* send message and save it to Sent Items */
   oxws_message* message = oxws_message_new();
-  oxws_item_set_subject((oxws_item*) message, "[libetpan test] message from oxws-sample");
-  oxws_item_set_body_fields((oxws_item*) message,
+  oxws_item_set_subject_cstring((oxws_item*) message, "[libetpan test] message from oxws-sample");
+  oxws_item_set_body_fields_cstring((oxws_item*) message,
           "This is just another email sent using libetpan's Exchange implementation.\n" \
           "It's ok to feel annoyed by now :P",
           OXWS_BODY_TYPE_TEXT);
   message->to_recipients = carray_new(3);
-  oxws_email_address* address = oxws_email_address_new(NULL, argv[1], NULL, OXWS_MAILBOX_TYPE__NOT_SET, NULL);
+  oxws_email_address* address = oxws_email_address_new();
+  oxws_email_address_set_email_address(address, argv[1]);
   carray_add(message->to_recipients, address, NULL);
   oxws_create_item(oxws, (oxws_item*) message, OXWS_MESSAGE_DISPOSITION_SEND_AND_SAVE_COPY, OXWS_DISTFOLDER_SENTITEMS, NULL);
 #endif
