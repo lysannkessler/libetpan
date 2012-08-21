@@ -574,7 +574,14 @@ fi
 dnl libcurl
 
 dnl libcurl >= version 7.21 has a bug with NTLM
-LIBCURL_CHECK_CONFIG([yes], [], [7.20], [], [AC_MSG_ERROR([Curl >= 7.21 not supported])])
+dnl however, it seems to be fixed as of at least 7.24.
+libcurlok=no
+LIBCURL_CHECK_CONFIG([yes], [], [7.20], [libcurlok=yes], [])
+LIBCURL_CHECK_CONFIG([yes], [7.24], [], [libcurlok=yes], [])
+
+if test "x$libcurlok" = "xno"; then
+   AC_MSG_ERROR([Curl between 7.21 and 7.23 not supported])
+fi
 
 dnl expat
 libexpat=no

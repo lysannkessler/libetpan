@@ -88,13 +88,14 @@ AC_DEFUN([LIBCURL_CHECK_CONFIG],
 
         _libcurl_version=`echo $libcurl_cv_lib_curl_version | $_libcurl_version_parse`
         _libcurl_wanted_min=`echo ifelse([$2],,[0],[$2]) | $_libcurl_version_parse`
-        _libcurl_wanted_max=`echo ifelse([$3],,[0],[$3]) | $_libcurl_version_parse`
+        _libcurl_wanted_max=`echo ifelse([$3],,[9999],[$3]) | $_libcurl_version_parse`
 
-        if test $_libcurl_wanted_min -gt 0 || test $_libcurl_wanted_max -gt 0; then
+
+        if test $_libcurl_wanted_min -gt 0 || test $_libcurl_wanted_max -lt 9999; then
            AC_CACHE_CHECK([for libcurl >= version '$2' and <= version '$3' ],
               [libcurl_cv_lib_version_ok],
               [
-              if (test $_libcurl_version -ge $_libcurl_wanted_min || test $_libcurl_wanted_min -eq 0) && (test $_libcurl_version -le $_libcurl_wanted_max || test $_libcurl_wanted_max -eq 0) ; then
+              if (test $_libcurl_version -ge $_libcurl_wanted_min || test $_libcurl_wanted_min -eq 0) && (test $_libcurl_version -le $_libcurl_wanted_max || test $_libcurl_wanted_max -eq 9999) ; then
                  libcurl_cv_lib_version_ok=yes
               else
                  libcurl_cv_lib_version_ok=no
@@ -102,7 +103,7 @@ AC_DEFUN([LIBCURL_CHECK_CONFIG],
               ])
         fi
 
-        if (test $_libcurl_wanted_min -eq 0 && test $_libcurl_wanted_max -eq 0) || test x$libcurl_cv_lib_version_ok = xyes ; then
+        if (test $_libcurl_wanted_min -eq 0 && test $_libcurl_wanted_max -eq 9999) || test "x$libcurl_cv_lib_version_ok" = "xyes" ; then
            if test x"$LIBCURL_CPPFLAGS" = "x" ; then
               LIBCURL_CPPFLAGS=`$_libcurl_config --cflags`
            fi
