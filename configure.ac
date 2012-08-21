@@ -22,11 +22,11 @@ dnl    reset to `0'. This release has a new, but backwards incompatible
 dnl    interface.
 dnl age = api_current - api_compatiblity
 
-AC_PREREQ(2.61)
+AC_PREREQ([2.61])
 AC_INIT([libetpan],[maj_version.min_version],[libetpan-devel@lists.sourceforge.net])
 AC_CONFIG_SRCDIR([src/main/libetpan_version.h.in])
 AC_CONFIG_MACRO_DIR([m4])
-AM_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
 AC_CANONICAL_HOST
@@ -81,23 +81,23 @@ have_w32_system=no
 case "${host}" in
     *-mingw32*)
         have_w32_system=yes
-	CFLAGS="$CFLAGS -mms-bitfields -I\${top_srcdir}/src/windows"
-	## Currently we export all symbols indiscriminately.
-	## Eventually, this can be limited to those which should be
-	## exported (which helps to hide our internal mmap stubs, for
-	## example), but before this can happen, the missing export
-	## declarations have to be added to all header files.  Also, it
-	## should first be verified that exporting data members from a
-	## DLL is safe.  To reenable discriminate exports, uncomment
-	## the following line and replace the "@ifdef _MSC_VER" around the
-	## export/import declaration stuff in libetpan.h.in by
-	## "@if WIN32".
-	# CFLAGS="$CFLAGS -DLIBETPAN_DLL"
+        CFLAGS="$CFLAGS -mms-bitfields -I\${top_srcdir}/src/windows"
+        ## Currently we export all symbols indiscriminately.
+        ## Eventually, this can be limited to those which should be
+        ## exported (which helps to hide our internal mmap stubs, for
+        ## example), but before this can happen, the missing export
+        ## declarations have to be added to all header files.  Also, it
+        ## should first be verified that exporting data members from a
+        ## DLL is safe.  To reenable discriminate exports, uncomment
+        ## the following line and replace the "@ifdef _MSC_VER" around the
+        ## export/import declaration stuff in libetpan.h.in by
+        ## "@if WIN32".
+        # CFLAGS="$CFLAGS -DLIBETPAN_DLL"
         # We use winsock2.
-    	LIBS="$LIBS -lws2_32"
+            LIBS="$LIBS -lws2_32"
         ;;
     *)
-	;;
+        ;;
 esac
 if test "$have_w32_system" = yes; then
    AC_DEFINE(HAVE_MINGW32_SYSTEM, 1, [Defined if we run on a W32 API based system])
@@ -128,7 +128,7 @@ fi
 if test "x$GCC" = xyes; then
   CFLAGS="$CFLAGS -W -Wall"
 fi
-AC_ARG_ENABLE(syntax,   [  --enable-unstrict-syntax be lazy on syntax checking for protocols (default=no)], , [AC_DEFINE(UNSTRICT_SYNTAX, 1, [Define to be lazy on protocol syntax])])
+AC_ARG_ENABLE(syntax,   [  --enable-unstrict-syntax  be lazy on syntax checking for protocols (default=no)], , [AC_DEFINE(UNSTRICT_SYNTAX, 1, [Define to be lazy on protocol syntax])])
 
 AH_VERBATIM([CONFIG_H_FIRST], [/* Check for Linux's /usr/include/features.h
  */
@@ -139,9 +139,9 @@ AH_VERBATIM([CONFIG_H_FIRST], [/* Check for Linux's /usr/include/features.h
 AC_C_INLINE
 
 # Checks for programs.
-AC_LIBTOOL_WIN32_DLL
-AC_LIBTOOL_RC
-AC_PROG_LIBTOOL
+LT_INIT([win32-dll])
+LT_LANG([Windows Resource])
+
 AC_PROG_MKDIR_P
 
 dnl Can't use AC_PROG_INSTALL
@@ -187,7 +187,7 @@ if test "x$has_getoptlong" = "xyes"; then
 fi
 
 dnl OpenSSL -- very primitive right now
-AC_ARG_WITH(openssl,   [  --with-openssl[=DIR]    include OpenSSL support (default=auto)],
+AC_ARG_WITH(openssl,   [  --with-openssl[=DIR]      include OpenSSL support (default=auto)],
             [], [with_openssl=yes])
 if test "x$with_openssl" != "xno"; then
   OCPPFLAGS="$CPPFLAGS"
@@ -218,7 +218,7 @@ fi
 AC_SUBST(SSLLIBS)
 
 dnl GNUTLS
-AC_ARG_WITH(gnutls,    [ --with-gnutls[=DIR]      include GnuTLS support (default=auto)],
+AC_ARG_WITH(gnutls,    [  --with-gnutls[=DIR]       include GnuTLS support (default=auto)],
             [], [with_gnutls=no])
 if test "x$with_gnutls" != "xno"; then
   OCPPFLAGS="$CPPFLAGS"
@@ -257,8 +257,8 @@ dnl iconv
 LIBICONV=""
 
 AC_ARG_ENABLE(iconv,
-	[ --disable-iconv	make a version not using iconv],
-		enable_iconv=no, enable_iconv=yes)
+        [  --disable-iconv         make a version not using iconv],
+                enable_iconv=no, enable_iconv=yes)
 if test x$enable_iconv = xyes; then
    dnl get prototype
    AC_CHECK_HEADER(iconv.h, [ICONV_HEADER=1], [ICONV_HEADER=0])
@@ -268,21 +268,25 @@ if test x$enable_iconv = xyes; then
    if test "x$ICONV_HEADER" = x1 ; then
      SAVED_CPPFLAGS="$CPPFLAGS"
      CPPFLAGS="-std=c99 $CPPFLAGS"
-     AC_TRY_COMPILE([#include <iconv.h>
-       size_t iconv (iconv_t cd, char ** restrict inbuf,
-                     size_t * restrict inbytesleft,
-                     char ** restrict outbuf,
-                     size_t * restrict outbytesleft);],
-       [],
-       [ICONV_PROTO=noconst]
-       [])
-     AC_TRY_COMPILE([#include <iconv.h>
-       size_t iconv (iconv_t cd, const char ** restrict inbuf,
-                     size_t * restrict inbytesleft,
-                     char ** restrict outbuf,
-                     size_t * restrict outbytesleft);],
-       [],
-       [ICONV_PROTO=const]
+     AC_COMPILE_IFELSE(
+         [AC_LANG_PROGRAM(
+              [#include <iconv.h>
+              size_t iconv (iconv_t cd, char ** restrict inbuf,
+                            size_t * restrict inbytesleft,
+                            char ** restrict outbuf,
+                            size_t * restrict outbytesleft);],
+                    [])],
+        [ICONV_PROTO=noconst],
+        [])
+     AC_COMPILE_IFELSE(
+        [AC_LANG_PROGRAM(
+            [#include <iconv.h>
+             size_t iconv (iconv_t cd, const char ** restrict inbuf,
+                           size_t * restrict inbytesleft,
+                              char ** restrict outbuf,
+                                size_t * restrict outbytesleft);],
+            [])],
+       [ICONV_PROTO=const],
        [])
      CPPFLAGS="$SAVED_CPPFLAGS"
    fi
@@ -295,24 +299,28 @@ if test x$enable_iconv = xyes; then
      AC_MSG_CHECKING([for iconv])
 
      ICONV_LINKED=0
-     AC_TRY_LINK([#include <stdlib.h>
-#include <iconv.h>],
-       [iconv_t cd = iconv_open("","");
-        iconv(cd,NULL,NULL,NULL,NULL);
-        iconv_close(cd);],
+     AC_LINK_IFELSE(
+        [AC_LANG_PROGRAM(
+            [#include <stdlib.h>
+             #include <iconv.h>], 
+            [iconv_t cd = iconv_open("","");
+             iconv(cd,NULL,NULL,NULL,NULL);
+             iconv_close(cd);])],
        [ICONV_LINKED=1],
        [])
      saved_LIBS="$LIBS"
      for lib in iconv ; do
        if test "x$ICONV_LINKED" = "x0" ; then
-	 LIBS=-l$lib
-         AC_TRY_LINK([#include <stdlib.h>
-#include <iconv.h>],
-         [iconv_t cd = iconv_open("","");
-          iconv(cd,NULL,NULL,NULL,NULL);
-          iconv_close(cd);],
-         [LIBICONV="$LIBS" ; ICONV_LINKED=1],
-         [])
+         LIBS=-l$lib
+         AC_LINK_IFELSE(
+             [AC_LANG_PROGRAM(
+                 [#include <stdlib.h>
+                  #include <iconv.h>],
+                 [iconv_t cd = iconv_open("","");
+                  iconv(cd,NULL,NULL,NULL,NULL);
+                  iconv_close(cd);])],
+             [LIBICONV="$LIBS" ; ICONV_LINKED=1],
+             [])
        fi
      done
      LIBS="$saved_LIBS"
@@ -358,22 +366,25 @@ dnl Check for version of Berkeley DB
   AC_MSG_CHECKING([version of Berkeley DB])
 
 dnl check for version 3 and above
-  AC_TRY_COMPILE(
-    [#include <db.h>],
-    [#if DB_VERSION_MAJOR < 3
-    #error DB version 3 or above needed
-    #endif],
-    [DBVERS=3]
-    [])
+  AC_COMPILE_IFELSE(
+      [AC_LANG_PROGRAM(
+          [#include <db.h>],
+          [#if DB_VERSION_MAJOR < 3
+           #error DB version 3 or above needed
+           #endif])],
+      [DBVERS=3],
+      [])
 
 dnl check for version 2
   if test "x$DBVERS" = "x0"; then
-     AC_TRY_COMPILE([#include <db.h>],
-       [#if DB_VERSION_MAJOR != 2
-       #error DB version 2 needed
-       #endif],
-       [DBVERS=2]
-       [])
+     AC_COMPILE_IFELSE(
+         [AC_LANG_PROGRAM(
+              [#include <db.h>],
+              [#if DB_VERSION_MAJOR != 2
+              #error DB version 2 needed
+              #endif])],
+         [DBVERS=2],
+         [])
   fi
 
   if test "x$DBVERS" = "x0"; then
@@ -393,12 +404,13 @@ dnl        AC_CHECK_LIB($lib, db_create, [DBLIB="-l$lib"; DBLINKED=1], [])
 dnl installations of libdb4 function names are defined in db.h
 dnl to other symbols
         AC_MSG_CHECKING([for db_create() in -l$lib])
-	LIBS=-l$lib
-	AC_TRY_LINK(
-	   [#include <db.h>],
-	   [db_create(0,0,0)],
-	   [DBLIB="-l$lib"; DBLINKED=1; AC_MSG_RESULT([found])],
-	   [AC_MSG_RESULT([not found])])
+        LIBS=-l$lib
+        AC_LINK_IFELSE(
+            [AC_LANG_PROGRAM(
+                 [#include <db.h>],
+                q [db_create(0,0,0)])],
+            [DBLIB="-l$lib"; DBLINKED=1; AC_MSG_RESULT([found])],
+            [AC_MSG_RESULT([not found])])
       fi
     done
     LIBS=""
@@ -440,7 +452,7 @@ AC_DEFINE_UNQUOTED(DBVERS, $DBVERS,
 AC_SUBST(DBLIB)
 
 dnl Threading support, if enabled
-AC_ARG_ENABLE(threads,  [  --disable-threads        do not include multithreading support using pthread],,[enable_threads=yes])
+AC_ARG_ENABLE(threads,  [  --disable-threads       do not include multithreading support using pthread],[],[enable_threads=yes])
 
 if test "x$enable_threads" = "xyes"; then
   dnl Try to find a good CFLAGS/LDFLAGS for pthreads
@@ -449,9 +461,12 @@ if test "x$enable_threads" = "xyes"; then
   checkpthread=yes
 
   AC_MSG_CHECKING([for pthread_create with libc])
-  AC_TRY_LINK([], [pthread_create();],
-                  [pthflag=yes; checkpthread=no],
-                  [pthflag=no])
+  AC_LINK_IFELSE(
+      [AC_LANG_PROGRAM(
+           [],
+           [pthread_create();])],
+      [pthflag=yes; checkpthread=no],
+      [pthflag=no])
   AC_MSG_RESULT($pthflag)
 
   for flag in "pthreads" "pthread"; do
@@ -459,9 +474,12 @@ if test "x$enable_threads" = "xyes"; then
       AC_MSG_CHECKING([for pthread_create with -$flag])
       OLDLIBS="$LIBS"
       LIBS="$LIBS -$flag"
-      AC_TRY_LINK([], [pthread_create();],
-                      [pthflag=yes; checkpthread=no],
-                      [pthflag=no; LIBS="$OLDLIBS"])
+      AC_LINK_IFELSE(
+          [AC_LANG_PROGRAM(
+               [],
+               [pthread_create();])],
+          [pthflag=yes; checkpthread=no],
+          [pthflag=no; LIBS="$OLDLIBS"])
       AC_MSG_RESULT($pthflag)
     fi
   done
@@ -507,7 +525,7 @@ AC_SUBST(VERSION_MAJOR)
 AC_SUBST(VERSION_MINOR)
 
 dnl Cyrus SASL
-AC_ARG_WITH(sasl,   [  --with-sasl[=DIR]    include SASL support (default=auto)],
+AC_ARG_WITH(sasl,   [  --with-sasl[=DIR]         include SASL support (default=auto)],
             [], [with_sasl=yes])
 if test "x$with_sasl" != "xno"; then
   OCPPFLAGS="$CPPFLAGS"
@@ -536,17 +554,20 @@ AC_SUBST(SASLLIBS)
 
 dnl IPv6 support
 enable_ipv6=maybe
-AC_ARG_ENABLE(ipv6, AC_HELP_STRING([--enable-ipv6], [enable IPv6 support]), enable_ipv6=$enableval)
+AC_ARG_ENABLE(ipv6, AS_HELP_STRING([--enable-ipv6],[enable IPv6 support]), enable_ipv6=$enableval)
 AC_MSG_CHECKING([whether to use IPv6])
 AC_MSG_RESULT($enable_ipv6)
 if test "x$enable_ipv6" != "xno"; then
   dnl check for IPv6 support
   AC_MSG_CHECKING([for IPv6 support])
-  AC_TRY_COMPILE([#define INET6
+  AC_COMPILE_IFELSE(
+      [AC_LANG_PROGRAM(
+           [#define INET6
             #include <sys/types.h>
             #include <netinet/in.h>],
-         [int x = IPPROTO_IPV6; struct in6_addr a;],
-         ipv6_support=yes, ipv6_support=no)
+           [int x = IPPROTO_IPV6; struct in6_addr a;])],
+      [ipv6_support=yes],
+      [ipv6_support=no])
   AC_MSG_RESULT($ipv6_support)
 
   if test "x$ipv6_support" = "xno"; then
@@ -559,9 +580,12 @@ if test "x$enable_ipv6" != "xno"; then
     dnl check for getaddrinfo and freeaddrinfo function presence
     for func in "getaddrinfo" "freeaddrinfo"; do
       AC_MSG_CHECKING([for $func])
-      AC_TRY_LINK([], [$func();],
-                      [func_present=yes],
-                      [func_present=no])
+      AC_LINK_IFELSE(
+          [AC_LANG_PROGRAM(
+               [],
+               [$func();])],
+          [func_present=yes],
+          [func_present=no])
       AC_MSG_RESULT($func_present)
 
       if test "x$func_present" = "xno"; then
@@ -585,10 +609,10 @@ fi
 
 dnl expat
 libexpat=no
-AC_ARG_WITH(expat,   [  --with-expat[=DIR]    expat install directory (default=auto)],
+AC_ARG_WITH(expat,   [  --with-expat[=DIR]        expat install directory (default=auto)],
             [], [with_expat=auto])
 if test "x$with_expat" != "xno"; then
-	:
+        :
 elif test "x$with_expat" != "xauto"; then
   OCPPFLAGS="$CPPFLAGS"
   OLDFLAGS="$LDFLAGS"
@@ -599,7 +623,12 @@ elif test "x$with_expat" != "xauto"; then
   AC_CHECK_HEADER(expat.h, [libexpat=yes])
   if test "x$libexpat" = "xyes"; then
       AC_MSG_CHECKING([whether with-expat compiles and links fine])
-      AC_TRY_LINK([], [XML_SetElementHandler();], [libexpat=yes], [libexpat=no])
+      AC_LINK_IFELSE(
+          [AC_LANG_PROGRAM(
+               [],
+               [XML_SetElementHandler();])],
+          [libexpat=yes],
+          [libexpat=no])
       AC_MSG_RESULT([$libexpat])
   fi
    if test "x$libexpat" = "xno"; then
@@ -612,7 +641,12 @@ else
     AC_MSG_CHECKING([whether libexpat compiles and links fine])
     OLDFLAGS="$LDFLAGS"
     LDFLAGS="$LDFLAGS -lexpat"
-    AC_TRY_LINK([], [XML_SetElementHandler();], [libexpat=yes], [libexpat=no])
+    AC_LINK_IFELSE(
+        [AC_LANG_PROGRAM(
+             [],
+             [XML_SetElementHandler();])],
+        [libexpat=yes],
+        [libexpat=no])
     AC_MSG_RESULT([$libexpat])
     if test "x$libexpat" = "xno"; then
       LDFLAGS="$OLDFLAGS"
@@ -639,46 +673,46 @@ AC_SUBST(VERSION)
 # Further checks.
 
 AC_CONFIG_FILES(libetpan-config
-		Makefile
-		build-windows/Makefile
+                Makefile
+                build-windows/Makefile
                 include/Makefile
                 src/Makefile
-		src/bsd/Makefile
-		src/windows/Makefile
-		src/data-types/Makefile
-		src/low-level/Makefile
-		src/low-level/feed/Makefile
-		src/low-level/imap/Makefile
-		src/low-level/imf/Makefile
-		src/low-level/maildir/Makefile
-		src/low-level/mbox/Makefile
-		src/low-level/mh/Makefile
-		src/low-level/mime/Makefile
-		src/low-level/nntp/Makefile
-		src/low-level/pop3/Makefile
-		src/low-level/smtp/Makefile
+                src/bsd/Makefile
+                src/windows/Makefile
+                src/data-types/Makefile
+                src/low-level/Makefile
+                src/low-level/feed/Makefile
+                src/low-level/imap/Makefile
+                src/low-level/imf/Makefile
+                src/low-level/maildir/Makefile
+                src/low-level/mbox/Makefile
+                src/low-level/mh/Makefile
+                src/low-level/mime/Makefile
+                src/low-level/nntp/Makefile
+                src/low-level/pop3/Makefile
+                src/low-level/smtp/Makefile
     src/low-level/oxws/Makefile
-		src/driver/Makefile
-		src/driver/implementation/Makefile
-		src/driver/implementation/data-message/Makefile
-		src/driver/implementation/db/Makefile
-		src/driver/implementation/feed/Makefile
-		src/driver/implementation/hotmail/Makefile
-		src/driver/implementation/imap/Makefile
-		src/driver/implementation/maildir/Makefile
-		src/driver/implementation/mbox/Makefile
-		src/driver/implementation/mh/Makefile
-		src/driver/implementation/mime-message/Makefile
-		src/driver/implementation/nntp/Makefile
-		src/driver/implementation/pop3/Makefile
-		src/driver/interface/Makefile
-		src/driver/tools/Makefile
-		src/main/Makefile
-		src/main/libetpan_version.h
-		src/engine/Makefile
-		src/versioninfo.rc
-		doc/Makefile
-		tests/Makefile)
+                src/driver/Makefile
+                src/driver/implementation/Makefile
+                src/driver/implementation/data-message/Makefile
+                src/driver/implementation/db/Makefile
+                src/driver/implementation/feed/Makefile
+                src/driver/implementation/hotmail/Makefile
+                src/driver/implementation/imap/Makefile
+                src/driver/implementation/maildir/Makefile
+                src/driver/implementation/mbox/Makefile
+                src/driver/implementation/mh/Makefile
+                src/driver/implementation/mime-message/Makefile
+                src/driver/implementation/nntp/Makefile
+                src/driver/implementation/pop3/Makefile
+                src/driver/interface/Makefile
+                src/driver/tools/Makefile
+                src/main/Makefile
+                src/main/libetpan_version.h
+                src/engine/Makefile
+                src/versioninfo.rc
+                doc/Makefile
+                tests/Makefile)
 
 # We collect all files which could potentially install public header
 # files via HEADERS.  Updating any of these files will trigger
@@ -696,3 +730,7 @@ AC_SUBST(cfg_files)
 AC_OUTPUT
 
 cp -f ${crd}/src/main/libetpan_version.h ${crd}/build-windows
+
+# Local variables:
+# indent-tabs-mode: nil
+# end:
