@@ -15,6 +15,7 @@
 /config.h.in
 /config.sub
 /ltmain.sh
+/compile
 
 /Makefile
 /Makefile.in
