@@ -7,7 +7,7 @@ logfile="`pwd`/update.log"
 
 cd ..
 echo configuring
-./autogen.sh > "$logfile" 2>&1
+./autogen.sh "$@" > "$logfile" 2>&1
 if [[ "$?" != "0" ]]; then
     echo "configure failed"
     exit 1
