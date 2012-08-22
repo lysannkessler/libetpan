@@ -10,6 +10,8 @@
 /build-mac/include
 /build-mac/dependencies/build/
 /build-mac/libsasl-ios/
+/build-mac/libcurl-ios/
+/build-mac/libcurl-macosx/
 /build-mac/update.log
 /config.guess
 /config.h.in
