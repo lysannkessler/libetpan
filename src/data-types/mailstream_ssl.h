@@ -45,7 +45,7 @@ extern "C" {
 
 /* socket */
 
-#if LIBETPAN_IOS_DISABLE_SSL
+#if LIBETPAN_APPLE_SSL
 #undef USE_SSL
 #endif
 

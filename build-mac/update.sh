@@ -23,3 +23,5 @@ cp ../libetpan-config.h include
 
 # build dependencies for iOS
 sh ./prepare-ios.sh
+
+sh ./prepare-macosx.sh
