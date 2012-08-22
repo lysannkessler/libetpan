@@ -34,25 +34,6 @@ AC_CANONICAL_HOST
 dnl Version major and minor
 VERSION_MAJOR=maj_version
 VERSION_MINOR=min_version
-
-dnl required version of libcurl
-libcurl_major_required=0
-libcurl_minor_required=0
-
-dnl API version
-dnl 1. If you have changed any of the sources for this library, the revision
-dnl    number must be incremented. This is a new revision of the current
-dnl    interface.
-dnl 2. If the interface has changed, then current must be incremented, and
-dnl    revision reset to `0'. This is the first revision of a new interface.
-dnl 3. If the new interface is a superset of the previous interface (that is,
-dnl    if the previous interface has not been broken by the changes in this new
-dnl    release), then age must be incremented. This release is backwards
-dnl    compatible with the previous release.
-dnl 4. If the new interface has removed elements with respect to the previous
-dnl    interface, then you have broken backward compatibility and age must be
-dnl    reset to `0'. This release has a new, but backwards incompatible
-dnl    interface.
 API_CURRENT=api_current
 API_REVISION=api_revision
 API_COMPATIBILITY=api_compatibility
@@ -65,7 +46,7 @@ API_VERSION="$API_CURRENT:$API_REVISION:$API_AGE"
 AC_SUBST(API_VERSION)
 
 dnl FIXME: This should be the CVS revision.
-BUILD_REVISION=0
+BUILD_REVISION=`((type -t git >/dev/null) && test -d $(top_srcdir)/.git -o -f $(top_srcdir)/.git && cd $(top_srcdir) && git describe --always && cd - 2>&1 >/dev/null) || echo 0`
 AC_SUBST(BUILD_REVISION)
 BUILD_TIMESTAMP=`date +'%Y-%m-%dT%H:%M%z'`
 AC_SUBST(BUILD_TIMESTAMP)
@@ -145,8 +126,9 @@ LT_LANG([Windows Resource])
 AC_PROG_MKDIR_P
 
 dnl Can't use AC_PROG_INSTALL
-INSTALL='$(SHELL) $(top_srcdir)/install-sh -c'
-AC_SUBST(INSTALL)
+dnl INSTALL='$(SHELL) $(top_srcdir)/install-sh -c'
+dnl AC_SUBST(INSTALL)
+AC_PROG_INSTALL
 
 AM_PROG_CC_C_O
 
