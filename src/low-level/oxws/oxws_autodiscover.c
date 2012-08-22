@@ -57,7 +57,7 @@
 #define OXWS_AUTODISCOVER_STEP1_URL_FORMAT "https://%s/autodiscover/autodiscover.xml"
 #define OXWS_AUTODISCOVER_STEP2_URL_FORMAT "https://autodiscover.%s/autodiscover/autodiscover.xml"
 #define OXWS_AUTODISCOVER_LONGEST_URL_FORMAT OXWS_AUTODISCOVER_STEP2_URL_FORMAT
-#define OXWS_AUTODISCOVER_URL_LENGTH strlen(OXWS_AUTODISCOVER_LONGEST_URL_FORMAT) - 2
+#define OXWS_AUTODISCOVER_URL_LENGTH (strlen(OXWS_AUTODISCOVER_LONGEST_URL_FORMAT) - 2)
 
 
 #define OXWS_AUTODISCOVER_TRY_STEP_LONG(step, curl, response_buffer, url_buffer, settings, host, result) \
