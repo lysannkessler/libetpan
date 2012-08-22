@@ -115,8 +115,10 @@ typedef struct oxws_item_or_folder_id oxws_item_or_folder_id;
 typedef struct oxws_item_or_folder_id oxws_item_id;
 typedef struct oxws_item_or_folder_id oxws_folder_id;
 
+LIBETPAN_EXPORT
 oxws_item_id* oxws_item_id_new(const char* id, const char* change_key);
 
+LIBETPAN_EXPORT
 oxws_folder_id* oxws_folder_id_new(const char* id, const char* change_key);
 
 /*
@@ -126,6 +128,7 @@ oxws_folder_id* oxws_folder_id_new(const char* id, const char* change_key);
 
   @param id [optional] object to release
 */
+LIBETPAN_EXPORT
 void oxws_item_id_free(oxws_item_id* id);
 
 /*
@@ -135,6 +138,7 @@ void oxws_item_id_free(oxws_item_id* id);
 
   @param id [optional] object to release
 */
+LIBETPAN_EXPORT
 void oxws_folder_id_free(oxws_folder_id* id);
 
 
@@ -162,9 +166,12 @@ struct oxws_body {
 };
 typedef struct oxws_body oxws_body;
 
+LIBETPAN_EXPORT
 oxws_body* oxws_body_new(MMAPString* string, oxws_body_type body_type);
+LIBETPAN_EXPORT
 oxws_body* oxws_body_new_cstring(const char* string, oxws_body_type body_type);
 
+LIBETPAN_EXPORT
 void oxws_body_free(oxws_body* body);
 
 
@@ -199,6 +206,7 @@ struct oxws_email_address {
 };
 typedef struct oxws_email_address oxws_email_address;
 
+LIBETPAN_EXPORT
 oxws_email_address* oxws_email_address_new();
 
 /*
@@ -208,6 +216,7 @@ oxws_email_address* oxws_email_address_new();
 
   @param address [optional] object to release
 */
+LIBETPAN_EXPORT
 void oxws_email_address_free(oxws_email_address* address);
 
 /*
@@ -220,13 +229,20 @@ void oxws_email_address_free(oxws_email_address* address);
 
   @see oxws_email_address_free()
 */
+LIBETPAN_EXPORT
 void oxws_email_address_array_free(carray* array);
 
+LIBETPAN_EXPORT
 OXWS_SETTER_STRING_DECL(email_address, address, name);
+LIBETPAN_EXPORT
 OXWS_SETTER_STRING_DECL(email_address, address, email_address);
+LIBETPAN_EXPORT
 OXWS_SETTER_STRING_DECL(email_address, address, routing_type);
+LIBETPAN_EXPORT
 OXWS_SETTER_VALUE_DECL(email_address, address, mailbox_type, mailbox_type);
+LIBETPAN_EXPORT
 OXWS_SETTER_OBJECT_DECL(email_address, address, item_id, item_id);
+LIBETPAN_EXPORT
 OXWS_SETTER_OBJECT_FIELDS_DECL(email_address, address, item_id, item_id, CONCAT_MACRO_ARGS2(const char* id, const char* change_key));
 
 
@@ -276,6 +292,7 @@ struct oxws_item {
 };
 typedef struct oxws_item oxws_item;
 
+LIBETPAN_EXPORT
 oxws_item* oxws_item_new();
 
 /*
@@ -287,6 +304,7 @@ oxws_item* oxws_item_new();
 
   @param item [optional] object to release
 */
+LIBETPAN_EXPORT
 void oxws_item_free(oxws_item* item);
 
 /*
@@ -299,25 +317,39 @@ void oxws_item_free(oxws_item* item);
 
   @see oxws_item_free()
 */
+LIBETPAN_EXPORT
 void oxws_item_array_free(carray* array);
 
+LIBETPAN_EXPORT
 OXWS_SETTER_OBJECT_DECL(item, item, item_id, item_id);
+LIBETPAN_EXPORT
 OXWS_SETTER_OBJECT_FIELDS_DECL(item, item, item_id, item_id, CONCAT_MACRO_ARGS2(const char* id, const char* change_key));
 
+LIBETPAN_EXPORT
 OXWS_SETTER_OBJECT_DECL(item, item, folder_id, parent_folder_id);
+LIBETPAN_EXPORT
 OXWS_SETTER_OBJECT_FIELDS_DECL(item, item, folder_id, parent_folder_id, CONCAT_MACRO_ARGS2(const char* id, const char* change_key));
 
+LIBETPAN_EXPORT
 OXWS_SETTER_STRING_DECL(item, item, item_class);
 
+LIBETPAN_EXPORT
 OXWS_SETTER_OBJECT_DECL(item, item, MMAPString, subject);
+LIBETPAN_EXPORT
 oxws_result oxws_item_set_subject_cstring(oxws_item* item, const char* string);
 
+LIBETPAN_EXPORT
 OXWS_SETTER_OBJECT_DECL(item, item, body, body);
+LIBETPAN_EXPORT
 OXWS_SETTER_OBJECT_FIELDS_DECL(item, item, body, body, CONCAT_MACRO_ARGS2(MMAPString* string, oxws_body_type body_type));
+LIBETPAN_EXPORT
 oxws_result oxws_item_set_body_fields_cstring(oxws_item* item, const char* string, oxws_body_type body_type);
 
+LIBETPAN_EXPORT
 OXWS_SETTER_OBJECT_DECL(item, item, time_t, date_time_received);
+LIBETPAN_EXPORT
 OXWS_SETTER_VALUE_DECL(item, item, optional_int32, size);
+LIBETPAN_EXPORT
 OXWS_SETTER_OBJECT_DECL(item, item, time_t, date_time_sent);
 
 
@@ -350,9 +382,12 @@ struct oxws_message {
 };
 typedef struct oxws_message oxws_message;
 
+LIBETPAN_EXPORT
 oxws_message* oxws_message_new();
 
+LIBETPAN_EXPORT
 OXWS_SETTER_OBJECT_DECL(message, message, email_address, from);
+LIBETPAN_EXPORT
 OXWS_SETTER_VALUE_DECL(message, message, optional_boolean, is_read);
 
 
