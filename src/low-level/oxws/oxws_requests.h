@@ -48,6 +48,44 @@ extern const unsigned short oxws_distfolder_id_name_map_length;
 
 
 /*
+  oxws_autodiscover()
+
+  Autodiscover connection settings for given account and store them in a
+  oxws_connection_settings structure.
+
+  @param host             [optional] exchange server host name; if missing the
+                          host name is extracted from email_address
+  @param email_address    [required] email address of user whose connection
+                          settings should be autodiscovered
+  @param username         [required] username required for authentication to the
+                          autodiscover service
+  @param password         [required] password required for authentication to the
+                          autodiscover service
+  @param domain           [optional] domain name required for authentication to
+                          the autodiscover service
+  @param settings         [required] Upon success, the connection settings are
+                          stored in the structure ponited at by this parameter.
+
+  @return - OXWS_NO_ERROR indicates success
+          - OXWS_ERROR_INVALID_PARAMETER indicates one of the following:
+            * a required parameter is missing
+            * no host given and host cannot be extracted from email_address
+          - OXWS_ERROR_AUTODISCOVER_UNAVAILABLE: autodiscovering the
+            connection settings failed
+          - OXWS_ERROR_INTERNAL: arbitrary failure
+
+  @see oxws_autodiscover_connection_settings()
+  @see oxws_set_connection_settings()
+
+  @seealso http://msdn.microsoft.com/en-us/library/exchange/ee332364(v=exchg.140).aspx
+*/
+LIBETPAN_EXPORT
+oxws_result oxws_autodiscover(const char* host, const char* email_address,
+        const char* username, const char* password, const char* domain,
+        oxws_connection_settings* settings);
+
+
+/*
   oxws_prepare_for_requests()
 
   Prepare given connected Exchange session to be used for SOAP requests, if the

@@ -171,9 +171,12 @@ oxws_result oxws_find_item_sax_context_init(oxws_find_item_sax_context* context,
 #define OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS_ANY_EMAIL_ADDRESS() \
   OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS(MESSAGE_FROM)
 
+#define OXWS_FIND_ITEM_SAX_IS_NS_NODE(expected_ns_suffix, expected_name) \
+  (xmlStrcmp(ns_uri, OXWS_XML_NS_##expected_ns_suffix) == 0 && xmlStrcmp(localname, BAD_CAST expected_name) == 0)
+
 #define OXWS_FIND_ITEM_SAX_CONTEXT_STATE_MATCHES_TAG(test_state, tag_ns, tag_name) \
   (OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS(test_state) && \
-  OXWS_FIND_ITEM_SAX_IS_NS_NODE(ns_uri, localname, tag_ns, tag_name))
+  OXWS_FIND_ITEM_SAX_IS_NS_NODE(tag_ns, tag_name))
 
 
 #define OXWS_FIND_ITEM_SAX_CONTEXT_SET_STATE(new_state) \

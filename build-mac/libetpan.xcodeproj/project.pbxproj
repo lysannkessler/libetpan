@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8A499FD015E550EC00322380 /* autodiscover.c in Sources */ = {isa = PBXBuildFile; fileRef = 8A499FCF15E550EC00322380 /* autodiscover.c */; };
+		8A499FD115E550EC00322380 /* autodiscover.c in Sources */ = {isa = PBXBuildFile; fileRef = 8A499FCF15E550EC00322380 /* autodiscover.c */; };
+		8A499FD215E550EC00322380 /* autodiscover.c in Sources */ = {isa = PBXBuildFile; fileRef = 8A499FCF15E550EC00322380 /* autodiscover.c */; };
+		8A499FD415E550F700322380 /* autodiscover.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A499FD315E550F700322380 /* autodiscover.h */; };
 		C6451AFE1083D316003135FD /* mailimf_write.h in Headers */ = {isa = PBXBuildFile; fileRef = C6F9EA32105335BC0059C3BA /* mailimf_write.h */; };
 		C6451AFF1083D316003135FD /* mhdriver_cached.h in Headers */ = {isa = PBXBuildFile; fileRef = C6F9E913105335BC0059C3BA /* mhdriver_cached.h */; };
 		C6451B001083D316003135FD /* mhdriver_types.h in Headers */ = {isa = PBXBuildFile; fileRef = C6F9E91A105335BC0059C3BA /* mhdriver_types.h */; };
@@ -838,10 +842,6 @@
 		F62D7BDE15E3E4A8003CA2CF /* oxws.c in Sources */ = {isa = PBXBuildFile; fileRef = F62D7BB815E3E4A8003CA2CF /* oxws.c */; };
 		F62D7BDF15E3E4A8003CA2CF /* oxws.c in Sources */ = {isa = PBXBuildFile; fileRef = F62D7BB815E3E4A8003CA2CF /* oxws.c */; };
 		F62D7BE015E3E4A8003CA2CF /* oxws.h in Headers */ = {isa = PBXBuildFile; fileRef = F62D7BB915E3E4A8003CA2CF /* oxws.h */; };
-		F62D7BE115E3E4A8003CA2CF /* oxws_autodiscover.c in Sources */ = {isa = PBXBuildFile; fileRef = F62D7BBA15E3E4A8003CA2CF /* oxws_autodiscover.c */; };
-		F62D7BE215E3E4A8003CA2CF /* oxws_autodiscover.c in Sources */ = {isa = PBXBuildFile; fileRef = F62D7BBA15E3E4A8003CA2CF /* oxws_autodiscover.c */; };
-		F62D7BE315E3E4A8003CA2CF /* oxws_autodiscover.c in Sources */ = {isa = PBXBuildFile; fileRef = F62D7BBA15E3E4A8003CA2CF /* oxws_autodiscover.c */; };
-		F62D7BE415E3E4A8003CA2CF /* oxws_autodiscover.h in Headers */ = {isa = PBXBuildFile; fileRef = F62D7BBB15E3E4A8003CA2CF /* oxws_autodiscover.h */; };
 		F62D7BE515E3E4A8003CA2CF /* oxws_requests.c in Sources */ = {isa = PBXBuildFile; fileRef = F62D7BBC15E3E4A8003CA2CF /* oxws_requests.c */; };
 		F62D7BE615E3E4A8003CA2CF /* oxws_requests.c in Sources */ = {isa = PBXBuildFile; fileRef = F62D7BBC15E3E4A8003CA2CF /* oxws_requests.c */; };
 		F62D7BE715E3E4A8003CA2CF /* oxws_requests.c in Sources */ = {isa = PBXBuildFile; fileRef = F62D7BBC15E3E4A8003CA2CF /* oxws_requests.c */; };
@@ -909,6 +909,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		8A499FCF15E550EC00322380 /* autodiscover.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = autodiscover.c; sourceTree = "<group>"; };
+		8A499FD315E550F700322380 /* autodiscover.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = autodiscover.h; sourceTree = "<group>"; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* libetpan.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = libetpan.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C6516B69130DD667004ADD56 /* namespace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = namespace.h; sourceTree = "<group>"; };
@@ -1419,8 +1421,6 @@
 		F62D7BB415E3E4A8003CA2CF /* helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = helper.h; sourceTree = "<group>"; };
 		F62D7BB815E3E4A8003CA2CF /* oxws.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = oxws.c; sourceTree = "<group>"; };
 		F62D7BB915E3E4A8003CA2CF /* oxws.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = oxws.h; sourceTree = "<group>"; };
-		F62D7BBA15E3E4A8003CA2CF /* oxws_autodiscover.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = oxws_autodiscover.c; sourceTree = "<group>"; };
-		F62D7BBB15E3E4A8003CA2CF /* oxws_autodiscover.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = oxws_autodiscover.h; sourceTree = "<group>"; };
 		F62D7BBC15E3E4A8003CA2CF /* oxws_requests.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = oxws_requests.c; sourceTree = "<group>"; };
 		F62D7BBD15E3E4A8003CA2CF /* oxws_requests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = oxws_requests.h; sourceTree = "<group>"; };
 		F62D7BBE15E3E4A8003CA2CF /* oxws_setters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = oxws_setters.h; sourceTree = "<group>"; };
@@ -2320,8 +2320,6 @@
 				F62D7BB415E3E4A8003CA2CF /* helper.h */,
 				F62D7BB815E3E4A8003CA2CF /* oxws.c */,
 				F62D7BB915E3E4A8003CA2CF /* oxws.h */,
-				F62D7BBA15E3E4A8003CA2CF /* oxws_autodiscover.c */,
-				F62D7BBB15E3E4A8003CA2CF /* oxws_autodiscover.h */,
 				F62D7BBC15E3E4A8003CA2CF /* oxws_requests.c */,
 				F62D7BBD15E3E4A8003CA2CF /* oxws_requests.h */,
 				F62D7BBE15E3E4A8003CA2CF /* oxws_setters.h */,
@@ -2340,6 +2338,8 @@
 		F62D7BC215E3E4A8003CA2CF /* requests */ = {
 			isa = PBXGroup;
 			children = (
+				8A499FCF15E550EC00322380 /* autodiscover.c */,
+				8A499FD315E550F700322380 /* autodiscover.h */,
 				F62D7BC315E3E4A8003CA2CF /* create_item.c */,
 				F62D7BC415E3E4A8003CA2CF /* create_item.h */,
 				F62D7BC515E3E4A8003CA2CF /* find_item.c */,
@@ -2693,7 +2693,6 @@
 				C6CE9B1914AA9C9D00D20BA6 /* xgmlabels.h in Headers */,
 				F62D7BD715E3E4A8003CA2CF /* helper.h in Headers */,
 				F62D7BE015E3E4A8003CA2CF /* oxws.h in Headers */,
-				F62D7BE415E3E4A8003CA2CF /* oxws_autodiscover.h in Headers */,
 				F62D7BE815E3E4A8003CA2CF /* oxws_requests.h in Headers */,
 				F62D7BE915E3E4A8003CA2CF /* oxws_setters.h in Headers */,
 				F62D7BEA15E3E4A8003CA2CF /* oxws_types.h in Headers */,
@@ -2708,6 +2707,7 @@
 				F6956C8715E619E000EDD4F4 /* oxws_types_item.h in Headers */,
 				F6956C8815E619E000EDD4F4 /* oxws_types.h in Headers */,
 				F6956C8915E619E000EDD4F4 /* oxws.h in Headers */,
+				8A499FD415E550F700322380 /* autodiscover.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2991,13 +2991,13 @@
 				C6CE9B1614AA9C8B00D20BA6 /* xgmlabels.c in Sources */,
 				F62D7BD415E3E4A8003CA2CF /* helper.c in Sources */,
 				F62D7BDD15E3E4A8003CA2CF /* oxws.c in Sources */,
-				F62D7BE115E3E4A8003CA2CF /* oxws_autodiscover.c in Sources */,
 				F62D7BE515E3E4A8003CA2CF /* oxws_requests.c in Sources */,
 				F62D7BEB15E3E4A8003CA2CF /* oxws_types_item.c in Sources */,
 				F62D7BEF15E3E4A8003CA2CF /* create_item.c in Sources */,
 				F62D7BF315E3E4A8003CA2CF /* find_item.c in Sources */,
 				F62D7BF715E3E4A8003CA2CF /* types_internal.c in Sources */,
 				F62D7BFB15E3E4A8003CA2CF /* xml.c in Sources */,
+				8A499FD015E550EC00322380 /* autodiscover.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3167,13 +3167,13 @@
 				C682E2BB15B315EF00BE9DA7 /* xgmlabels.c in Sources */,
 				F62D7BD615E3E4A8003CA2CF /* helper.c in Sources */,
 				F62D7BDF15E3E4A8003CA2CF /* oxws.c in Sources */,
-				F62D7BE315E3E4A8003CA2CF /* oxws_autodiscover.c in Sources */,
 				F62D7BE715E3E4A8003CA2CF /* oxws_requests.c in Sources */,
 				F62D7BED15E3E4A8003CA2CF /* oxws_types_item.c in Sources */,
 				F62D7BF115E3E4A8003CA2CF /* create_item.c in Sources */,
 				F62D7BF515E3E4A8003CA2CF /* find_item.c in Sources */,
 				F62D7BF915E3E4A8003CA2CF /* types_internal.c in Sources */,
 				F62D7BFD15E3E4A8003CA2CF /* xml.c in Sources */,
+				8A499FD215E550EC00322380 /* autodiscover.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3343,13 +3343,13 @@
 				C69AD25F14AB2062003D04D5 /* xgmlabels.c in Sources */,
 				F62D7BD515E3E4A8003CA2CF /* helper.c in Sources */,
 				F62D7BDE15E3E4A8003CA2CF /* oxws.c in Sources */,
-				F62D7BE215E3E4A8003CA2CF /* oxws_autodiscover.c in Sources */,
 				F62D7BE615E3E4A8003CA2CF /* oxws_requests.c in Sources */,
 				F62D7BEC15E3E4A8003CA2CF /* oxws_types_item.c in Sources */,
 				F62D7BF015E3E4A8003CA2CF /* create_item.c in Sources */,
 				F62D7BF415E3E4A8003CA2CF /* find_item.c in Sources */,
 				F62D7BF815E3E4A8003CA2CF /* types_internal.c in Sources */,
 				F62D7BFC15E3E4A8003CA2CF /* xml.c in Sources */,
+				8A499FD115E550EC00322380 /* autodiscover.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

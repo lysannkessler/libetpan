@@ -46,10 +46,6 @@
 #include <libxml/parser.h>
 
 
-#define OXWS_FIND_ITEM_SAX_IS_NS_NODE(ns_uri, localname, expected_ns_suffix, expected_name) \
-  (xmlStrcmp(ns_uri, OXWS_XML_NS_##expected_ns_suffix) == 0 && xmlStrcmp(localname, BAD_CAST expected_name) == 0)
-
-
 oxws_result oxws_find_item(oxws* oxws,
         oxws_distinguished_folder_id distfolder_id, const char* folder_id,
         int count, carray** list) {
@@ -202,7 +198,7 @@ void oxws_find_item_sax_handler_start_element_ns(void* user_data,
     if(context->item != NULL || context->item_node_depth != 0) {
       /* TODO warn */
     }
-    if(OXWS_FIND_ITEM_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "Message")) {
+    if(OXWS_FIND_ITEM_SAX_IS_NS_NODE(EXCH_TYPES, "Message")) {
       OXWS_FIND_ITEM_SAX_CONTEXT_SET_STATE(MESSAGE);
       context->item = (oxws_item*) oxws_message_new();
     } else {
@@ -215,7 +211,7 @@ void oxws_find_item_sax_handler_start_element_ns(void* user_data,
   } else if(OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS_ANY_ITEM_TOP_LEVEL()) {
     /* TODO check item */
 
-    if(OXWS_FIND_ITEM_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "ItemId")) {
+    if(OXWS_FIND_ITEM_SAX_IS_NS_NODE(EXCH_TYPES, "ItemId")) {
       /* TODO check item */
       xmlChar* id = NULL, *change_key = NULL;
       OXWS_FIND_ITEM_SAX_CONTEXT_PARSE_ITEM_ID(id, change_key);
@@ -223,10 +219,10 @@ void oxws_find_item_sax_handler_start_element_ns(void* user_data,
       /* TODO warn if result != NO_ERROR */
       xmlFree(id); xmlFree(change_key);
       OXWS_FIND_ITEM_SAX_CONTEXT_PUSH_STATE(ITEM_ITEM_ID);
-    } else if(OXWS_FIND_ITEM_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "Subject")) {
+    } else if(OXWS_FIND_ITEM_SAX_IS_NS_NODE(EXCH_TYPES, "Subject")) {
       OXWS_FIND_ITEM_SAX_CONTEXT_PREPARE_STRING(50);
       OXWS_FIND_ITEM_SAX_CONTEXT_PUSH_STATE(ITEM_SUBJECT);
-    } else if(OXWS_FIND_ITEM_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "Size")) {
+    } else if(OXWS_FIND_ITEM_SAX_IS_NS_NODE(EXCH_TYPES, "Size")) {
       OXWS_FIND_ITEM_SAX_CONTEXT_PREPARE_STRING(6); /* assume 6 digit number, will expand on demand */
       OXWS_FIND_ITEM_SAX_CONTEXT_PUSH_STATE(ITEM_SIZE);
 
@@ -234,10 +230,10 @@ void oxws_find_item_sax_handler_start_element_ns(void* user_data,
     } else if(OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS(MESSAGE)) {
       /* TODO check item class */
 
-      if(OXWS_FIND_ITEM_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "From")) {
+      if(OXWS_FIND_ITEM_SAX_IS_NS_NODE(EXCH_TYPES, "From")) {
         OXWS_FIND_ITEM_SAX_CONTEXT_PREPARE_EMAIL_ADDRESS();
         OXWS_FIND_ITEM_SAX_CONTEXT_SET_STATE(MESSAGE_FROM);
-      } else if(OXWS_FIND_ITEM_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "IsRead")) {
+      } else if(OXWS_FIND_ITEM_SAX_IS_NS_NODE(EXCH_TYPES, "IsRead")) {
         OXWS_FIND_ITEM_SAX_CONTEXT_PREPARE_STRING(5); /* true / false / 1 / 0 */
         OXWS_FIND_ITEM_SAX_CONTEXT_SET_STATE(MESSAGE_IS_READ);
       } else {
@@ -252,26 +248,26 @@ void oxws_find_item_sax_handler_start_element_ns(void* user_data,
 
   /* Mailbox itself and nodes within Mailbox */
   } else if(OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS_ANY_EMAIL_ADDRESS() &&
-            OXWS_FIND_ITEM_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "Mailbox")) {
+            OXWS_FIND_ITEM_SAX_IS_NS_NODE(EXCH_TYPES, "Mailbox")) {
     OXWS_FIND_ITEM_SAX_CONTEXT_PUSH_STATE(INNER_MAILBOX);
   } else if(OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS(INNER_MAILBOX)) {
-    if(OXWS_FIND_ITEM_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "Name")) {
+    if(OXWS_FIND_ITEM_SAX_IS_NS_NODE(EXCH_TYPES, "Name")) {
       OXWS_FIND_ITEM_SAX_CONTEXT_PREPARE_STRING(20);
       OXWS_FIND_ITEM_SAX_CONTEXT_SET_STATE(INNER_MAILBOX_NAME);
     } else if(OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS(INNER_MAILBOX) &&
-       OXWS_FIND_ITEM_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "EmailAddress")) {
+       OXWS_FIND_ITEM_SAX_IS_NS_NODE(EXCH_TYPES, "EmailAddress")) {
       OXWS_FIND_ITEM_SAX_CONTEXT_PREPARE_STRING(40);
       OXWS_FIND_ITEM_SAX_CONTEXT_SET_STATE(INNER_MAILBOX_EMAIL_ADDRESS);
     } else if(OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS(INNER_MAILBOX) &&
-       OXWS_FIND_ITEM_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "RoutingType")) {
+       OXWS_FIND_ITEM_SAX_IS_NS_NODE(EXCH_TYPES, "RoutingType")) {
       OXWS_FIND_ITEM_SAX_CONTEXT_PREPARE_STRING(4); /* SMTP */
       OXWS_FIND_ITEM_SAX_CONTEXT_SET_STATE(INNER_MAILBOX_ROUTING_TYPE);
     } else if(OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS(INNER_MAILBOX) &&
-       OXWS_FIND_ITEM_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "MailboxType")) {
+       OXWS_FIND_ITEM_SAX_IS_NS_NODE(EXCH_TYPES, "MailboxType")) {
       OXWS_FIND_ITEM_SAX_CONTEXT_PREPARE_STRING(12); /* Mailbox/PublicDL/PrivateDL/Contact/PublicFolder */
       OXWS_FIND_ITEM_SAX_CONTEXT_SET_STATE(INNER_MAILBOX_MAILBOX_TYPE);
     } else if(OXWS_FIND_ITEM_SAX_CONTEXT_STATE_IS(INNER_MAILBOX) &&
-       OXWS_FIND_ITEM_SAX_IS_NS_NODE(ns_uri, localname, EXCH_TYPES, "ItemId")) {
+       OXWS_FIND_ITEM_SAX_IS_NS_NODE(EXCH_TYPES, "ItemId")) {
       /* TODO check email_address */
       xmlChar* id = NULL, *change_key = NULL;
       OXWS_FIND_ITEM_SAX_CONTEXT_PARSE_ITEM_ID(id, change_key);

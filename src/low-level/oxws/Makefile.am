@@ -32,7 +32,7 @@ include $(top_srcdir)/rules.mk
 
 etpaninclude_HEADERS = \
   oxws.h oxws_setters.h oxws_types.h oxws_types_item.h \
-  oxws_autodiscover.h oxws_requests.h
+  oxws_requests.h
 
 AM_CPPFLAGS = -Werror \
   -I$(top_builddir)/include \
@@ -46,4 +46,5 @@ noinst_LTLIBRARIES = liboxws.la
 liboxws_la_SOURCES = \
   oxws.c types_internal.c oxws_types_item.c \
   helper.c xml.c \
-  oxws_autodiscover.c oxws_requests.c requests/find_item.c requests/create_item.c
+  oxws_requests.c requests/autodiscover.c requests/find_item.c \
+  requests/create_item.c
