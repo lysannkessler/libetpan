@@ -53,7 +53,7 @@ extern "C" {
 #include <libetpan/carray.h>
 #include <libetpan/chash.h>
 #include <libetpan/maillock.h>
-  
+
 /* mbox driver */
 #include <libetpan/mboxdriver.h>
 #include <libetpan/mboxdriver_message.h>
@@ -117,6 +117,7 @@ extern "C" {
 
 /* Microsoft Exchange web services */
 #include <libetpan/oxws.h>
+#include <libetpan/oxws_requests.h>
 
 /* engine */
 #include <libetpan/mailprivacy.h>

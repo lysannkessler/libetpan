@@ -157,10 +157,6 @@ LIBETPAN_EXPORT
 oxws_result oxws_set_progress_callback(oxws* oxws, mailprogress_function* callback, void* userdata, size_t rate);
 
 
-/* include all request functions */
-#include <libetpan/oxws_requests.h>
-
-
 #ifdef __cplusplus
 }
 #endif

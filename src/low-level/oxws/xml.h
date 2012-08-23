@@ -130,6 +130,23 @@ oxws_result oxws_perform_request_xml(oxws* oxws, xmlNodePtr request_body);
 oxws_result oxws_handle_response_xml(oxws* oxws, xmlSAXHandlerPtr sax_handler, void* sax_context);
 
 /*
+  oxws_handle_response_xml_callback()
+
+  Callback called by CURL as write function if configured with
+  oxws_handle_response_xml(). It parses the given response chunk using the
+  response XML parser. This will either continue parsing into an in-memory
+  response XML document, or invoke the configured SAX handler.
+
+  @param userdata [required] the xmlParserCtxtPtr of the Exchange session
+                  receiving the SOAP response.
+
+  @seealso CURL documentation
+
+  @see oxws_handle_response_xml()
+*/
+size_t oxws_handle_response_xml_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
+
+/*
   oxws_get_response_xml()
 
   Signal response finalization and return the in-memory response XML document.

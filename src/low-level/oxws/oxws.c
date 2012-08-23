@@ -35,7 +35,7 @@
 #endif
 
 #include <libetpan/oxws.h>
-#include <libetpan/oxws_autodiscover.h>
+#include <libetpan/oxws_requests.h>
 #include "helper.h"
 #include "types_internal.h"
 

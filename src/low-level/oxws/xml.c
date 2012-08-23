@@ -38,25 +38,6 @@
 #include "xml.h"
 
 
-/*
-  oxws_handle_response_xml_callback()
-
-  Callback called by CURL as write function if configured with
-  oxws_handle_response_xml(). It parses the given response chunk using the
-  response XML parser. This will either continue parsing into an in-memory
-  response XML document, or invoke the configured SAX handler.
-
-  @param userdata [required] the oxws_internal* of the Exchange session
-                  receiving the SOAP response. It is configured as
-                  CURLOPT_WRITEDATA in oxws_handle_response_xml().
-
-  @seealso CURL documentation
-
-  @see oxws_handle_response_xml()
-*/
-size_t oxws_handle_response_xml_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
-
-
 oxws_result oxws_prepare_xml_request_method_node(const char* name,
         xmlNodePtr* node, xmlNsPtr* ns_exch_messages, xmlNsPtr* ns_exch_types) {
 
@@ -107,7 +88,7 @@ oxws_result oxws_perform_request_xml(oxws* oxws, xmlNodePtr request_body) {
 
   /* perform request */
   CURLcode curl_code = curl_easy_perform(curl);
-  int result = OXWS_ERROR_CONNECT;
+  oxws_result result = OXWS_ERROR_CONNECT;
   if(curl_code == CURLE_OK) {
     /* process response code */
     long http_response_code;
@@ -131,15 +112,30 @@ oxws_result oxws_handle_response_xml(oxws* oxws, xmlSAXHandlerPtr sax_handler, v
   oxws_internal* internal = OXWS_INTERNAL(oxws);
   if(internal == NULL) return OXWS_ERROR_INTERNAL;
 
-  /* configure CURL write callback */
-  curl_easy_setopt(internal->curl, CURLOPT_WRITEFUNCTION, oxws_handle_response_xml_callback);
-  curl_easy_setopt(internal->curl, CURLOPT_WRITEDATA, internal);
-
   /* create XML parser */
   oxws_release_response_xml_parser(oxws);
   internal->response_xml_parser = xmlCreatePushParserCtxt(sax_handler, sax_context, NULL, 0, NULL);
 
+  /* configure CURL write callback */
+  curl_easy_setopt(internal->curl, CURLOPT_WRITEFUNCTION, oxws_handle_response_xml_callback);
+  curl_easy_setopt(internal->curl, CURLOPT_WRITEDATA, internal->response_xml_parser);
+
   return OXWS_NO_ERROR;
+}
+
+size_t oxws_handle_response_xml_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
+
+  size_t length = size*nmemb < 1 ? 0 : size*nmemb;
+  xmlParserCtxtPtr xml_parser = (xmlParserCtxtPtr) userdata;
+
+  if(xml_parser != NULL) {
+    /* read next data chunk */
+    xmlParseChunk(xml_parser, ptr, length, 0);
+  } else {
+    return 0; /* error */
+  }
+
+  return length;
 }
 
 xmlDocPtr oxws_get_response_xml(oxws* oxws) {
@@ -216,20 +212,4 @@ void oxws_release_response_xml_parser(oxws* oxws) {
     xmlFreeParserCtxt(internal->response_xml_parser);
     internal->response_xml_parser = NULL;
   }
-}
-
-
-size_t oxws_handle_response_xml_callback(char *ptr, size_t size, size_t nmemb,void *userdata) {
-
-  size_t length = size*nmemb < 1 ? 0 : size*nmemb;
-  oxws_internal* internal = (oxws_internal*) userdata;
-
-  if(internal != NULL && internal->response_xml_parser != NULL) {
-    /* read next data chunk */
-    xmlParseChunk(internal->response_xml_parser, ptr, length, 0);
-  } else {
-    return 0; /* error */
-  }
-
-  return length;
 }
