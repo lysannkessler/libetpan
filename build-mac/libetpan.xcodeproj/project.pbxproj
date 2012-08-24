@@ -6,6 +6,49 @@
 	objectVersion = 46;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		8A3015AA15E79E7100ADBD06 /* all-mac */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 8A3015AD15E79E7100ADBD06 /* Build configuration list for PBXAggregateTarget "all-mac" */;
+			buildPhases = (
+			);
+			dependencies = (
+				8A3015B015E79E7F00ADBD06 /* PBXTargetDependency */,
+				8A3015B215E79E7F00ADBD06 /* PBXTargetDependency */,
+				8A3015B415E79E7F00ADBD06 /* PBXTargetDependency */,
+				8A3015B615E79E7F00ADBD06 /* PBXTargetDependency */,
+				8A3015B815E79E7F00ADBD06 /* PBXTargetDependency */,
+				8A3015BA15E79E7F00ADBD06 /* PBXTargetDependency */,
+				8A3015BC15E79E7F00ADBD06 /* PBXTargetDependency */,
+				8A3015BE15E79E7F00ADBD06 /* PBXTargetDependency */,
+				8A3015C015E79E7F00ADBD06 /* PBXTargetDependency */,
+				8A3015C215E79E7F00ADBD06 /* PBXTargetDependency */,
+				8A3015C415E79E7F00ADBD06 /* PBXTargetDependency */,
+				8A3015C615E79E7F00ADBD06 /* PBXTargetDependency */,
+				8A3015C815E79E7F00ADBD06 /* PBXTargetDependency */,
+				8A3015CA15E79E7F00ADBD06 /* PBXTargetDependency */,
+				8A3015CC15E79E7F00ADBD06 /* PBXTargetDependency */,
+				8A3015CE15E79E7F00ADBD06 /* PBXTargetDependency */,
+				8A3015D015E79E7F00ADBD06 /* PBXTargetDependency */,
+				8A3015D215E79E7F00ADBD06 /* PBXTargetDependency */,
+				8A3015D415E79E7F00ADBD06 /* PBXTargetDependency */,
+			);
+			name = "all-mac";
+			productName = "all-mac";
+		};
+		8A3015D515E79E8F00ADBD06 /* all-ios */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 8A3015D615E79E8F00ADBD06 /* Build configuration list for PBXAggregateTarget "all-ios" */;
+			buildPhases = (
+			);
+			dependencies = (
+				8A3015DA15E79EA700ADBD06 /* PBXTargetDependency */,
+			);
+			name = "all-ios";
+			productName = "all-ios";
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXBuildFile section */
 		8A499FD015E550EC00322380 /* autodiscover.c in Sources */ = {isa = PBXBuildFile; fileRef = 8A499FCF15E550EC00322380 /* autodiscover.c */; };
 		8A499FD115E550EC00322380 /* autodiscover.c in Sources */ = {isa = PBXBuildFile; fileRef = 8A499FCF15E550EC00322380 /* autodiscover.c */; };
@@ -969,6 +1012,149 @@
 		F6D21F1415E51740003A9B6A /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F6D21F1215E51740003A9B6A /* Security.framework */; };
 		F6D21F1515E51740003A9B6A /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F6D21F1215E51740003A9B6A /* Security.framework */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		8A3015AF15E79E7F00ADBD06 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
+			remoteInfo = libetpan;
+		};
+		8A3015B115E79E7F00ADBD06 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C69AB10910546FE500F32FBD;
+			remoteInfo = "static libetpan";
+		};
+		8A3015B315E79E7F00ADBD06 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8AB5E09415E765FD00C3971F;
+			remoteInfo = smime;
+		};
+		8A3015B515E79E7F00ADBD06 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8AB5E0A215E766D100C3971F;
+			remoteInfo = decrypt;
+		};
+		8A3015B715E79E7F00ADBD06 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8AB5E0AE15E7676F00C3971F;
+			remoteInfo = pgp;
+		};
+		8A3015B915E79E7F00ADBD06 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8AB5E0B915E7677200C3971F;
+			remoteInfo = frm;
+		};
+		8A3015BB15E79E7F00ADBD06 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8AB5E0C415E7677300C3971F;
+			remoteInfo = "frm-tree";
+		};
+		8A3015BD15E79E7F00ADBD06 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8AB5E0CF15E7677500C3971F;
+			remoteInfo = "frm-simple";
+		};
+		8A3015BF15E79E7F00ADBD06 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8AB5E0DA15E7677600C3971F;
+			remoteInfo = "readmsg-simple";
+		};
+		8A3015C115E79E7F00ADBD06 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8AB5E11C15E76AB300C3971F;
+			remoteInfo = "fetch-attachment";
+		};
+		8A3015C315E79E7F00ADBD06 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8AB5E12715E76AB500C3971F;
+			remoteInfo = smtpsend;
+		};
+		8A3015C515E79E7F00ADBD06 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8AB5E15E15E76B8500C3971F;
+			remoteInfo = "readmsg-uid";
+		};
+		8A3015C715E79E7F00ADBD06 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8AB5E17015E76BBB00C3971F;
+			remoteInfo = readmsg;
+		};
+		8A3015C915E79E7F00ADBD06 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8AB5E13215E76AB600C3971F;
+			remoteInfo = "compose-msg";
+		};
+		8A3015CB15E79E7F00ADBD06 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8AB5E13D15E76AB700C3971F;
+			remoteInfo = "imap-sample";
+		};
+		8A3015CD15E79E7F00ADBD06 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8AB5E14815E76AB800C3971F;
+			remoteInfo = "mime-create";
+		};
+		8A3015CF15E79E7F00ADBD06 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8AB5E18915E76CC600C3971F;
+			remoteInfo = "mime-parse";
+		};
+		8A3015D115E79E7F00ADBD06 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8AB5E19515E76D0F00C3971F;
+			remoteInfo = "pop-sample";
+		};
+		8A3015D315E79E7F00ADBD06 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8AB5E08515E7654000C3971F;
+			remoteInfo = "oxws-sample";
+		};
+		8A3015D915E79EA700ADBD06 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C682E21815B315EF00BE9DA7;
+			remoteInfo = "libetpan ios";
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		8AB5E08415E7654000C3971F /* CopyFiles */ = {
@@ -3601,6 +3787,8 @@
 				8AB5E18915E76CC600C3971F /* mime-parse */,
 				8AB5E19515E76D0F00C3971F /* pop-sample */,
 				8AB5E08515E7654000C3971F /* oxws-sample */,
+				8A3015AA15E79E7100ADBD06 /* all-mac */,
+				8A3015D515E79E8F00ADBD06 /* all-ios */,
 			);
 		};
 /* End PBXProject section */
@@ -4312,6 +4500,109 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		8A3015B015E79E7F00ADBD06 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8DC2EF4F0486A6940098B216 /* libetpan */;
+			targetProxy = 8A3015AF15E79E7F00ADBD06 /* PBXContainerItemProxy */;
+		};
+		8A3015B215E79E7F00ADBD06 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C69AB10910546FE500F32FBD /* static libetpan */;
+			targetProxy = 8A3015B115E79E7F00ADBD06 /* PBXContainerItemProxy */;
+		};
+		8A3015B415E79E7F00ADBD06 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8AB5E09415E765FD00C3971F /* smime */;
+			targetProxy = 8A3015B315E79E7F00ADBD06 /* PBXContainerItemProxy */;
+		};
+		8A3015B615E79E7F00ADBD06 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8AB5E0A215E766D100C3971F /* decrypt */;
+			targetProxy = 8A3015B515E79E7F00ADBD06 /* PBXContainerItemProxy */;
+		};
+		8A3015B815E79E7F00ADBD06 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8AB5E0AE15E7676F00C3971F /* pgp */;
+			targetProxy = 8A3015B715E79E7F00ADBD06 /* PBXContainerItemProxy */;
+		};
+		8A3015BA15E79E7F00ADBD06 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8AB5E0B915E7677200C3971F /* frm */;
+			targetProxy = 8A3015B915E79E7F00ADBD06 /* PBXContainerItemProxy */;
+		};
+		8A3015BC15E79E7F00ADBD06 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8AB5E0C415E7677300C3971F /* frm-tree */;
+			targetProxy = 8A3015BB15E79E7F00ADBD06 /* PBXContainerItemProxy */;
+		};
+		8A3015BE15E79E7F00ADBD06 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8AB5E0CF15E7677500C3971F /* frm-simple */;
+			targetProxy = 8A3015BD15E79E7F00ADBD06 /* PBXContainerItemProxy */;
+		};
+		8A3015C015E79E7F00ADBD06 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8AB5E0DA15E7677600C3971F /* readmsg-simple */;
+			targetProxy = 8A3015BF15E79E7F00ADBD06 /* PBXContainerItemProxy */;
+		};
+		8A3015C215E79E7F00ADBD06 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8AB5E11C15E76AB300C3971F /* fetch-attachment */;
+			targetProxy = 8A3015C115E79E7F00ADBD06 /* PBXContainerItemProxy */;
+		};
+		8A3015C415E79E7F00ADBD06 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8AB5E12715E76AB500C3971F /* smtpsend */;
+			targetProxy = 8A3015C315E79E7F00ADBD06 /* PBXContainerItemProxy */;
+		};
+		8A3015C615E79E7F00ADBD06 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8AB5E15E15E76B8500C3971F /* readmsg-uid */;
+			targetProxy = 8A3015C515E79E7F00ADBD06 /* PBXContainerItemProxy */;
+		};
+		8A3015C815E79E7F00ADBD06 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8AB5E17015E76BBB00C3971F /* readmsg */;
+			targetProxy = 8A3015C715E79E7F00ADBD06 /* PBXContainerItemProxy */;
+		};
+		8A3015CA15E79E7F00ADBD06 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8AB5E13215E76AB600C3971F /* compose-msg */;
+			targetProxy = 8A3015C915E79E7F00ADBD06 /* PBXContainerItemProxy */;
+		};
+		8A3015CC15E79E7F00ADBD06 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8AB5E13D15E76AB700C3971F /* imap-sample */;
+			targetProxy = 8A3015CB15E79E7F00ADBD06 /* PBXContainerItemProxy */;
+		};
+		8A3015CE15E79E7F00ADBD06 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8AB5E14815E76AB800C3971F /* mime-create */;
+			targetProxy = 8A3015CD15E79E7F00ADBD06 /* PBXContainerItemProxy */;
+		};
+		8A3015D015E79E7F00ADBD06 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8AB5E18915E76CC600C3971F /* mime-parse */;
+			targetProxy = 8A3015CF15E79E7F00ADBD06 /* PBXContainerItemProxy */;
+		};
+		8A3015D215E79E7F00ADBD06 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8AB5E19515E76D0F00C3971F /* pop-sample */;
+			targetProxy = 8A3015D115E79E7F00ADBD06 /* PBXContainerItemProxy */;
+		};
+		8A3015D415E79E7F00ADBD06 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8AB5E08515E7654000C3971F /* oxws-sample */;
+			targetProxy = 8A3015D315E79E7F00ADBD06 /* PBXContainerItemProxy */;
+		};
+		8A3015DA15E79EA700ADBD06 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C682E21815B315EF00BE9DA7 /* libetpan ios */;
+			targetProxy = 8A3015D915E79EA700ADBD06 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
 		1DEB91AE08733DA50010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -4404,6 +4695,36 @@
 					"-DLIBETPAN_APPLE_SSL=1",
 				);
 				OTHER_LDFLAGS = "-lcurl";
+			};
+			name = Release;
+		};
+		8A3015AB15E79E7100ADBD06 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		8A3015AC15E79E7100ADBD06 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		8A3015D715E79E8F00ADBD06 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+			};
+			name = Debug;
+		};
+		8A3015D815E79E8F00ADBD06 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 			};
 			name = Release;
 		};
@@ -5243,6 +5564,22 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		8A3015AD15E79E7100ADBD06 /* Build configuration list for PBXAggregateTarget "all-mac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8A3015AB15E79E7100ADBD06 /* Debug */,
+				8A3015AC15E79E7100ADBD06 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		8A3015D615E79E8F00ADBD06 /* Build configuration list for PBXAggregateTarget "all-ios" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8A3015D715E79E8F00ADBD06 /* Debug */,
+				8A3015D815E79E8F00ADBD06 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
 		8AB5E08D15E7654100C3971F /* Build configuration list for PBXNativeTarget "oxws-sample" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -5250,6 +5587,7 @@
 				8AB5E08F15E7654100C3971F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8AB5E09B15E765FD00C3971F /* Build configuration list for PBXNativeTarget "smime" */ = {
 			isa = XCConfigurationList;
@@ -5258,6 +5596,7 @@
 				8AB5E09D15E765FD00C3971F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8AB5E0A815E766D100C3971F /* Build configuration list for PBXNativeTarget "decrypt" */ = {
 			isa = XCConfigurationList;
@@ -5266,6 +5605,7 @@
 				8AB5E0AA15E766D100C3971F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8AB5E0B415E7676F00C3971F /* Build configuration list for PBXNativeTarget "pgp" */ = {
 			isa = XCConfigurationList;
@@ -5274,6 +5614,7 @@
 				8AB5E0B615E7676F00C3971F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8AB5E0BF15E7677200C3971F /* Build configuration list for PBXNativeTarget "frm" */ = {
 			isa = XCConfigurationList;
@@ -5282,6 +5623,7 @@
 				8AB5E0C115E7677200C3971F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8AB5E0CA15E7677300C3971F /* Build configuration list for PBXNativeTarget "frm-tree" */ = {
 			isa = XCConfigurationList;
@@ -5290,6 +5632,7 @@
 				8AB5E0CC15E7677300C3971F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8AB5E0D515E7677500C3971F /* Build configuration list for PBXNativeTarget "frm-simple" */ = {
 			isa = XCConfigurationList;
@@ -5298,6 +5641,7 @@
 				8AB5E0D715E7677500C3971F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8AB5E0E015E7677600C3971F /* Build configuration list for PBXNativeTarget "readmsg-simple" */ = {
 			isa = XCConfigurationList;
@@ -5306,6 +5650,7 @@
 				8AB5E0E215E7677600C3971F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8AB5E12215E76AB300C3971F /* Build configuration list for PBXNativeTarget "fetch-attachment" */ = {
 			isa = XCConfigurationList;
@@ -5314,6 +5659,7 @@
 				8AB5E12415E76AB300C3971F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8AB5E12D15E76AB500C3971F /* Build configuration list for PBXNativeTarget "smtpsend" */ = {
 			isa = XCConfigurationList;
@@ -5322,6 +5668,7 @@
 				8AB5E12F15E76AB500C3971F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8AB5E13815E76AB600C3971F /* Build configuration list for PBXNativeTarget "compose-msg" */ = {
 			isa = XCConfigurationList;
@@ -5330,6 +5677,7 @@
 				8AB5E13A15E76AB600C3971F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8AB5E14315E76AB700C3971F /* Build configuration list for PBXNativeTarget "imap-sample" */ = {
 			isa = XCConfigurationList;
@@ -5338,6 +5686,7 @@
 				8AB5E14515E76AB700C3971F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8AB5E14E15E76AB800C3971F /* Build configuration list for PBXNativeTarget "mime-create" */ = {
 			isa = XCConfigurationList;
@@ -5346,6 +5695,7 @@
 				8AB5E15015E76AB800C3971F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8AB5E16A15E76B8500C3971F /* Build configuration list for PBXNativeTarget "readmsg-uid" */ = {
 			isa = XCConfigurationList;
@@ -5354,6 +5704,7 @@
 				8AB5E16C15E76B8500C3971F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8AB5E17C15E76BBB00C3971F /* Build configuration list for PBXNativeTarget "readmsg" */ = {
 			isa = XCConfigurationList;
@@ -5362,6 +5713,7 @@
 				8AB5E17E15E76BBB00C3971F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8AB5E18F15E76CC600C3971F /* Build configuration list for PBXNativeTarget "mime-parse" */ = {
 			isa = XCConfigurationList;
@@ -5370,6 +5722,7 @@
 				8AB5E19115E76CC600C3971F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8AB5E19B15E76D0F00C3971F /* Build configuration list for PBXNativeTarget "pop-sample" */ = {
 			isa = XCConfigurationList;
@@ -5378,6 +5731,7 @@
 				8AB5E19D15E76D0F00C3971F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		C682E2BD15B315EF00BE9DA7 /* Build configuration list for PBXNativeTarget "libetpan ios" */ = {
 			isa = XCConfigurationList;
