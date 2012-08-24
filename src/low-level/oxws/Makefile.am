@@ -34,7 +34,7 @@ etpaninclude_HEADERS = \
   oxws.h oxws_setters.h oxws_types.h oxws_types_item.h \
   oxws_requests.h
 
-AM_CPPFLAGS = -Werror \
+AM_CPPFLAGS = $(WERROR) \
   -I$(top_builddir)/include \
   -I$(top_srcdir)/src/data-types \
   $(LIBCURL_CPPFLAGS) $(LIBXML2_CFLAGS)

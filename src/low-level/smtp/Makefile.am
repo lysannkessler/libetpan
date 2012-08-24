@@ -35,7 +35,7 @@ etpaninclude_HEADERS = \
 	mailsmtp.h mailsmtp_helper.h mailsmtp_socket.h mailsmtp_ssl.h \
 	mailsmtp_types.h
 
-AM_CPPFLAGS = -Werror \
+AM_CPPFLAGS = $(WERROR) \
 	-I$(top_builddir)/include \
 	-I$(top_srcdir)/src/data-types
 

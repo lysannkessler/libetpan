@@ -37,7 +37,7 @@ etpaninclude_HEADERS = \
 	mhdriver_types.h \
 	mhstorage.h
 
-AM_CPPFLAGS = -Werror \
+AM_CPPFLAGS = $(WERROR) \
 	-I$(top_builddir)/include \
 	-I$(top_srcdir)/src/driver/interface \
 	-I$(top_srcdir)/src/driver/tools \

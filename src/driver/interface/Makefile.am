@@ -37,7 +37,7 @@ etpaninclude_HEADERS = \
 	mailstorage_types.h \
 	mailfolder.h
 
-AM_CPPFLAGS = -Werror \
+AM_CPPFLAGS = $(WERROR) \
 	-I$(top_builddir)/include \
 	-I$(top_srcdir)/src/low-level/imf \
 	-I$(top_srcdir)/src/low-level/mime \

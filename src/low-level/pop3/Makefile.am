@@ -33,7 +33,7 @@ etpaninclude_HEADERS = \
 	mailpop3.h mailpop3_socket.h mailpop3_helper.h mailpop3_ssl.h \
 	mailpop3_types.h
 
-AM_CPPFLAGS = -Werror \
+AM_CPPFLAGS = $(WERROR) \
 	-I$(top_builddir)/include \
 	-I$(top_srcdir)/src/data-types
 

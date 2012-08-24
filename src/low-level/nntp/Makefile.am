@@ -32,7 +32,7 @@ include $(top_srcdir)/rules.mk
 etpaninclude_HEADERS = \
 	newsnntp.h newsnntp_socket.h newsnntp_ssl.h newsnntp_types.h
 
-AM_CPPFLAGS = -Werror \
+AM_CPPFLAGS = $(WERROR) \
 	-I$(top_builddir)/include \
 	-I$(top_srcdir)/src/data-types
 

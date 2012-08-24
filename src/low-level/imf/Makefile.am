@@ -36,7 +36,7 @@ etpaninclude_HEADERS = \
 	mailimf_types_helper.h \
 	mailimf_write_generic.h mailimf_write_mem.h
 
-AM_CPPFLAGS = -Werror \
+AM_CPPFLAGS = $(WERROR) \
 	-I$(top_builddir)/include \
 	-I$(top_srcdir)/src/data-types
 

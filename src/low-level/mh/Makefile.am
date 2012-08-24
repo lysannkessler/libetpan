@@ -32,7 +32,7 @@ include $(top_srcdir)/rules.mk
 etpaninclude_HEADERS = \
 	mailmh.h
 
-AM_CPPFLAGS = -Werror \
+AM_CPPFLAGS = $(WERROR) \
 	-I$(top_builddir)/include \
 	-I$(top_srcdir)/src/data-types
 
