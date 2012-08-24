@@ -37,7 +37,8 @@ etpaninclude_HEADERS = \
 	pop3driver_types.h \
 	pop3storage.h
 
-AM_CPPFLAGS = -I$(top_builddir)/include \
+AM_CPPFLAGS = -Werror \
+	-I$(top_builddir)/include \
 	-I$(top_srcdir)/src/driver/interface \
 	-I$(top_srcdir)/src/driver/tools \
 	-I$(top_srcdir)/src/low-level/pop3 \
