@@ -35,6 +35,7 @@
 #endif
 
 #include "parser.h"
+#include "mail.h"
 
 #include <string.h>
 #include <ctype.h>
@@ -66,20 +67,20 @@ static void handler_set(XML_Parser parser, unsigned int type)
 {
   if (parser == NULL)
     return;
-  
+
   switch(type) {
   case FEED_TYPE_RSS_20:
     XML_SetElementHandler(parser,
         newsfeed_parser_rss20_start,
         newsfeed_parser_rss20_end);
     break;
-    
+
   case FEED_TYPE_RDF:
     XML_SetElementHandler(parser,
         newsfeed_parser_rdf_start,
         newsfeed_parser_rdf_end);
     break;
-    
+
   case FEED_TYPE_ATOM_10:
     XML_SetElementHandler(parser,
         newsfeed_parser_atom10_start,
@@ -100,10 +101,10 @@ static void elparse_start_chooser(void * data,
   struct newsfeed_parser_context * ctx;
   unsigned int feedtype;
   XML_Parser parser;
-  
+
   ctx = (struct newsfeed_parser_context *) data;
   feedtype = FEED_TYPE_NONE;
-  
+
   if (ctx->depth == 0) {
     /* RSS 2.0 detected */
     if (strcasecmp(el, "rss") == 0) {
@@ -114,7 +115,7 @@ static void elparse_start_chooser(void * data,
     }
     else if (strcasecmp(el, "feed") == 0) {
       const char * version;
-      
+
       /* ATOM feed detected, let's check version */
       version = newsfeed_parser_get_attribute_value(attr, "xmlns");
       if (version != NULL) {
@@ -125,21 +126,21 @@ static void elparse_start_chooser(void * data,
       }
     }
   }
-  
+
   parser = ctx->parser;
   handler_set(parser, feedtype);
-  
+
   ctx->depth ++;
 }
 
 static void elparse_end_dummy(void * data, const char * el)
 {
   struct newsfeed_parser_context * ctx;
-  
+
   ctx = (struct newsfeed_parser_context *) data;
-  
+
   mmap_string_truncate(ctx->str, 0);
-  
+
   ctx->depth --;
 }
 
@@ -149,21 +150,21 @@ static void chparse(void * data, const char * s, int len)
   char * pt;
   int i;
   int blank;
-  
+
   blank = 1;
   ctx = (struct newsfeed_parser_context *) data;
-  
+
   /* check if the string is blank, ... */
   for(i = 0, pt = (XML_Char *) s ; i < len ; i ++) {
     if ((* pt != ' ') && (* pt != '\t'))
       blank = 0;
     pt ++;
   }
-  
+
   /* ... because we do not want to deal with blank strings */
   if (blank)
     return;
-  
+
   for(i = 0, pt = (XML_Char *) s ; i < len ; i ++) {
     /* do not append newline as first char of our string */
     if ((* pt != '\n') || (ctx->str->len != 0)) {
@@ -194,7 +195,7 @@ static int iconv_utf32_char(iconv_t cd, const char * inbuf, size_t insize,
   unsigned char outbuf[CHARSIZEUTF32];
   char * outbufp;
   int r;
-  
+
   outsize = sizeof(outbuf);
   outbufp = (char *) outbuf;
 #ifdef HAVE_ICONV_PROTO_CONST
@@ -217,15 +218,15 @@ static int iconv_utf32_char(iconv_t cd, const char * inbuf, size_t insize,
   else {
     uint32_t value;
     unsigned int i;
-    
+
     if ((insize > 0) || (outsize > 0))
       return LEP_ICONV_FAILED;
-    
+
     value = 0;
     for(i = 0 ; i < sizeof(outbuf) ; i ++) {
       value = (value << 8) + outbuf[i];
     }
-    
+
     * p_value = value;
     return LEP_ICONV_OK;
   }
@@ -247,12 +248,12 @@ static int setup_unknown_encoding(const char * charset, XML_Encoding * info)
   if (cd == (iconv_t) (-1)) {
     return -1;
   }
-  
+
   flag = 0;
   for (i = 0; i < 256; i++) {
     /* *** first char *** */
     uint32_t value;
-    
+
     buf[0] = i;
     info->map[i] = 0;
     r = iconv_utf32_char(cd, buf, 1, &value);
@@ -264,7 +265,7 @@ static int setup_unknown_encoding(const char * charset, XML_Encoding * info)
     }
     else /* r == LEP_ICONV_INVAL */ {
       unsigned int j;
-      
+
       for (j = 0; j < 256; j++) {
         /* *** second char *** */
         buf[1] = j;
@@ -279,7 +280,7 @@ static int setup_unknown_encoding(const char * charset, XML_Encoding * info)
         }
         else /* r == LEP_ICONV_INVAL */ {
           unsigned int k;
-          
+
           for (k = 0; k < 256; k++) {
             /* *** third char *** */
             buf[2] = k;
@@ -294,9 +295,9 @@ static int setup_unknown_encoding(const char * charset, XML_Encoding * info)
       }
     }
   }
-  
+
   iconv_close(cd);
-  
+
   return flag;
 }
 
@@ -312,19 +313,19 @@ static int unknown_encoding_convert(void * data, const char * s)
   struct unknown_encoding_data * enc_data;
   size_t insize;
   uint32_t value;
-  
+
   enc_data = data;
-  
+
   if (s == NULL)
     goto err;
-  
+
   insize = -enc_data->map[(unsigned char) s[0]];
   r = iconv_utf32_char(enc_data->cd, s, insize, &value);
   if (r != LEP_ICONV_OK)
     return -1;
-  
+
   return value;
-  
+
  err:
   return -1;
 }
@@ -332,7 +333,7 @@ static int unknown_encoding_convert(void * data, const char * s)
 static void unknown_encoding_data_free(void * data)
 {
   struct unknown_encoding_data * enc_data;
-  
+
   enc_data = data;
   free(enc_data->charset);
   iconv_close(enc_data->cd);
@@ -354,20 +355,20 @@ static int unknown_encoding_handler(void * encdata, const XML_Char * name,
     info->release = NULL;
     return XML_STATUS_OK;
   }
-  
+
   cd = iconv_open("UTF-32BE", name);
   if (cd == (iconv_t) -1) {
     goto err;
   }
-  
+
   data = malloc(sizeof(* data));
   if (data == NULL)
     goto close_iconv;
-  
+
   data->charset = strdup(name);
   if (data->charset == NULL)
     goto free_data;
-  
+
   data->cd = cd;
   for(i = 0 ; i < 256 ; i ++) {
     data->map[i] = info->map[i];
@@ -375,9 +376,9 @@ static int unknown_encoding_handler(void * encdata, const XML_Char * name,
   info->data = data;
   info->convert = unknown_encoding_convert;
   info->release = unknown_encoding_data_free;
-  
+
   return XML_STATUS_OK;
-  
+
  free_data:
   free(data);
  close_iconv:
@@ -391,19 +392,21 @@ void newsfeed_parser_set_expat_handlers(struct newsfeed_parser_context * ctx)
 {
 #ifdef HAVE_EXPAT
   XML_Parser parser;
-  
+
   parser = ctx->parser;
-  
+
   XML_SetUserData(parser, (void *) ctx);
-  
+
   XML_SetElementHandler(parser,
       elparse_start_chooser,
       elparse_end_dummy);
-  
+
   XML_SetCharacterDataHandler(parser,
       chparse);
-  
+
   XML_SetUnknownEncodingHandler(parser, unknown_encoding_handler, NULL);
+#else
+  UNUSED(ctx);
 #endif
 }
 
@@ -413,39 +416,41 @@ size_t newsfeed_writefunc(void * ptr, size_t size, size_t nmemb, void * data)
   unsigned int len;
   struct newsfeed_parser_context * ctx;
   XML_Parser parser;
-  
+
   ctx = data;
   len = size * nmemb;
-  
+
   if (ctx->error != NEWSFEED_NO_ERROR) {
     return 0;
   }
-  
+
   parser = ctx->parser;
   XML_Parse(parser, ptr, len, 0);
-  
+
   if (ctx->error != NEWSFEED_NO_ERROR) {
     return 0;
   }
-  
+
   return len;
-#endif
+#else
+  UNUSED(ptr); UNUSED(size); UNUSED(nmemb); UNUSED(data);
   return 0;
+#endif
 }
 
 const char * newsfeed_parser_get_attribute_value(const char ** attr,
     const char * name)
 {
   unsigned int i;
-  
+
   if ((attr == NULL) || (name == NULL))
     return NULL;
-  
+
   for(i = 0 ; attr[i] != NULL && attr[i + 1] != NULL ; i += 2 ) {
     if (strcmp(attr[i], name) == 0)
       return attr[i + 1];
   }
-  
+
   /* We haven't found anything. */
   return NULL;
 }

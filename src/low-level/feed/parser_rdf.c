@@ -44,11 +44,13 @@
 #include "newsfeed_item.h"
 #include "newsfeed_private.h"
 #include "date.h"
+#include "mail.h"
 
 void newsfeed_parser_rdf_start(void * data, const char * el, const char ** attr)
 {
+  UNUSED(attr);
   struct newsfeed_parser_context * ctx;
-  
+
   ctx = data;
   if (ctx->depth == 1) {
     if (strcasecmp(el, "channel") == 0) {
@@ -57,7 +59,7 @@ void newsfeed_parser_rdf_start(void * data, const char * el, const char ** attr)
     else if (strcasecmp(el, "item") == 0) {
       if (ctx->curitem != NULL)
         newsfeed_item_free(ctx->curitem);
-      
+
       ctx->curitem = newsfeed_item_new(ctx->feed);
       if (ctx->curitem == NULL) {
         ctx->error = NEWSFEED_ERROR_MEMORY;
@@ -68,7 +70,7 @@ void newsfeed_parser_rdf_start(void * data, const char * el, const char ** attr)
       ctx->location = 0;
     }
   }
-  
+
   ctx->depth ++;
 }
 
@@ -78,20 +80,20 @@ void newsfeed_parser_rdf_end(void *data, const char *el)
   struct newsfeed * feed;
   char * text;
   int r;
-  
+
   ctx = data;
   feed = ctx->feed;
   text = ctx->str->str;
-  
+
   ctx->depth --;
-  
+
   switch (ctx->depth) {
   case 0:
     if (strcasecmp(el, "rdf") == 0) {
       /* we finished parsing the feed */
     }
     break;
-    
+
   case 1:
     /* <item></item> block just ended, so ... */
     if (strcasecmp(el, "item") == 0) {
@@ -101,12 +103,12 @@ void newsfeed_parser_rdf_end(void *data, const char *el)
         ctx->error = NEWSFEED_ERROR_MEMORY;
         return;
       }
-      
+
       /* since it's in the linked list, lose this pointer */
       ctx->curitem = NULL;
     }
     break;
-    
+
   case 2:
     switch(ctx->location) {
     case FEED_LOC_RDF_CHANNEL:
@@ -141,24 +143,24 @@ void newsfeed_parser_rdf_end(void *data, const char *el)
       }
       else if (strcasecmp(el, "dc:date") == 0) {
         time_t date;
-        
+
         date = newsfeed_iso8601_date_parse(text);
         newsfeed_set_date(feed, date);
       }
       else if (strcasecmp(el, "pubDate") == 0) {
         time_t date;
-      
+
         date = newsfeed_rfc822_date_parse(text);
         newsfeed_set_date(feed, date);
       }
       break;
-      
+
     case FEED_LOC_RDF_ITEM:
       /* We're inside an <item></item> */
       if (ctx->curitem == NULL) {
         break;
       }
-      
+
       /* decide which field did we just get */
       if (strcasecmp(el, "title") == 0) {
         r = newsfeed_item_set_title(ctx->curitem, text);
@@ -197,22 +199,22 @@ void newsfeed_parser_rdf_end(void *data, const char *el)
       }
       else if (strcasecmp(el, "dc:date") == 0) {
         time_t date;
-        
+
         date = newsfeed_iso8601_date_parse(text);
         newsfeed_item_set_date_modified(ctx->curitem, date);
       }
       else if (strcasecmp(el, "pubDate") == 0) {
         time_t date;
-      
+
         date = newsfeed_rfc822_date_parse(text);
         newsfeed_item_set_date_modified(ctx->curitem, date);
       }
       break;
     }
-    
+
     break;
-    
+
   }
-  
+
   mmap_string_truncate(ctx->str, 0);
 }
