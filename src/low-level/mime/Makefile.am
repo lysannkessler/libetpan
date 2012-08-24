@@ -37,7 +37,8 @@ etpaninclude_HEADERS = \
 	mailmime_types_helper.h mailmime_write_generic.h \
 	mailmime_write_mem.h
 
-AM_CPPFLAGS = -I$(top_builddir)/include \
+AM_CPPFLAGS = -Werror \
+	-I$(top_builddir)/include \
 	-I$(top_srcdir)/src/low-level/imf \
 	-I$(top_srcdir)/src/data-types
 
