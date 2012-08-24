@@ -57,6 +57,7 @@
 #include "mailstream.h"
 #include "mailmime.h"
 #include "mail_cache_db.h"
+#include "mail.h"
 
 /* ********************************************************************* */
 /* tools */
@@ -68,12 +69,13 @@ maildriver_generic_get_envelopes_list(mailsession * session,
 {
   int r;
   unsigned i;
+  UNUSED(session);
 
   for(i = 0 ; i < carray_count(env_list->msg_tab) ; i ++) {
     mailmessage * msg;
-    
+
     msg = carray_get(env_list->msg_tab, i);
-    
+
     if (msg->msg_fields == NULL) {
       struct mailimf_fields * fields;
 
@@ -283,7 +285,7 @@ static int match_messages(char * message,
 
   case MAIL_SEARCH_KEY_SINCE:
     return (comp_date(fields, key->before) >= 0);
-    
+
     /* boolean */
   case MAIL_SEARCH_KEY_NOT:
     return (!match_messages(message, size, fields, flags, charset, key->not));
@@ -325,7 +327,7 @@ static int match_messages(char * message,
 
   case MAIL_SEARCH_KEY_TEXT:
     return (strstr(message, key->body) != NULL);
-    
+
   case MAIL_SEARCH_KEY_ALL:
   default:
     return TRUE;
@@ -586,7 +588,7 @@ int maildriver_imf_error_to_mail_error(int error)
 
   case MAILIMF_ERROR_FILE:
     return MAIL_ERROR_FILE;
-    
+
   default:
     return MAIL_ERROR_INVAL;
   }
@@ -600,7 +602,7 @@ char * maildriver_quote_mailbox(const char * mb)
   gstr = mmap_string_new("");
   if (gstr == NULL)
     return NULL;
-  
+
   while (* mb != 0) {
     char hex[3];
 
@@ -623,7 +625,7 @@ char * maildriver_quote_mailbox(const char * mb)
     goto free;
 
   mmap_string_free(gstr);
-  
+
   return str;
 
  free:
@@ -641,9 +643,9 @@ int maildriver_cache_clean_up(struct mail_cache_db * cache_db_env,
   int r;
   char keyname[PATH_MAX];
   unsigned int i;
-  
+
   /* flush cache */
-  
+
   hash_exist = chash_new(CHASH_DEFAULTSIZE, CHASH_COPYALL);
   if (hash_exist == NULL) {
     res = MAIL_ERROR_MEMORY;
@@ -656,13 +658,13 @@ int maildriver_cache_clean_up(struct mail_cache_db * cache_db_env,
     chashdatum value;
 
     msg = carray_get(env_list->msg_tab, i);
-    
+
     value.data = NULL;
     value.len = 0;
-    
+
     if (cache_db_env != NULL) {
       snprintf(keyname, PATH_MAX, "%s-envelope", msg->msg_uid);
-      
+
       key.data = keyname;
       key.len = strlen(keyname);
       r = chash_set(hash_exist, &key, &value, NULL);
@@ -671,10 +673,10 @@ int maildriver_cache_clean_up(struct mail_cache_db * cache_db_env,
         goto free;
       }
     }
-        
+
     if (cache_db_flags != NULL) {
       snprintf(keyname, PATH_MAX, "%s-flags", msg->msg_uid);
-      
+
       key.data = keyname;
       key.len = strlen(keyname);
       r = chash_set(hash_exist, &key, &value, NULL);
@@ -684,15 +686,15 @@ int maildriver_cache_clean_up(struct mail_cache_db * cache_db_env,
       }
     }
   }
-  
+
   /* clean up */
   if (cache_db_env != NULL)
     mail_cache_db_clean_up(cache_db_env, hash_exist);
   if (cache_db_flags != NULL)
     mail_cache_db_clean_up(cache_db_flags, hash_exist);
-  
+
   chash_free(hash_exist);
-  
+
   return MAIL_NO_ERROR;
 
  free:
@@ -703,9 +705,9 @@ int maildriver_cache_clean_up(struct mail_cache_db * cache_db_env,
 
 /*
   maildriver_message_cache_clean_up()
-  
+
   remove files in cache_dir that does not correspond to a message.
-  
+
   get_uid_from_filename() modifies the given filename so that it
   is a uid when returning from the function. If get_uid_from_filename()
   clears the content of file (set to empty string), this means that
@@ -724,22 +726,22 @@ int maildriver_message_cache_clean_up(char * cache_dir,
   unsigned int i;
   int res;
   int r;
-  
+
   /* remove files */
-    
+
   hash_exist = chash_new(CHASH_DEFAULTSIZE, CHASH_COPYALL);
   if (hash_exist == NULL) {
     res = MAIL_ERROR_MEMORY;
     goto err;
   }
-  
+
   for(i = 0 ; i < carray_count(env_list->msg_tab) ; i ++) {
     mailmessage * msg;
     chashdatum key;
     chashdatum value;
-    
+
     msg = carray_get(env_list->msg_tab, i);
-      
+
     key.data = msg->msg_uid;
     key.len = strlen(msg->msg_uid);
     value.data = NULL;
@@ -750,32 +752,32 @@ int maildriver_message_cache_clean_up(char * cache_dir,
       goto free;
     }
   }
-  
+
   d = opendir(cache_dir);
   while ((ent = readdir(d)) != NULL) {
     chashdatum key;
     chashdatum value;
-    
+
     if (strcmp(ent->d_name, ".") == 0)
       continue;
-    
+
     if (strcmp(ent->d_name, "..") == 0)
       continue;
-      
+
     if (strstr(ent->d_name, ".db") != NULL)
       continue;
-    
+
     strncpy(keyname, ent->d_name, sizeof(keyname));
     keyname[sizeof(keyname) - 1] = '\0';
-    
+
     get_uid_from_filename(keyname);
-    
+
     if (* keyname == '\0')
       continue;
-    
+
     key.data = keyname;
     key.len = strlen(keyname);
-    
+
     r = chash_get(hash_exist, &key, &value);
     if (r < 0) {
       snprintf(cached_filename, sizeof(cached_filename),
@@ -784,9 +786,9 @@ int maildriver_message_cache_clean_up(char * cache_dir,
     }
   }
   closedir(d);
-    
+
   chash_free(hash_exist);
-  
+
   return MAIL_NO_ERROR;
 
  free:
