@@ -42,6 +42,7 @@
 #include "mailmessage_tools.h"
 #include "feeddriver.h"
 #include "newsfeed.h"
+#include "mail.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -102,16 +103,16 @@ static int feed_prefetch(mailmessage * msg_info)
   struct newsfeed * feed;
   struct newsfeed_item * item;
   int res;
-  
+
   feed = get_feed_session(msg_info);
   item = newsfeed_get_item(feed, msg_info->msg_index);
-  
+
   str = mmap_string_new("");
   if (str == NULL) {
     res = MAIL_ERROR_MEMORY;
     goto err;
   }
-  
+
   col = 0;
   r = mailimf_fields_write_mem(str, &col,
       msg_info->msg_fields);
@@ -119,12 +120,12 @@ static int feed_prefetch(mailmessage * msg_info)
     res = MAIL_ERROR_MEMORY;
     goto free_str;
   }
-  
+
   if (mmap_string_append(str, "\r\n") == NULL) {
     res = MAIL_ERROR_MEMORY;
     goto free_str;
   }
-  
+
   text = newsfeed_item_get_text(item);
   if (text == NULL) {
     /* if no content, fallback on summary */
@@ -134,15 +135,15 @@ static int feed_prefetch(mailmessage * msg_info)
     res = MAIL_ERROR_MEMORY;
     goto free_str;
   }
-  
+
   msg = msg_info->msg_data;
   msg->msg_message = str->str;
   msg->msg_length = str->len;
-  
+
   mmap_string_ref(str);
-  
+
   return MAIL_NO_ERROR;
-  
+
  free_str:
   mmap_string_free(str);
  err:
@@ -168,7 +169,7 @@ static int feed_initialize(mailmessage * msg_info)
   uid = strdup(static_uid);
   if (uid == NULL)
     return MAIL_ERROR_MEMORY;
-  
+
   r = mailmessage_generic_initialize(msg_info);
   if (r != MAIL_NO_ERROR) {
     free(uid);
@@ -189,12 +190,13 @@ static int feed_fetch_size(mailmessage * msg_info,
   int r;
   struct generic_message_t * msg;
   struct mailmime * mime;
-  
+  UNUSED(result);
+
   r = mailmessage_generic_get_bodystructure(msg_info, &mime);
   if (r != MAIL_NO_ERROR) {
     return r;
   }
-  
+
   msg = msg_info->msg_data;
   return msg->msg_length;
 }

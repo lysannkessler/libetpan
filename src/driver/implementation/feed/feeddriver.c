@@ -50,6 +50,7 @@
 #include "maildriver_tools.h"
 #include "feeddriver_message.h"
 #include "feeddriver_types.h"
+#include "mail.h"
 
 #define MIN_DELAY 5
 
@@ -139,65 +140,65 @@ static int feeddriver_feed_error_to_mail_error(int error)
   switch (error) {
   case NEWSFEED_NO_ERROR:
     return MAIL_NO_ERROR;
-    
+
   case NEWSFEED_ERROR_CANCELLED:
     return MAIL_ERROR_STREAM;
-    
+
   case NEWSFEED_ERROR_INTERNAL:
     return MAIL_ERROR_UNKNOWN;
-  
+
   case NEWSFEED_ERROR_BADURL:
     return MAIL_ERROR_INVAL;
-    
+
   case NEWSFEED_ERROR_RESOLVE_PROXY:
   case NEWSFEED_ERROR_RESOLVE_HOST:
     return MAIL_ERROR_CONNECT;
-    
+
   case NEWSFEED_ERROR_CONNECT:
     return MAIL_ERROR_CONNECT;
-    
+
   case NEWSFEED_ERROR_STREAM:
     return MAIL_ERROR_STREAM;
-    
+
   case NEWSFEED_ERROR_PROTOCOL:
   case NEWSFEED_ERROR_PARSE:
     return MAIL_ERROR_PARSE;
-    
+
   case NEWSFEED_ERROR_ACCESS:
     return MAIL_ERROR_NO_PERMISSION;
-    
+
   case NEWSFEED_ERROR_AUTHENTICATION:
     return MAIL_ERROR_LOGIN;
-    
+
   case NEWSFEED_ERROR_FTP:
     return MAIL_ERROR_UNKNOWN;
-    
+
   case NEWSFEED_ERROR_PARTIAL_FILE:
   case NEWSFEED_ERROR_FETCH:
     return MAIL_ERROR_FETCH;
-    
+
   case NEWSFEED_ERROR_HTTP:
     return MAIL_ERROR_UNKNOWN;
-    
+
   case NEWSFEED_ERROR_FILE:
     return MAIL_ERROR_FILE;
-    
+
   case NEWSFEED_ERROR_PUT:
     return MAIL_ERROR_APPEND;
-    
+
   case NEWSFEED_ERROR_MEMORY:
     return MAIL_ERROR_MEMORY;
-    
+
   case NEWSFEED_ERROR_SSL:
     return MAIL_ERROR_SSL;
-    
+
   case NEWSFEED_ERROR_LDAP:
     return MAIL_ERROR_UNKNOWN;
-    
+
   case NEWSFEED_ERROR_UNSUPPORTED_PROTOCOL:
     return MAIL_ERROR_INVAL;
   }
-  
+
   return MAIL_ERROR_UNKNOWN;
 }
 
@@ -242,10 +243,10 @@ static void feeddriver_uninitialize(mailsession * session)
   struct feed_session_state_data * data;
 
   data = get_data(session);
-  
+
   newsfeed_free(data->feed_session);
   free(data);
-  
+
   session->sess_data = NULL;
 }
 
@@ -253,7 +254,7 @@ static int feeddriver_connect_path(mailsession * session, const char * path)
 {
   struct feed_session_state_data * data;
   int r;
-  
+
   data = get_data(session);
   r = newsfeed_set_url(data->feed_session, path);
   return feeddriver_feed_error_to_mail_error(r);
@@ -266,15 +267,15 @@ static int feeddriver_status_folder(mailsession * session, const char * mb,
 {
   uint32_t count;
   int r;
-  
+
   r = feeddriver_messages_number(session, mb, &count);
   if (r != MAIL_NO_ERROR)
     return r;
-          
+
   * result_messages = count;
   * result_recent = count;
   * result_unseen = count;
-  
+
   return MAIL_NO_ERROR;
 }
 
@@ -284,20 +285,21 @@ static int feeddriver_messages_number(mailsession * session, const char * mb,
   struct feed_session_state_data * data;
   unsigned int count;
   int res;
-  
+  UNUSED(mb);
+
   update(session);
   data = get_data(session);
   if (data->feed_error != MAIL_NO_ERROR) {
     res = data->feed_error;
     goto err;
   }
-  
+
   count = newsfeed_item_list_get_count(data->feed_session);
-  
+
   * result = count;
-  
+
   return MAIL_NO_ERROR;
-  
+
  err:
   return res;
 }
@@ -307,15 +309,15 @@ static void update(mailsession * session)
   int r;
   struct feed_session_state_data * data;
   time_t value;
-  
+
   data = get_data(session);
-  
+
   value = time(NULL);
   if (data->feed_last_update != (time_t) -1) {
     if (value - data->feed_last_update < MIN_DELAY)
       return;
   }
-  
+
   r = newsfeed_update(data->feed_session, -1);
   data->feed_error = feeddriver_feed_error_to_mail_error(r);
   if (data->feed_error == MAIL_NO_ERROR) {
@@ -328,6 +330,7 @@ static int
 feeddriver_get_envelopes_list(mailsession * session,
 			      struct mailmessage_list * env_list)
 {
+  UNUSED(session); UNUSED(env_list);
   return MAIL_NO_ERROR;
 }
 
@@ -382,16 +385,16 @@ static inline int quote_word(const char * display_charset,
   size_t i;
   char hex[4];
   int col;
-  
+
   if (mmap_string_append(mmapstr, "=?") == NULL)
     return -1;
   if (mmap_string_append(mmapstr, display_charset) == NULL)
     return -1;
   if (mmap_string_append(mmapstr, "?Q?") == NULL)
     return -1;
-  
+
   col = mmapstr->len;
-  
+
   cur = word;
   for(i = 0 ; i < size ; i ++) {
     int do_quote_char;
@@ -402,25 +405,25 @@ static inline int quote_word(const char * display_charset,
                folded header */ >= MAX_IMF_LINE) {
       int old_pos;
       /* adds a concatened encoded word */
-      
+
       if (mmap_string_append(mmapstr, "?=") == NULL)
         return -1;
-      
+
       if (mmap_string_append(mmapstr, " ") == NULL)
         return -1;
-      
+
       old_pos = mmapstr->len;
-      
+
       if (mmap_string_append(mmapstr, "=?") == NULL)
         return -1;
       if (mmap_string_append(mmapstr, display_charset) == NULL)
         return -1;
       if (mmap_string_append(mmapstr, "?Q?") == NULL)
         return -1;
-      
+
       col = mmapstr->len - old_pos;
     }
-    
+
     do_quote_char = 0;
     switch (* cur) {
     case ',':
@@ -473,7 +476,7 @@ static inline int quote_word(const char * display_charset,
 
   if (mmap_string_append(mmapstr, "?=") == NULL)
     return -1;
-  
+
   return 0;
 }
 
@@ -481,7 +484,7 @@ static inline void get_word(const char * begin,
     const char ** pend, int * pto_be_quoted)
 {
   const char * cur;
-  
+
   cur = begin;
 
   while ((* cur != ' ') && (* cur != '\t') && (* cur != '\0')) {
@@ -494,7 +497,7 @@ static inline void get_word(const char * begin,
     * pto_be_quoted = 1;
   else
     * pto_be_quoted = to_be_quoted(begin, cur - begin);
-  
+
   * pend = cur;
 }
 
@@ -509,7 +512,7 @@ static char * make_quoted_printable(const char * display_charset,
   mmapstr = mmap_string_new("");
   if (mmapstr == NULL)
     return NULL;
-  
+
   cur = phrase;
   while (* cur != '\0') {
     const char * begin;
@@ -540,7 +543,7 @@ static char * make_quoted_printable(const char * display_charset,
         mmap_string_free(mmapstr);
         return NULL;
       }
-      
+
       if ((* end == ' ') || (* end == '\t')) {
         if (mmap_string_append_c(mmapstr, * end) == NULL) {
           mmap_string_free(mmapstr);
@@ -579,7 +582,7 @@ static char * make_quoted_printable(const char * display_charset,
   }
 
   mmap_string_free(mmapstr);
-  
+
   return str;
 }
 
@@ -597,19 +600,19 @@ static mailmessage * feed_item_to_message(mailsession * session,
   char * msg_id;
   int r;
   const char * author_const;
-  
+
   from = NULL;
   author_const = newsfeed_item_get_author(item);
   if (author_const != NULL) {
     char * author;
     char * addr_spec;
     struct mailimf_mailbox * mb;
-    
+
     author = strdup(author_const);
     if (author == NULL) {
       goto err;
     }
-    
+
     from = mailimf_mailbox_list_new_empty();
     if (from == NULL) {
       free(author);
@@ -620,7 +623,7 @@ static mailmessage * feed_item_to_message(mailsession * session,
       free(author);
       goto free_from;
     }
-      
+
     /* XXX - encode author with MIME */
     mb = mailimf_mailbox_new(author, addr_spec);
     if (mb == NULL) {
@@ -628,14 +631,14 @@ static mailmessage * feed_item_to_message(mailsession * session,
       free(author);
       goto free_from;
     }
-    
+
     r = mailimf_mailbox_list_add(from, mb);
     if (r != MAILIMF_NO_ERROR) {
       mailimf_mailbox_free(mb);
       goto free_from;
     }
   }
-  
+
   date_time = NULL;
   time_modified = newsfeed_item_get_date_modified(item);
   if (time_modified != (time_t) -1) {
@@ -644,7 +647,7 @@ static mailmessage * feed_item_to_message(mailsession * session,
       goto free_from;
     }
   }
-  
+
   subject = NULL;
   subject_const = newsfeed_item_get_title(item);
   if (subject_const != NULL) {
@@ -653,12 +656,12 @@ static mailmessage * feed_item_to_message(mailsession * session,
       goto free_date;
     }
   }
-  
+
   msg_id = mailimf_get_message_id();
   if (msg_id == NULL) {
     goto free_subject;
   }
-  
+
   fields = mailimf_fields_new_with_data_all(date_time,
       from,
       NULL,
@@ -670,16 +673,16 @@ static mailmessage * feed_item_to_message(mailsession * session,
       NULL,
       NULL,
       subject);
-  
+
   msg = mailmessage_new();
   r = mailmessage_init(msg, session, feed_message_driver, num, 0);
   if (r != MAIL_NO_ERROR) {
     goto free_fields;
   }
   msg->msg_fields = fields;
-  
+
   return msg;
-  
+
  free_fields:
   mailimf_fields_free(fields);
   goto err;
@@ -703,27 +706,27 @@ static int feeddriver_get_messages_list(mailsession * session,
   carray * tab;
   int res;
   int r;
-  
+
   update(session);
   data = get_data(session);
   if (data->feed_error != MAIL_NO_ERROR) {
     res = data->feed_error;
     goto err;
   }
-  
+
   count = newsfeed_item_list_get_count(data->feed_session);
-  
+
   tab = carray_new(count);
   if (tab == NULL) {
     res = MAIL_ERROR_MEMORY;
     goto err;
   }
   fprintf(stderr, "count: %i\n", count);
-  
+
   for(i = 0 ; i < count ; i ++) {
     struct newsfeed_item * item;
     mailmessage * msg;
-    
+
     item = newsfeed_get_item(data->feed_session, i);
     msg = feed_item_to_message(session, i, item);
     r = carray_add(tab, msg, NULL);
@@ -732,21 +735,21 @@ static int feeddriver_get_messages_list(mailsession * session,
       goto free_tab;
     }
   }
-  
+
   msg_list = mailmessage_list_new(tab);
   if (msg_list == NULL) {
     res = MAIL_ERROR_MEMORY;
     goto free_tab;
   }
-  
+
   * result = msg_list;
-  
+
   return MAIL_NO_ERROR;
-  
+
  free_tab:
   for(i = 0 ; i < carray_count(tab) ; i ++) {
     mailmessage * msg;
-    
+
     msg = carray_get(tab, i);
     mailmessage_free(msg);
   }
@@ -759,19 +762,19 @@ static int feeddriver_get_message(mailsession * session,
 {
   mailmessage * msg_info;
   int r;
-  
+
   msg_info = mailmessage_new();
   if (msg_info == NULL)
     return MAIL_ERROR_MEMORY;
-  
+
   r = mailmessage_init(msg_info, session, feed_message_driver, num, 0);
   if (r != MAIL_NO_ERROR) {
     mailmessage_free(msg_info);
     return r;
   }
-  
+
   * result = msg_info;
-  
+
   return MAIL_NO_ERROR;
 }
 
@@ -782,15 +785,17 @@ static int feeddriver_get_message_by_uid(mailsession * session,
 #if 0
   uint32_t num;
   char * p;
-  
+
   if (uid == NULL)
     return MAIL_ERROR_INVAL;
-  
+
   num = strtoul(uid, &p, 10);
   if ((p == uid) || (* p != '\0'))
     return MAIL_ERROR_INVAL;
-  
+
   return feeddriver_get_message(session, num, result);
+#else
+  UNUSED(session); UNUSED(uid); UNUSED(result);
 #endif
   return MAIL_ERROR_INVAL;
  }
