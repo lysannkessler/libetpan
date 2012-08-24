@@ -46,6 +46,7 @@
 #include "mailimap.h"
 #include "maildriver_tools.h"
 #include "generic_cache.h"
+#include "mail.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -103,13 +104,13 @@ static void imap_check(mailmessage * msg_info);
 
 static mailmessage_driver local_imap_message_driver = {
   /* msg_name */ "imap",
-  
+
   /* msg_initialize */ imap_initialize,
   /* msg_uninitialize */ NULL,
 
   /* msg_flush */ imap_flush,
   /* msg_check */ imap_check,
-  
+
   /* msg_fetch_result_free */ imap_fetch_result_free,
 
   /* msg_fetch */ imap_fetch,
@@ -156,7 +157,7 @@ static int imap_initialize(mailmessage * msg_info)
   if (uid == NULL) {
     return MAIL_ERROR_MEMORY;
   }
-  
+
   msg_info->msg_uid = uid;
 
   return MAIL_NO_ERROR;
@@ -166,6 +167,7 @@ static int imap_initialize(mailmessage * msg_info)
 static void imap_fetch_result_free(mailmessage * msg_info,
 				   char * msg)
 {
+  UNUSED(msg_info);
   if (msg != NULL) {
     if (mmap_string_unref(msg) != 0)
       free(msg);
@@ -184,7 +186,7 @@ static void imap_flush(mailmessage * msg_info)
 static void imap_check(mailmessage * msg_info)
 {
   int r;
-  
+
   if (msg_info->msg_flags != NULL) {
     r = mail_flags_store_set(get_session_data(msg_info)->imap_flags_store,
         msg_info);
@@ -239,14 +241,14 @@ static int imap_fetch(mailmessage * msg_info,
     res = MAIL_ERROR_MEMORY;
     goto free_set;
   }
-  
+
   fetch_att = mailimap_fetch_att_new_body_peek_section(section);
   if (fetch_att == NULL) {
     mailimap_section_free(section);
     res = MAIL_ERROR_MEMORY;
     goto free_set;
   }
-  
+
   fetch_type = mailimap_fetch_type_new_fetch_att(fetch_att);
   if (fetch_type == NULL) {
     res = MAIL_ERROR_MEMORY;
@@ -255,17 +257,17 @@ static int imap_fetch(mailmessage * msg_info,
 
   r = mailimap_uid_fetch(get_imap_session(msg_info), set,
 			 fetch_type, &fetch_result);
-  
+
   mailimap_fetch_type_free(fetch_type);
   mailimap_set_free(set);
-  
+
   switch (r) {
   case MAILIMAP_NO_ERROR:
     break;
   default:
     return imap_error_to_mail_error(r);
   }
-  
+
   if (clist_begin(fetch_result) == NULL) {
     mailimap_fetch_list_free(fetch_result);
     return MAIL_ERROR_FETCH;
@@ -306,7 +308,7 @@ static int imap_fetch(mailmessage * msg_info,
 
   * result = text;
   * result_len = text_length;
-  
+
   return MAIL_NO_ERROR;
 
  free_fetch_att:
@@ -316,7 +318,7 @@ static int imap_fetch(mailmessage * msg_info,
  err:
   return res;
 }
-       
+
 static int imap_fetch_header(mailmessage * msg_info,
 			     char ** result,
 			     size_t * result_len)
@@ -333,7 +335,7 @@ static int imap_fetch_header(mailmessage * msg_info,
   int res;
   clistiter * cur;
   struct mailimap_section * section;
-  
+
   set = mailimap_set_new_single(msg_info->msg_index);
   if (set == NULL) {
     res = MAIL_ERROR_MEMORY;
@@ -364,14 +366,14 @@ static int imap_fetch_header(mailmessage * msg_info,
     res = MAIL_ERROR_MEMORY;
     goto free_set;
   }
-  
+
   fetch_att = mailimap_fetch_att_new_body_peek_section(section);
   if (fetch_att == NULL) {
     mailimap_section_free(section);
     res = MAIL_ERROR_MEMORY;
     goto free_set;
   }
-  
+
   fetch_type = mailimap_fetch_type_new_fetch_att(fetch_att);
   if (fetch_type == NULL) {
     res = MAIL_ERROR_MEMORY;
@@ -380,7 +382,7 @@ static int imap_fetch_header(mailmessage * msg_info,
 
   r = mailimap_uid_fetch(get_imap_session(msg_info), set,
       fetch_type, &fetch_result);
-  
+
   mailimap_fetch_type_free(fetch_type);
   mailimap_set_free(set);
 
@@ -441,7 +443,7 @@ static int imap_fetch_header(mailmessage * msg_info,
  err:
   return res;
 }
-  
+
 static int imap_fetch_body(mailmessage * msg_info,
 			   char ** result, size_t * result_len)
 {
@@ -457,7 +459,7 @@ static int imap_fetch_body(mailmessage * msg_info,
   int res;
   clistiter * cur;
   struct mailimap_section * section;
-  
+
   set = mailimap_set_new_single(msg_info->msg_index);
   if (set == NULL) {
     res = MAIL_ERROR_MEMORY;
@@ -487,14 +489,14 @@ static int imap_fetch_body(mailmessage * msg_info,
     res = MAIL_ERROR_MEMORY;
     goto free_set;
   }
-  
+
   fetch_att = mailimap_fetch_att_new_body_peek_section(section);
   if (fetch_att == NULL) {
     mailimap_section_free(section);
     res = MAIL_ERROR_MEMORY;
     goto free_set;
   }
-  
+
   fetch_type = mailimap_fetch_type_new_fetch_att(fetch_att);
   if (fetch_type == NULL) {
     res = MAIL_ERROR_MEMORY;
@@ -503,10 +505,10 @@ static int imap_fetch_body(mailmessage * msg_info,
 
   r = mailimap_uid_fetch(get_imap_session(msg_info), set,
       fetch_type, &fetch_result);
-  
+
   mailimap_fetch_type_free(fetch_type);
   mailimap_set_free(set);
-  
+
   switch (r) {
   case MAILIMAP_NO_ERROR:
     break;
@@ -579,7 +581,7 @@ static int imap_fetch_size(mailmessage * msg_info,
   size_t size;
   int res;
   clistiter * cur;
-  
+
   set = mailimap_set_new_single(msg_info->msg_index);
   if (set == NULL) {
     res = MAIL_ERROR_MEMORY;
@@ -603,7 +605,7 @@ static int imap_fetch_size(mailmessage * msg_info,
 
   mailimap_fetch_type_free(fetch_type);
   mailimap_set_free(set);
-  
+
   switch (r) {
   case MAILIMAP_ERROR_BAD_STATE:
     return MAIL_ERROR_BAD_STATE;
@@ -633,7 +635,7 @@ static int imap_fetch_size(mailmessage * msg_info,
 	size = msg_att_item->att_data.att_static->att_data.att_rfc822_size;
 
 	* result = size;
-	
+
 	mailimap_fetch_list_free(fetch_result);
 	return MAIL_NO_ERROR;
       }
@@ -722,7 +724,7 @@ static int imap_get_bodystructure(mailmessage * msg_info,
     res = r;
     goto free_fetch_type;
   }
-  
+
 
   r = mailimap_uid_fetch(get_imap_session(msg_info), set,
 			 fetch_type, &fetch_result);
@@ -813,7 +815,7 @@ static int imap_get_bodystructure(mailmessage * msg_info,
     goto err;
   }
   msg_info->msg_mime = new_body;
-  
+
   mailimap_fetch_list_free(fetch_result);
 
   * result = new_body;
@@ -895,7 +897,7 @@ fetch_imap(mailmessage * msg,
   return MAIL_NO_ERROR;
 }
 
-  
+
 static int imap_fetch_section(mailmessage * msg_info,
 			      struct mailmime * mime,
 			      char ** result, size_t * result_len)
@@ -910,7 +912,7 @@ static int imap_fetch_section(mailmessage * msg_info,
 
   if (mime->mm_parent == NULL)
     return imap_fetch(msg_info, result, result_len);
-  
+
   r = mailmime_get_section_id(mime, &part);
   if (r != MAILIMF_NO_ERROR)
     return maildriver_imf_error_to_mail_error(r);
@@ -938,13 +940,13 @@ static int imap_fetch_section(mailmessage * msg_info,
 
   if (r != MAIL_NO_ERROR)
     return r;
-  
+
   * result = text;
   * result_len = text_length;
 
   return MAIL_NO_ERROR;
 }
-  
+
 static int imap_fetch_section_header(mailmessage * msg_info,
 				     struct mailmime * mime,
 				     char ** result,
@@ -975,7 +977,7 @@ static int imap_fetch_section_header(mailmessage * msg_info,
     mailimap_section_free(section);
     return MAIL_ERROR_MEMORY;
   }
-  
+
   fetch_type = mailimap_fetch_type_new_fetch_att(fetch_att);
   if (fetch_type == NULL) {
     mailimap_fetch_att_free(fetch_att);
@@ -987,13 +989,13 @@ static int imap_fetch_section_header(mailmessage * msg_info,
 
   if (r != MAIL_NO_ERROR)
     return r;
-  
+
   * result = text;
   * result_len = text_length;
 
   return MAIL_NO_ERROR;
 }
-  
+
 static int imap_fetch_section_mime(mailmessage * msg_info,
 				   struct mailmime * mime,
 				   char ** result,
@@ -1027,7 +1029,7 @@ static int imap_fetch_section_mime(mailmessage * msg_info,
     mailimap_section_free(section);
     return MAIL_ERROR_MEMORY;
   }
-  
+
   fetch_type = mailimap_fetch_type_new_fetch_att(fetch_att);
   if (fetch_type == NULL) {
     mailimap_fetch_att_free(fetch_att);
@@ -1040,13 +1042,13 @@ static int imap_fetch_section_mime(mailmessage * msg_info,
 
   if (r != MAIL_NO_ERROR)
     return r;
-  
+
   * result = text;
   * result_len = text_length;
 
   return MAIL_NO_ERROR;
 }
-  
+
 static int imap_fetch_section_body(mailmessage * msg_info,
 				   struct mailmime * mime,
 				   char ** result,
@@ -1080,7 +1082,7 @@ static int imap_fetch_section_body(mailmessage * msg_info,
     mailimap_section_free(section);
     return MAIL_ERROR_MEMORY;
   }
-  
+
   fetch_type = mailimap_fetch_type_new_fetch_att(fetch_att);
   if (fetch_type == NULL) {
     mailimap_fetch_att_free(fetch_att);
@@ -1093,7 +1095,7 @@ static int imap_fetch_section_body(mailmessage * msg_info,
 
   if (r != MAIL_NO_ERROR)
     return r;
-  
+
   * result = text;
   * result_len = text_length;
 

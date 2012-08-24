@@ -249,7 +249,7 @@ static void imap_flags_store_process(mailimap * imap,
 
   if (carray_count(flags_store->fls_tab) == 0)
     return;
-  
+
   first = carray_get(flags_store->fls_tab, 0);
   last = first;
 
@@ -275,7 +275,7 @@ static void imap_flags_store_process(mailimap * imap,
 
   r = imap_store_flags(imap, first->msg_index, last->msg_index,
       first->msg_flags);
-  
+
   mail_flags_store_clear(flags_store);
 }
 
@@ -287,20 +287,20 @@ static void imapdriver_uninitialize(mailsession * session)
 
   imap_flags_store_process(data->imap_session,
       data->imap_flags_store);
-  mail_flags_store_free(data->imap_flags_store); 
-  
+  mail_flags_store_free(data->imap_flags_store);
+
   mailimap_free(data->imap_session);
   if (data->imap_mailbox != NULL)
     free(data->imap_mailbox);
   free(data);
-  
+
   session->sess_data = NULL;
 }
 
 static int imapdriver_connect_stream(mailsession * session, mailstream * s)
 {
   int r;
-  
+
   r = mailimap_connect(get_imap_session(session), s);
 
   return imap_error_to_mail_error(r);
@@ -368,7 +368,7 @@ static int imapdriver_build_folder_name(mailsession * session, const char * mb,
   strcat(folder_name, name);
 
   * result = folder_name;
-  
+
   return MAIL_NO_ERROR;
 }
 
@@ -483,12 +483,13 @@ static int status_selected_folder(mailsession * session, const char * mb,
   uint32_t recent;
   struct mailimap_search_key * search_key;
   clist * search_result;
-  
+  UNUSED(mb);
+
   imap = get_imap_session(session);
-  
+
   exists = imap->imap_selection_info->sel_exists;
   recent = imap->imap_selection_info->sel_recent;
-  
+
   search_key = mailimap_search_key_new(MAILIMAP_SEARCH_KEY_UNSEEN,
       NULL, NULL, NULL, NULL, NULL,
       NULL, NULL, NULL, NULL, NULL,
@@ -499,7 +500,7 @@ static int status_selected_folder(mailsession * session, const char * mb,
     res = MAIL_ERROR_MEMORY;
     goto err;
   }
-  
+
   /* default : use the RECENT count if search fails */
   unseen = recent;
   r = mailimap_search(imap, NULL, search_key, &search_result);
@@ -509,13 +510,13 @@ static int status_selected_folder(mailsession * session, const char * mb,
     unseen = clist_count(search_result);
     mailimap_mailbox_data_search_free(search_result);
   }
-  
+
   * result_messages = exists;
   * result_unseen = unseen;
   * result_recent = recent;
-  
+
   return MAIL_NO_ERROR;
-  
+
  err:
   return res;
 }
@@ -530,15 +531,15 @@ static int status_unselected_folder(mailsession * session, const char * mb,
   int res;
   clistiter * cur;
   mailimap * imap;
-  
+
   imap = get_imap_session(session);
-  
+
   att_list = mailimap_status_att_list_new_empty();
   if (att_list == NULL) {
     res = MAIL_ERROR_MEMORY;
     goto err;
   }
-  
+
   r = mailimap_status_att_list_add(att_list, MAILIMAP_STATUS_ATT_MESSAGES);
   switch (r) {
   case MAILIMAP_NO_ERROR:
@@ -547,7 +548,7 @@ static int status_unselected_folder(mailsession * session, const char * mb,
     res = MAIL_ERROR_MEMORY;
     goto free;
   }
-    
+
   r = mailimap_status_att_list_add(att_list, MAILIMAP_STATUS_ATT_RECENT);
   switch (r) {
   case MAILIMAP_NO_ERROR:
@@ -556,7 +557,7 @@ static int status_unselected_folder(mailsession * session, const char * mb,
     res = MAIL_ERROR_MEMORY;
     goto free;
   }
-    
+
   r = mailimap_status_att_list_add(att_list, MAILIMAP_STATUS_ATT_UNSEEN);
   switch (r) {
   case MAILIMAP_NO_ERROR:
@@ -579,11 +580,11 @@ static int status_unselected_folder(mailsession * session, const char * mb,
   * result_messages = 0;
   * result_recent = 0;
   * result_unseen = 0;
-  
+
   for (cur = clist_begin(status->st_info_list);
        cur != NULL ; cur = clist_next(cur)) {
     struct mailimap_status_info * status_info;
-      
+
     status_info = clist_content(cur);
     switch (status_info->st_att) {
     case MAILIMAP_STATUS_ATT_MESSAGES:
@@ -600,7 +601,7 @@ static int status_unselected_folder(mailsession * session, const char * mb,
 
   mailimap_mailbox_data_status_free(status);
   mailimap_status_att_list_free(att_list);
-  
+
   return MAIL_NO_ERROR;
 
  free:
@@ -616,7 +617,7 @@ static int imapdriver_status_folder(mailsession * session, const char * mb,
   int res;
   int current_folder;
   char * current_mb;
-  
+
   if (mb == NULL) {
     mb = get_data(session)->imap_mailbox;
     if (mb == NULL) {
@@ -624,20 +625,20 @@ static int imapdriver_status_folder(mailsession * session, const char * mb,
       goto err;
     }
   }
-  
+
   current_mb = get_data(session)->imap_mailbox;
   if (strcmp(mb, current_mb) == 0)
     current_folder = 1;
   else
     current_folder = 0;
-  
+
   if (current_folder)
     return status_selected_folder(session, mb, result_messages,
         result_recent, result_unseen);
   else
     return status_unselected_folder(session, mb, result_messages,
         result_recent, result_unseen);
-  
+
  err:
   return res;
 }
@@ -651,13 +652,13 @@ static int imapdriver_messages_number(mailsession * session, const char * mb,
   uint32_t recent;
   uint32_t unseen;
   int r;
-  
+
   r = imapdriver_status_folder(session, mb, &messages, &recent, &unseen);
   if (r != MAIL_NO_ERROR)
     return r;
 
   * result = messages;
- 
+
   return MAIL_NO_ERROR;
 }
 
@@ -668,13 +669,13 @@ static int imapdriver_recent_number(mailsession * session, const char * mb,
   uint32_t recent;
   uint32_t unseen;
   int r;
-  
+
   r = imapdriver_status_folder(session, mb, &messages, &recent, &unseen);
   if (r != MAIL_NO_ERROR)
     return r;
 
   * result = recent;
- 
+
   return MAIL_NO_ERROR;
 }
 
@@ -685,13 +686,13 @@ static int imapdriver_unseen_number(mailsession * session, const char * mb,
   uint32_t recent;
   uint32_t unseen;
   int r;
-  
+
   r = imapdriver_status_folder(session, mb, &messages, &recent, &unseen);
   if (r != MAIL_NO_ERROR)
     return r;
 
   * result = unseen;
- 
+
   return MAIL_NO_ERROR;
 }
 
@@ -789,7 +790,7 @@ static int imapdriver_append_message(mailsession * session,
   r = mailimap_append_simple(get_imap_session(session),
       get_data(session)->imap_mailbox,
       message, size);
-  
+
   return imap_error_to_mail_error(r);
 }
 
@@ -798,7 +799,7 @@ static int imapdriver_append_message_flags(mailsession * session,
 {
   struct mailimap_flag_list * flag_list;
   int r;
-  
+
   if (flags != NULL) {
     r = imap_flags_to_imap_flags(flags, &flag_list);
     if (r != MAIL_NO_ERROR)
@@ -807,14 +808,14 @@ static int imapdriver_append_message_flags(mailsession * session,
   else {
     flag_list = NULL;
   }
-  
+
   r = mailimap_append(get_imap_session(session),
       get_data(session)->imap_mailbox,
       flag_list, NULL, message, size);
-  
+
   if (flag_list != NULL)
     mailimap_flag_list_free(flag_list);
-  
+
   return imap_error_to_mail_error(r);
 }
 
@@ -866,7 +867,7 @@ imapdriver_get_envelopes_list(mailsession * session,
   uint32_t exists;
   clist * msg_list;
   clistiter * set_iter;
-  
+
   if (get_imap_session(session)->imap_selection_info == NULL) {
     res = MAIL_ERROR_BAD_STATE;
     goto err;
@@ -941,12 +942,12 @@ imapdriver_get_envelopes_list(mailsession * session,
   }
   clist_foreach(msg_list, (clist_func) free, NULL);
   clist_free(msg_list);
-  
+
   set_iter = clist_begin(set->set_list);
   while (set_iter != NULL) {
     struct mailimap_set * subset;
     unsigned int count;
-    
+
     subset = mailimap_set_new_empty();
     if (subset == NULL) {
       res = MAIL_ERROR_MEMORY;
@@ -955,14 +956,14 @@ imapdriver_get_envelopes_list(mailsession * session,
       res = MAIL_ERROR_MEMORY;
       goto err;
     }
-    
+
     count = 0;
     while (count < IMAP_SET_MAX_COUNT) {
       struct mailimap_set_item * item;
-      
+
       item = clist_content(set_iter);
       set_iter = clist_delete(set->set_list, set_iter);
-      
+
       r = mailimap_set_add(subset, item);
       if (r != MAILIMAP_NO_ERROR) {
         mailimap_set_item_free(item);
@@ -972,18 +973,18 @@ imapdriver_get_envelopes_list(mailsession * session,
         res = MAIL_ERROR_MEMORY;
         goto err;
       }
-      
+
       count ++;
-      
+
       if (set_iter == NULL)
         break;
     }
-    
+
     r = mailimap_uid_fetch(get_imap_session(session), subset,
         fetch_type, &fetch_result);
-    
+
     mailimap_set_free(subset);
-    
+
     switch (r) {
     case MAILIMAP_NO_ERROR:
       break;
@@ -992,15 +993,15 @@ imapdriver_get_envelopes_list(mailsession * session,
       mailimap_set_free(set);
       return imap_error_to_mail_error(r);
     }
-    
+
     if (clist_begin(fetch_result) == NULL) {
       res = MAIL_ERROR_FETCH;
       goto err;
     }
-    
+
     r = imap_fetch_result_to_envelop_list(fetch_result, env_list);
     mailimap_fetch_list_free(fetch_result);
-    
+
     if (r != MAIL_NO_ERROR) {
       mailimap_fetch_type_free(fetch_type);
       mailimap_set_free(set);
@@ -1008,12 +1009,12 @@ imapdriver_get_envelopes_list(mailsession * session,
       goto err;
     }
   }
-  
+
 #if 0
   r = mailimap_uid_fetch(get_imap_session(session), set,
 			 fetch_type, &fetch_result);
 #endif
-  
+
   mailimap_fetch_type_free(fetch_type);
   mailimap_set_free(set);
 #if 0
@@ -1023,7 +1024,7 @@ imapdriver_get_envelopes_list(mailsession * session,
   default:
     return imap_error_to_mail_error(r);
   }
-  
+
   r = imap_fetch_result_to_envelop_list(fetch_result, env_list);
   mailimap_fetch_list_free(fetch_result);
 
@@ -1034,7 +1035,7 @@ imapdriver_get_envelopes_list(mailsession * session,
 #endif
 
   return MAIL_NO_ERROR;
-  
+
  free_fetch_type:
   mailimap_fetch_type_free(fetch_type);
  err:
@@ -1077,7 +1078,7 @@ static int imapdriver_search_messages(mailsession * session, const char * charse
   for(cur = clist_begin(imap_result) ; cur != NULL ; cur = clist_next(cur)) {
     uint32_t val = * (uint32_t *) clist_content(cur);
     uint32_t * new;
-    
+
     new = malloc(sizeof(* new));
     if (new == NULL) {
       goto free_imap_result;
@@ -1101,7 +1102,7 @@ static int imapdriver_search_messages(mailsession * session, const char * charse
   * result = search_result;
 
   return MAIL_NO_ERROR;
-  
+
  free_imap_result:
   mailimap_search_result_free(imap_result);
   return MAIL_ERROR_MEMORY;
@@ -1117,7 +1118,7 @@ static int imapdriver_starttls(mailsession * session)
   int starttls;
   int capability_available;
   struct imap_session_state_data * data;
-  
+
   data = get_data(session);
   imap = get_imap_session(session);
 
@@ -1157,7 +1158,7 @@ static int imapdriver_starttls(mailsession * session)
 
   if (!starttls)
     return MAIL_ERROR_NO_TLS;
-  
+
   r = mailimap_socket_starttls(imap);
   return imap_error_to_mail_error(r);
 }
@@ -1184,11 +1185,11 @@ static int imapdriver_get_message(mailsession * session,
 }
 
 /* Retrieve a message by UID
-   
+
    libEtPan! uid format for IMAP is "UIDVALIDITY-UID"
-   where UIDVALIDITY and UID are decimal representation of 
-   respectively uidvalidity and uid numbers. 
-   
+   where UIDVALIDITY and UID are decimal representation of
+   respectively uidvalidity and uid numbers.
+
    Return value:
    MAIL_ERROR_INVAL if uid is NULL or has an incorrect format.
    MAIL_ERROR_MSG_NOT_FOUND if uidvalidity has changed or uid was not found
@@ -1215,7 +1216,7 @@ static int imapdriver_get_message_by_uid(mailsession * session,
   num = strtoul(p1, &p2, 10);
   if (p2 == p1 || * p2 != '\0')
     return MAIL_ERROR_INVAL;
-  
+
   imap = get_imap_session(session);
   if (imap->imap_selection_info->sel_uidvalidity != uidvalidity)
     return MAIL_ERROR_MSG_NOT_FOUND;
@@ -1236,7 +1237,7 @@ static int imapdriver_login_sasl(mailsession * session,
   r = mailimap_authenticate(get_imap_session(session),
       auth_type, server_fqdn, local_ip_port, remote_ip_port,
       login, auth_name, password, realm);
-  
+
   return imap_error_to_mail_error(r);
 }
 
@@ -1271,9 +1272,9 @@ static int imapdriver_parameters(mailsession * session,
     int id, void * value)
 {
   struct imap_session_state_data * data;
-  
+
   data = get_data(session);
-  
+
   switch (id) {
   case IMAPDRIVER_CACHED_SET_SSL_CALLBACK:
     data->imap_ssl_callback = value;
@@ -1282,6 +1283,6 @@ static int imapdriver_parameters(mailsession * session,
     data->imap_ssl_cb_data = value;
     break;
   }
-  
+
   return MAIL_ERROR_INVAL;
 }
