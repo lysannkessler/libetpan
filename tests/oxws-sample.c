@@ -55,8 +55,10 @@ int main(int argc, char ** argv) {
     memset(&settings, 0, sizeof(settings));
     settings.as_url = ews_url;
     result = oxws_set_connection_settings(oxws, &settings);
+    check_error(result, "could not set connection settings");
   } else {
-    result = oxws_autodiscover_connection_settings(oxws, host, user, password, email, NULL);
+    result = oxws_autodiscover_connection_settings(oxws, host, email, user, password, NULL);
+    check_error(result, "could not autodiscover connection settings");
   }
 
   /* connect */
