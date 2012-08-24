@@ -127,11 +127,11 @@ mailsmtp * mailsmtp_new(size_t progr_rate,
 
   session->esmtp = 0;
   session->auth = MAILSMTP_AUTH_NOT_CHECKED;
-  
+
 #ifdef USE_SASL
   session->smtp_sasl.sasl_conn = NULL;
 #endif
-  
+
   session->smtp_max_msg_size = 0;
   session->smtp_progress_fun = NULL;
   session->smtp_progress_context = NULL;
@@ -154,7 +154,7 @@ void mailsmtp_free(mailsmtp * session)
     mailsasl_unref();
   }
 #endif
-  
+
   if (session->stream)
     mailsmtp_quit(session);
 
@@ -183,12 +183,12 @@ int mailsmtp_connect(mailsmtp * session, mailstream * s)
   switch (code) {
   case 220:
     return MAILSMTP_NO_ERROR;
-      
+
   case 554:
     session->stream = NULL;
     mailstream_close(s);
     return MAILSMTP_ERROR_SERVICE_NOT_AVAILABLE;
-      
+
   default:
     session->stream = NULL;
     mailstream_close(s);
@@ -203,13 +203,13 @@ static int send_quit(mailsmtp * session)
 {
     char command[SMTP_STRING_SIZE];
     int r;
-    
+
     snprintf(command, SMTP_STRING_SIZE, "QUIT\r\n");
     r = send_command(session, command);
     if (r == -1) {
         return MAILSMTP_ERROR_STREAM;
     }
-    
+
     return MAILSMTP_NO_ERROR;
 }
 
@@ -217,22 +217,22 @@ int mailsmtp_quit(mailsmtp * session)
 {
   int r;
   int res;
-  
+
   if (session->stream == NULL)
     return MAILSMTP_NO_ERROR;
-  
+
   r = send_quit(session);
   if (r != MAILSMTP_NO_ERROR) {
     res = r;
     goto close;
   }
-  
-  res = MAILSMTP_NO_ERROR;  
-  
+
+  res = MAILSMTP_NO_ERROR;
+
  close:
   mailstream_close(session->stream);
   session->stream = NULL;
-  
+
   return res;
 }
 
@@ -298,13 +298,13 @@ int mailsmtp_helo_with_ip(mailsmtp * session, int useip)
   if (r == -1)
     return MAILSMTP_ERROR_STREAM;
   r = read_response(session);
-  
+
   switch (r) {
   case 250:
     session->esmtp = 0;
     session->auth = MAILSMTP_AUTH_NOT_CHECKED;
     return MAILSMTP_NO_ERROR;
-    
+
   case 504:
     return MAILSMTP_ERROR_NOT_IMPLEMENTED;
 
@@ -411,16 +411,16 @@ int mailsmtp_data_message(mailsmtp * session,
   switch(r) {
   case 250:
     return MAILSMTP_NO_ERROR;
-      
+
   case 552:
     return MAILSMTP_ERROR_EXCEED_STORAGE_ALLOCATION;
 
   case 554:
     return MAILSMTP_ERROR_TRANSACTION_FAILED;
-      
+
   case 451:
     return MAILSMTP_ERROR_IN_PROCESSING;
-      
+
   case 452:
     return MAILSMTP_ERROR_INSUFFICIENT_SYSTEM_STORAGE;
 
@@ -437,37 +437,37 @@ int mailsmtp_data_message_quit(mailsmtp * session,
                                size_t size)
 {
     int r;
-    
+
     r = send_data(session, message, size);
     if (r == -1)
         return MAILSMTP_ERROR_STREAM;
-    
+
     r = send_quit(session);
-    
+
     r = read_response(session);
-    
+
     mailstream_close(session->stream);
     session->stream = NULL;
-    
+
     switch(r) {
         case 250:
             return MAILSMTP_NO_ERROR;
-            
+
         case 552:
             return MAILSMTP_ERROR_EXCEED_STORAGE_ALLOCATION;
-            
+
         case 554:
             return MAILSMTP_ERROR_TRANSACTION_FAILED;
-            
+
         case 451:
             return MAILSMTP_ERROR_IN_PROCESSING;
-            
+
         case 452:
             return MAILSMTP_ERROR_INSUFFICIENT_SYSTEM_STORAGE;
-            
+
         case 0:
             return MAILSMTP_ERROR_STREAM;
-            
+
         default:
             return MAILSMTP_ERROR_UNEXPECTED_CODE;
     }
@@ -488,13 +488,13 @@ int mailsmtp_data_message_quit(mailsmtp * session,
 int mailesmtp_parse_ehlo(mailsmtp * session)
 {
   char * response;
-  
+
   /* restore data */
   session->esmtp = MAILSMTP_ESMTP;
   session->auth = MAILSMTP_AUTH_CHECKED;
 
   response = session->response;
-  
+
   /* ESMTP supported extensions :
      DSN
      EXPN
@@ -605,7 +605,7 @@ int mailesmtp_parse_ehlo(mailsmtp * session)
     if (response != NULL)
       response++;
   }
-  
+
   return MAILSMTP_NO_ERROR;
 }
 
@@ -630,11 +630,11 @@ int mailesmtp_ehlo_with_ip(mailsmtp * session, int useip)
   if (r == -1)
     return MAILSMTP_ERROR_STREAM;
   r = read_response(session);
-  
+
   switch (r) {
   case 250:
     return mailesmtp_parse_ehlo(session);
-    
+
   case 504:
     return MAILSMTP_ERROR_NOT_IMPLEMENTED;
 
@@ -847,22 +847,22 @@ static int mailsmtp_auth_login(mailsmtp * session,
   int err;
   char command[SMTP_STRING_SIZE];
   char * user64, * pass64;
-  
+
   user64 = NULL;
   pass64 = NULL;
-  
+
   user64 = encode_base64(user, strlen(user));
   if (user64 == NULL) {
     err = MAILSMTP_ERROR_MEMORY;
     goto err_free;
   }
-  
+
   pass64 = encode_base64(pass, strlen(pass));
   if (pass64 == NULL) {
     err = MAILSMTP_ERROR_MEMORY;
     goto err_free;
   }
-  
+
   snprintf(command, SMTP_STRING_SIZE, "%s\r\n", user64);
   err = send_command(session, command);
   if (err == -1) {
@@ -873,7 +873,7 @@ static int mailsmtp_auth_login(mailsmtp * session,
   err = auth_map_errors(err);
   if (err != MAILSMTP_NO_ERROR)
     goto err_free;
-  
+
   snprintf(command, SMTP_STRING_SIZE, "%s\r\n", pass64);
   err = send_command(session, command);
   if (err == -1) {
@@ -882,11 +882,11 @@ static int mailsmtp_auth_login(mailsmtp * session,
   }
   err = read_response(session);
   err = auth_map_errors(err);
-  
+
  err_free:
   free(user64);
   free(pass64);
-  
+
   return err;
 }
 #endif
@@ -896,34 +896,34 @@ int mailsmtp_auth_type(mailsmtp * session,
 {
   int err;
   char hostname[SMTP_STRING_SIZE];
-  
+
   err = gethostname(hostname, sizeof(hostname));
   if (err < 0) {
     return MAILSMTP_ERROR_MEMORY;
   }
-  
-  if (session->auth == MAILSMTP_AUTH_NOT_CHECKED) 
+
+  if (session->auth == MAILSMTP_AUTH_NOT_CHECKED)
     return MAILSMTP_ERROR_BAD_SEQUENCE_OF_COMMAND;
-    
+
   if ( !(session->auth & type) ) return MAILSMTP_ERROR_AUTH_NOT_SUPPORTED;
-  
+
   switch (type) {
   case MAILSMTP_AUTH_LOGIN:
     return mailesmtp_auth_sasl(session, "LOGIN",
         hostname, NULL, NULL, user, user, pass, NULL);
-    
+
   case MAILSMTP_AUTH_PLAIN:
     return mailesmtp_auth_sasl(session, "PLAIN",
         hostname, NULL, NULL, user, user, pass, NULL);
-    
+
   case MAILSMTP_AUTH_CRAM_MD5:
     return mailesmtp_auth_sasl(session, "CRAM-MD5",
         hostname, NULL, NULL, user, user, pass, NULL);
-    
+
   case MAILSMTP_AUTH_DIGEST_MD5:
     return mailesmtp_auth_sasl(session, "DIGEST-MD5",
         hostname, NULL, NULL, user, user, pass, NULL);
-    
+
   default:
     return MAILSMTP_ERROR_NOT_IMPLEMENTED;
   }
@@ -933,9 +933,9 @@ int mailsmtp_auth_type(mailsmtp * session,
 
 int mailsmtp_auth(mailsmtp * session, const char * user, const char * pass)
 {
-  if (session->auth == MAILSMTP_AUTH_NOT_CHECKED) 
+  if (session->auth == MAILSMTP_AUTH_NOT_CHECKED)
     return MAILSMTP_ERROR_BAD_SEQUENCE_OF_COMMAND;
-    
+
   if (session->auth & MAILSMTP_AUTH_DIGEST_MD5) {
     return mailsmtp_auth_type(session, user, pass, MAILSMTP_AUTH_DIGEST_MD5);
   } else if (session->auth & MAILSMTP_AUTH_CRAM_MD5) {
@@ -990,7 +990,7 @@ static int parse_response(mailsmtp * session,
   }
   else
     mmap_string_append(session->response_buffer, message);
-      
+
   return code | cont;
 }
 
@@ -1021,7 +1021,7 @@ static int read_response(mailsmtp * session)
 
   session->response = session->response_buffer->str;
 	session->response_code = code;
-    
+
   return code;
 }
 
@@ -1123,9 +1123,9 @@ static int sasl_getsimple(void * context, int id,
     const char ** result, unsigned * len)
 {
   mailsmtp * session;
-  
+
   session = context;
-  
+
   switch (id) {
   case SASL_CB_USER:
     if (result != NULL)
@@ -1133,7 +1133,7 @@ static int sasl_getsimple(void * context, int id,
     if (len != NULL)
       * len = strlen(session->smtp_sasl.sasl_login);
     return SASL_OK;
-    
+
   case SASL_CB_AUTHNAME:
     if (result != NULL)
       * result = session->smtp_sasl.sasl_auth_name;
@@ -1141,24 +1141,24 @@ static int sasl_getsimple(void * context, int id,
       * len = strlen(session->smtp_sasl.sasl_auth_name);
     return SASL_OK;
   }
-  
+
   return SASL_FAIL;
 }
 
 static int sasl_getsecret(sasl_conn_t * conn, void * context, int id,
     sasl_secret_t ** psecret)
 {
+  UNUSED(conn);
   mailsmtp * session;
-  
   session = context;
-  
+
   switch (id) {
   case SASL_CB_PASS:
     if (psecret != NULL)
       * psecret = session->smtp_sasl.sasl_secret;
     return SASL_OK;
   }
-  
+
   return SASL_FAIL;
 }
 
@@ -1166,17 +1166,17 @@ static int sasl_getrealm(void * context, int id,
     const char ** availrealms,
     const char ** result)
 {
+  UNUSED(availrealms);
   mailsmtp * session;
-  
   session = context;
-  
+
   switch (id) {
   case SASL_CB_GETREALM:
     if (result != NULL)
       * result = session->smtp_sasl.sasl_realm;
     return SASL_OK;
   }
-  
+
   return SASL_FAIL;
 }
 #endif
@@ -1201,7 +1201,7 @@ int mailesmtp_auth_sasl(mailsmtp * session, const char * auth_type,
   char * encoded;
   unsigned int encoded_len;
   unsigned int max_encoded;
-  
+
   sasl_callback[0].id = SASL_CB_GETREALM;
   sasl_callback[0].proc =  (int (*)(void)) sasl_getrealm;
   sasl_callback[0].context = session;
@@ -1210,14 +1210,14 @@ int mailesmtp_auth_sasl(mailsmtp * session, const char * auth_type,
   sasl_callback[1].context = session;
   sasl_callback[2].id = SASL_CB_AUTHNAME;
   sasl_callback[2].proc =  (int (*)(void)) sasl_getsimple;
-  sasl_callback[2].context = session; 
+  sasl_callback[2].context = session;
   sasl_callback[3].id = SASL_CB_PASS;
   sasl_callback[3].proc =  (int (*)(void)) sasl_getsecret;
   sasl_callback[3].context = session;
   sasl_callback[4].id = SASL_CB_LIST_END;
   sasl_callback[4].proc =  NULL;
   sasl_callback[4].context = NULL;
-  
+
   len = strlen(password);
   secret = malloc(sizeof(* secret) + len);
   if (secret == NULL) {
@@ -1226,14 +1226,14 @@ int mailesmtp_auth_sasl(mailsmtp * session, const char * auth_type,
   }
   secret->len = len;
   memcpy(secret->data, password, len + 1);
-  
+
   session->smtp_sasl.sasl_server_fqdn = server_fqdn;
   session->smtp_sasl.sasl_login = login;
   session->smtp_sasl.sasl_auth_name = auth_name;
   session->smtp_sasl.sasl_password = password;
   session->smtp_sasl.sasl_realm = realm;
   session->smtp_sasl.sasl_secret = secret;
-  
+
   /* init SASL */
   if (session->smtp_sasl.sasl_conn != NULL) {
     sasl_dispose((sasl_conn_t **) &session->smtp_sasl.sasl_conn);
@@ -1242,7 +1242,7 @@ int mailesmtp_auth_sasl(mailsmtp * session, const char * auth_type,
   else {
     mailsasl_ref();
   }
-  
+
   r = sasl_client_new("smtp", server_fqdn,
       local_ip_port, remote_ip_port, sasl_callback, 0,
       (sasl_conn_t **) &session->smtp_sasl.sasl_conn);
@@ -1250,14 +1250,14 @@ int mailesmtp_auth_sasl(mailsmtp * session, const char * auth_type,
     res = MAILSMTP_ERROR_AUTH_LOGIN;
     goto free_secret;
   }
-  
+
   r = sasl_client_start(session->smtp_sasl.sasl_conn,
       auth_type, NULL, &sasl_out, &sasl_out_len, &mechusing);
   if ((r != SASL_CONTINUE) && (r != SASL_OK)) {
     res = MAILSMTP_ERROR_AUTH_LOGIN;
     goto free_sasl_conn;
   }
-  
+
   if (sasl_out_len != 0) {
     max_encoded = ((sasl_out_len + 2) / 3) * 4;
     encoded = malloc(max_encoded + 1);
@@ -1265,7 +1265,7 @@ int mailesmtp_auth_sasl(mailsmtp * session, const char * auth_type,
       res = MAILSMTP_ERROR_MEMORY;
       goto free_sasl_conn;
     }
-    
+
     r = sasl_encode64(sasl_out, sasl_out_len,
         encoded, max_encoded + 1, &encoded_len);
     if (r != SASL_OK) {
@@ -1273,21 +1273,21 @@ int mailesmtp_auth_sasl(mailsmtp * session, const char * auth_type,
       res = MAILSMTP_ERROR_MEMORY;
       goto free_sasl_conn;
     }
-    
+
     snprintf(command, SMTP_STRING_SIZE, "AUTH %s %s\r\n", auth_type, encoded);
-    
+
     free(encoded);
   }
   else {
     snprintf(command, SMTP_STRING_SIZE, "AUTH %s\r\n", auth_type);
   }
-  
+
   r = send_command_private(session, command, 0);
   if (r == -1) {
     res = MAILSMTP_ERROR_STREAM;
     goto free_sasl_conn;
   }
-  
+
   while (1) {
     r = read_response(session);
     switch (r) {
@@ -1295,16 +1295,16 @@ int mailesmtp_auth_sasl(mailsmtp * session, const char * auth_type,
     case 235:
       res = MAILSMTP_NO_ERROR;
       goto free_sasl_conn;
-        
+
     case 535:
       res = MAILSMTP_ERROR_AUTH_LOGIN;
       goto free_sasl_conn;
-      
+
     case 553:
     case 554:
       res = MAILSMTP_ERROR_AUTH_AUTHENTICATION_FAILED;
       goto free_sasl_conn;
-    
+
     case 334:
       {
         size_t response_len;
@@ -1312,7 +1312,7 @@ int mailesmtp_auth_sasl(mailsmtp * session, const char * auth_type,
         unsigned int decoded_len;
         unsigned int max_decoded;
         char * p;
-        
+
         p = strchr(session->response, '\r');
         if (p != NULL) {
           * p = '\0';
@@ -1321,7 +1321,7 @@ int mailesmtp_auth_sasl(mailsmtp * session, const char * auth_type,
         if (p != NULL) {
           * p = '\0';
         }
-        
+
         response_len = strlen(session->response);
         max_decoded = response_len * 3 / 4;
         decoded = malloc(max_decoded + 1);
@@ -1329,33 +1329,33 @@ int mailesmtp_auth_sasl(mailsmtp * session, const char * auth_type,
           res = MAILSMTP_ERROR_MEMORY;
           goto free_sasl_conn;
         }
-        
+
         r = sasl_decode64(session->response, response_len,
             decoded, max_decoded + 1, &decoded_len);
-        
+
         if (r != SASL_OK) {
           free(decoded);
           res = MAILSMTP_ERROR_MEMORY;
           goto free_sasl_conn;
         }
-        
+
         r = sasl_client_step(session->smtp_sasl.sasl_conn,
             decoded, decoded_len, NULL, &sasl_out, &sasl_out_len);
-        
+
         free(decoded);
-        
+
         if ((r != SASL_CONTINUE) && (r != SASL_OK)) {
           res = MAILSMTP_ERROR_AUTH_LOGIN;
           goto free_sasl_conn;
         }
-        
+
         max_encoded = ((sasl_out_len + 2) / 3) * 4;
         encoded = malloc(max_encoded + 1);
         if (encoded == NULL) {
           res = MAILSMTP_ERROR_MEMORY;
           goto free_sasl_conn;
         }
-        
+
         r = sasl_encode64(sasl_out, sasl_out_len,
             encoded, max_encoded + 1, &encoded_len);
         if (r != SASL_OK) {
@@ -1363,27 +1363,27 @@ int mailesmtp_auth_sasl(mailsmtp * session, const char * auth_type,
           res = MAILSMTP_ERROR_MEMORY;
           goto free_sasl_conn;
         }
-        
+
         snprintf(command, SMTP_STRING_SIZE, "%s\r\n", encoded);
         r = send_command(session, command);
-        
+
         free(encoded);
-        
+
         if (r == -1) {
           res = MAILSMTP_ERROR_STREAM;
           goto free_sasl_conn;
         }
       }
       break;
-      
+
     default:
       res = auth_map_errors(r);
       goto free_sasl_conn;
     }
   }
-  
+
   res = MAILSMTP_NO_ERROR;
-  
+
  free_sasl_conn:
   sasl_dispose((sasl_conn_t **) &session->smtp_sasl.sasl_conn);
   session->smtp_sasl.sasl_conn = NULL;
@@ -1411,7 +1411,7 @@ int mailsmtp_noop(mailsmtp * session)
   r = read_response(session);
   if (r == 0)
     return MAILSMTP_ERROR_STREAM;
-  
+
   return MAILSMTP_NO_ERROR;
 }
 
@@ -1427,7 +1427,7 @@ int mailsmtp_reset(mailsmtp * session)
   r = read_response(session);
   if (r == 0)
     return MAILSMTP_ERROR_STREAM;
-  
+
   return MAILSMTP_NO_ERROR;
 }
 
