@@ -49,6 +49,10 @@ extern "C" {
 #define FALSE 0
 #endif
 
+#ifndef UNUSED
+#define UNUSED(x) (void)(x)
+#endif
+
 #ifdef __cplusplus
 }
 #endif
