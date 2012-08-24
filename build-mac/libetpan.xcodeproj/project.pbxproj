@@ -871,7 +871,6 @@
 		F62D7C0A15E3E9DC003CA2CF /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F62D7C0915E3E9DC003CA2CF /* libxml2.dylib */; };
 		F62D7C0B15E3E9DC003CA2CF /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F62D7C0915E3E9DC003CA2CF /* libxml2.dylib */; };
 		F62D7C0C15E3E9DC003CA2CF /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F62D7C0915E3E9DC003CA2CF /* libxml2.dylib */; };
-		F6956C8415E619E000EDD4F4 /* oxws_autodiscover.h in Headers */ = {isa = PBXBuildFile; fileRef = F6956C7E15E619DF00EDD4F4 /* oxws_autodiscover.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F6956C8515E619E000EDD4F4 /* oxws_requests.h in Headers */ = {isa = PBXBuildFile; fileRef = F6956C7F15E619DF00EDD4F4 /* oxws_requests.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F6956C8615E619E000EDD4F4 /* oxws_setters.h in Headers */ = {isa = PBXBuildFile; fileRef = F6956C8015E619DF00EDD4F4 /* oxws_setters.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F6956C8715E619E000EDD4F4 /* oxws_types_item.h in Headers */ = {isa = PBXBuildFile; fileRef = F6956C8115E619DF00EDD4F4 /* oxws_types_item.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1436,7 +1435,6 @@
 		F62D7BC915E3E4A8003CA2CF /* xml.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = xml.c; sourceTree = "<group>"; };
 		F62D7BCA15E3E4A8003CA2CF /* xml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xml.h; sourceTree = "<group>"; };
 		F62D7C0915E3E9DC003CA2CF /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
-		F6956C7E15E619DF00EDD4F4 /* oxws_autodiscover.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = oxws_autodiscover.h; sourceTree = "<group>"; };
 		F6956C7F15E619DF00EDD4F4 /* oxws_requests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = oxws_requests.h; sourceTree = "<group>"; };
 		F6956C8015E619DF00EDD4F4 /* oxws_setters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = oxws_setters.h; sourceTree = "<group>"; };
 		F6956C8115E619DF00EDD4F4 /* oxws_types_item.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = oxws_types_item.h; sourceTree = "<group>"; };
@@ -1693,7 +1691,6 @@
 				C6DC67111083CDA000FA050B /* nntpdriver_message.h */,
 				C6DC67121083CDA000FA050B /* nntpdriver_types.h */,
 				C6DC67131083CDA000FA050B /* nntpstorage.h */,
-				F6956C7E15E619DF00EDD4F4 /* oxws_autodiscover.h */,
 				F6956C7F15E619DF00EDD4F4 /* oxws_requests.h */,
 				F6956C8015E619DF00EDD4F4 /* oxws_setters.h */,
 				F6956C8115E619DF00EDD4F4 /* oxws_types_item.h */,
@@ -2701,7 +2698,6 @@
 				F62D7BF615E3E4A8003CA2CF /* find_item.h in Headers */,
 				F62D7BFA15E3E4A8003CA2CF /* types_internal.h in Headers */,
 				F62D7BFE15E3E4A8003CA2CF /* xml.h in Headers */,
-				F6956C8415E619E000EDD4F4 /* oxws_autodiscover.h in Headers */,
 				F6956C8515E619E000EDD4F4 /* oxws_requests.h in Headers */,
 				F6956C8615E619E000EDD4F4 /* oxws_setters.h in Headers */,
 				F6956C8715E619E000EDD4F4 /* oxws_types_item.h in Headers */,
