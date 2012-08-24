@@ -22,7 +22,7 @@
 
 int parse_options(int argc, char** argv,
       char** user, char** host, char** email, char** password,
-      char** ews_url, short* send);
+      char** domain, char** ews_url, short* send);
 void print_usage();
 oxws_result list_items(oxws* oxws, oxws_distinguished_folder_id folder_id);
 static void check_error(oxws_result result, char* msg);
@@ -30,9 +30,9 @@ static void check_error(oxws_result result, char* msg);
 
 int main(int argc, char ** argv) {
   /* parse options */
-  char *user, *host, *email, *password, *ews_url;
+  char *user, *host, *email, *password, *domain, *ews_url;
   short send;
-  int r = parse_options(argc, argv, &user, &host, &email, &password, &ews_url, &send);
+  int r = parse_options(argc, argv, &user, &host, &email, &password, &domain, &ews_url, &send);
   if(r < 0) {
     fprintf(stderr, "parse_options: internal error\n");
     exit(EXIT_FAILURE);
@@ -57,12 +57,12 @@ int main(int argc, char ** argv) {
     result = oxws_set_connection_settings(oxws, &settings);
     check_error(result, "could not set connection settings");
   } else {
-    result = oxws_autodiscover_connection_settings(oxws, host, email, user, password, NULL);
+    result = oxws_autodiscover_connection_settings(oxws, host, email, user, password, domain);
     check_error(result, "could not autodiscover connection settings");
   }
 
   /* connect */
-  result = oxws_connect(oxws, user, password, NULL);
+  result = oxws_connect(oxws, user, password, domain);
   check_error(result, "could not connect");
 
   /* list items in Inbox */
@@ -98,7 +98,7 @@ int main(int argc, char ** argv) {
 
 int parse_options(int argc, char** argv,
       char** user, char** host, char** email, char** password,
-      char** ews_url, short* send) {
+      char** domain, char** ews_url, short* send) {
 
   static const char* short_options = "u:p:h:e:x:s";
 #if HAVE_GETOPT_LONG
@@ -107,6 +107,7 @@ int parse_options(int argc, char** argv,
     {"host",     1, 0, 'h'},
     {"email",    1, 0, 'e'},
     {"password", 1, 0, 'p'},
+    {"domain",   1, 0, 'd'},
     {"url",      1, 0, 'x'},
     {"send",     0, 0, 's'},
   };
@@ -114,13 +115,14 @@ int parse_options(int argc, char** argv,
   int r = 0;
 
   if(user == NULL || password == NULL || host == NULL || email == NULL || \
-     ews_url == NULL || send == NULL)
+     domain == NULL || ews_url == NULL || send == NULL)
     return -1;
 
   *user = NULL;
   *password = NULL;
   *host = NULL;
   *email = NULL;
+  *domain = NULL;
   *ews_url = NULL;
   *send = 0;
 
@@ -137,6 +139,7 @@ int parse_options(int argc, char** argv,
 
     case 'p': *password = strdup(optarg); break;
 
+    case 'd': *domain = strdup(optarg); break;
     case 'x': *ews_url = strdup(optarg); break;
     case 's': *send = 1; break;
 
@@ -205,6 +208,7 @@ void print_usage() {
                   "    --host     -h [HOST]    host (optional). If missing, derive from email.\n" \
                   "    --email    -e [EMAIL]   email address (optional). If missing, derive from user and host.\n\n" \
                   "    --password -p [PWD]     password (required)\n\n" \
+                  "    --domain   -d [NAME]    domain name for authentication (optional)\n" \
                   "    --url      -x [URL]     EWS URL (optional). If missing, use autodiscover.\n" \
                   "    --send     -s           send a test email to oneself\n");
 }
