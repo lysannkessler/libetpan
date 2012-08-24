@@ -39,6 +39,7 @@
 
 #include "mailimap_keywords.h"
 #include "mailimap_types.h"
+#include "mail.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -87,6 +88,7 @@ static int is_space_or_tab(char ch)
 int mailimap_char_parse(mailstream * fd, MMAPString * buffer,
 			size_t * indx, char token)
 {
+  UNUSED(fd);
   int cur_token;
 
   cur_token = * indx;
@@ -104,6 +106,7 @@ int mailimap_space_parse(mailstream * fd, MMAPString * buffer,
 			 size_t * indx)
 {
 #ifdef UNSTRICT_SYNTAX
+  UNUSED(fd);
 
   /* can accept unstrict syntax */
   size_t cur_token;
@@ -145,7 +148,7 @@ static const char * mailimap_get_token_str_size(int indx,
   for(i = 0 ; i < size ; i++)
     if (indx == tab[i].value)
       return tab[i].str;
-  
+
   return NULL;
 }
 
@@ -171,7 +174,7 @@ static int mailimap_get_token_value_size(mailstream * fd, MMAPString * buffer,
     if (r == MAILIMAP_NO_ERROR)
       return tab[i].value;
   }
-  
+
   return -1;
 }
 

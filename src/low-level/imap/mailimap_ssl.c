@@ -43,6 +43,8 @@
 
 #include "connect.h"
 
+#include "mail.h"
+
 #include <stdlib.h>
 #ifdef HAVE_NETINET_IN_H
 #	include <netinet/in.h>
@@ -57,7 +59,9 @@
 #define SERVICE_NAME_IMAPS "imaps"
 #define SERVICE_TYPE_TCP "tcp"
 
+#ifdef HAVE_CFNETWORK
 static int mailimap_cfssl_connect_voip(mailimap * f, const char * server, uint16_t port, int voip_enabled);
+#endif
 
 int mailimap_ssl_connect_with_callback(mailimap * f, const char * server, uint16_t port,
     void (* callback)(struct mailstream_ssl_context * ssl_context, void * data), void * data)
@@ -77,8 +81,10 @@ int mailimap_ssl_connect_voip_with_callback(mailimap * f, const char * server, u
       return mailimap_cfssl_connect_voip(f, server, port, voip_enabled);
     }
   }
+#else
+  UNUSED(voip_enabled);
 #endif
-  
+
   if (port == 0) {
     port = mail_get_service_port(SERVICE_NAME_IMAPS, SERVICE_TYPE_TCP);
     if (port == 0)
@@ -115,11 +121,12 @@ int mailimap_ssl_connect_voip(mailimap * f, const char * server, uint16_t port, 
       NULL, NULL);
 }
 
+#ifdef HAVE_CFNETWORK
 static int mailimap_cfssl_connect_voip_ssl_level(mailimap * f, const char * server, uint16_t port, int voip_enabled, int ssl_level)
 {
   mailstream * stream;
   int r;
-  
+
   stream = mailstream_cfstream_open_voip(server, port, voip_enabled);
   if (stream == NULL) {
     return MAILIMAP_ERROR_CONNECTION_REFUSED;
@@ -131,7 +138,7 @@ static int mailimap_cfssl_connect_voip_ssl_level(mailimap * f, const char * serv
     mailstream_close(stream);
     return MAILIMAP_ERROR_SSL;
   }
-  
+
   return mailimap_connect(f, stream);
 }
 
@@ -139,3 +146,4 @@ static int mailimap_cfssl_connect_voip(mailimap * f, const char * server, uint16
 {
     return mailimap_cfssl_connect_voip_ssl_level(f, server, port, voip_enabled, MAILSTREAM_CFSTREAM_SSL_LEVEL_SSLv3);
 }
+#endif
