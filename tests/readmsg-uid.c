@@ -22,6 +22,7 @@ int main(int argc, char ** argv)
   struct mailstorage * storage;
   int cached;
   struct mailfolder * folder;
+  unsigned long bytes_written;
 
   /* get options */
 
@@ -85,8 +86,8 @@ int main(int argc, char ** argv)
       continue;
     }
 
-    r = fwrite(data, 1, size, stdout);
-    if (r != (int) size) {
+    bytes_written = fwrite(data, 1, size, stdout);
+    if (bytes_written != size) {
       printf("** failed to dump message %s on stdout\n", uid);
       mailmessage_fetch_result_free(msg, data);
       mailmessage_free(msg);

@@ -53,7 +53,7 @@ struct mem_message {
 
 int collect(struct mem_message *message) {
   struct stat sb;
-  int len;
+  size_t len;
 
   memset(message, 0, sizeof(struct mem_message));
 
@@ -104,7 +104,7 @@ char *guessfrom(void) {
   uid_t uid;
   struct passwd *pw;
   char hostname[256];
-  int len;
+  size_t len;
   char *gfrom;
 
   if (gethostname(hostname, sizeof(hostname))) {

@@ -38,6 +38,7 @@
 #endif
 
 #include "mailprivacy.h"
+#include "mail.h"
 
 #include <libetpan/libetpan.h>
 #include <sys/types.h>
