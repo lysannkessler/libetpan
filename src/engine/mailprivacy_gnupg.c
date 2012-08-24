@@ -60,7 +60,6 @@
 #include <stdlib.h>
 #include "mailprivacy_tools.h"
 #include "mailprivacy_tools_private.h"
-#include "mail.h"
 #include <libetpan/mailmime.h>
 #include <libetpan/libetpan-config.h>
 #ifdef LIBETPAN_REENTRANT

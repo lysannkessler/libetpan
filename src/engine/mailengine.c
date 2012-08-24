@@ -46,7 +46,6 @@
 #include "imapdriver_cached_message.h"
 #include <stdlib.h>
 #include "mailprivacy.h"
-#include "mail.h"
 #ifdef LIBETPAN_REENTRANT
 #include <pthread.h>
 #endif
