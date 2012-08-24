@@ -117,6 +117,11 @@ AH_VERBATIM([CONFIG_H_FIRST], [/* Check for Linux's /usr/include/features.h
 #  error  config.h must be first file included
 #endif])
 
+AC_ARG_ENABLE(debug_curl, [  --enable-debug-curl     compile with verbose curl output (default=no)],[],[])
+if test "x$enable_debug_curl" = "xyes"; then
+  AC_DEFINE([DEBUG_CURL], 1, [see verbose curl output])
+fi
+
 AC_C_INLINE
 
 # Checks for programs.
@@ -284,7 +289,7 @@ if test x$enable_iconv = xyes; then
      AC_LINK_IFELSE(
         [AC_LANG_PROGRAM(
             [#include <stdlib.h>
-             #include <iconv.h>], 
+             #include <iconv.h>],
             [iconv_t cd = iconv_open("","");
              iconv(cd,NULL,NULL,NULL,NULL);
              iconv_close(cd);])],

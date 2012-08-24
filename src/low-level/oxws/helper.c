@@ -68,7 +68,7 @@ oxws_result oxws_prepare_curl_internal(CURL** curl, const char* username, const 
 
   *curl = curl_easy_init();
   if(*curl == NULL) return OXWS_ERROR_INTERNAL;
-#if 0
+#ifdef DEBUG_CURL
   curl_easy_setopt(*curl, CURLOPT_VERBOSE, 1L);
 #endif
 
