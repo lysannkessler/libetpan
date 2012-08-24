@@ -53,12 +53,13 @@ extern const unsigned short oxws_distfolder_id_name_map_length;
   Autodiscover connection settings for given account and store them in a
   oxws_connection_settings structure.
 
-  @param host             [optional] exchange server host name; if missing the
-                          host name is extracted from email_address
+  @param host             [optional] exchange server host name; if missing it is
+                          extracted from email_address
   @param email_address    [required] email address of user whose connection
                           settings should be autodiscovered
-  @param username         [required] username required for authentication to the
-                          autodiscover service
+  @param username         [optional] username required for authentication to the
+                          autodiscover service; if missing it is extracted from
+                          the email address
   @param password         [required] password required for authentication to the
                           autodiscover service
   @param domain           [optional] domain name required for authentication to
@@ -70,6 +71,8 @@ extern const unsigned short oxws_distfolder_id_name_map_length;
           - OXWS_ERROR_INVALID_PARAMETER indicates one of the following:
             * a required parameter is missing
             * no host given and host cannot be extracted from email_address
+            * no username given and username cannot be extracted from
+              email_address
           - OXWS_ERROR_AUTODISCOVER_UNAVAILABLE: autodiscovering the
             connection settings failed
           - OXWS_ERROR_INTERNAL: arbitrary failure

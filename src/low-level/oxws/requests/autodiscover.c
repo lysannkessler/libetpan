@@ -50,24 +50,42 @@ oxws_result oxws_autodiscover(const char* host, const char* email_address,
         oxws_connection_settings* settings) {
   /* http://msdn.microsoft.com/en-us/library/exchange/ee332364(v=exchg.140).aspx */
 
-  if(email_address == NULL || username == NULL || password == NULL || settings == NULL)
+  if(email_address == NULL || password == NULL || settings == NULL)
     return OXWS_ERROR_INVALID_PARAMETER;
 
-  /* get host name */
-  if(host == NULL) {
-    host = strstr(email_address, "@");
-    if(host == NULL)
+  /* get host name and username */
+  char* username_extracted = NULL;
+  if(host == NULL || username == NULL) {
+    const char* delim = strstr(email_address, "@");
+    if(delim == NULL)
       return OXWS_ERROR_INVALID_PARAMETER;
-    host += 1;
-    if(*host == 0) {
-      /* end of string after @, i.e. empty host name */
-      return OXWS_ERROR_INVALID_PARAMETER;
+
+    /* username */
+    if(username == NULL) {
+      size_t length = delim - email_address;
+      username_extracted = (char*) malloc(length + 1);
+      if(username_extracted == NULL)
+        return OXWS_ERROR_INTERNAL;
+      memcpy(username_extracted, email_address, length);
+      username_extracted[length] = 0;
+    }
+
+    /* host */
+    if(host == NULL) {
+      if(*(delim + 1) == 0) {
+        /* end of string after @, i.e. empty host name */
+        free(username_extracted);
+        return OXWS_ERROR_INVALID_PARAMETER;
+      } else {
+        host = delim + 1;
+      }
     }
   }
 
   /* prepare curl: curl object + credentials */
   CURL* curl = NULL;
-  int result = oxws_prepare_curl_internal(&curl, username, password, domain);
+  int result = oxws_prepare_curl_internal(&curl, username != NULL ? username : username_extracted, password, domain);
+  free(username_extracted);
   if(result != OXWS_NO_ERROR) return result;
 
   /* headers */
