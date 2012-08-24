@@ -98,7 +98,7 @@ int mbox_mailstorage_init(struct mailstorage * storage,
 
   storage->sto_data = mbox_storage;
   storage->sto_driver = &mbox_mailstorage_driver;
-  
+
   return MAIL_NO_ERROR;
 
  free_cache_directory:
@@ -122,7 +122,7 @@ static void mbox_mailstorage_uninitialize(struct mailstorage * storage)
     free(mbox_storage->mbox_cache_directory);
   free(mbox_storage->mbox_pathname);
   free(mbox_storage);
-  
+
   storage->sto_data = NULL;
 }
 
@@ -164,7 +164,7 @@ static int mbox_mailstorage_connect(struct mailstorage * storage)
       goto free;
     }
   }
-  
+
   r = mailsession_connect_path(session, mbox_storage->mbox_pathname);
   switch (r) {
   case MAIL_NO_ERROR_NON_AUTHENTICATED:
@@ -175,7 +175,7 @@ static int mbox_mailstorage_connect(struct mailstorage * storage)
     res = r;
     goto free;
   }
-  
+
   storage->sto_session = session;
 
   return MAIL_NO_ERROR;
@@ -190,6 +190,7 @@ static int
 mbox_mailstorage_get_folder_session(struct mailstorage * storage,
     char * pathname, mailsession ** result)
 {
+  UNUSED(pathname);
   * result = storage->sto_session;
 
   return MAIL_NO_ERROR;
