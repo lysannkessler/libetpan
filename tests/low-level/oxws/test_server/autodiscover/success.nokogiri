@@ -1,0 +1,40 @@
+xml.Autodiscover :xmlns => 'http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006' do
+  xml.Response :xmlns => 'http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a' do
+    xml.User do
+      xml.DisplayName user_info['name']
+      xml.LegacyDN "/o=Example Company/ou=First Administrative Group/cn=Recipients/cn=#{user_info['dn_suffix']}"
+      xml.DeploymentId "cf290b03-ee46-42e7-8d0f-7323113ef768"
+    end
+    xml.Account do
+      xml.AccountType 'email'
+      xml.Action 'settings'
+      xml.Protocol do
+        xml.Type 'EXCH'
+        xml.Server "#{user_info['server_name']}.#{host}"
+        xml.ServerDN "/o=Example Company/ou=Exchange Administrative Group (FYDIBOHF23SPDLT)/cn=Configuration/cn=Servers/cn=#{user_info['server_name']}"
+        xml.ServerVersion 72038053
+        xml.MdbDN "/o=Example Company/ou=Exchange Administrative Group (FYDIBOHF23SPDLT)/cn=Configuration/cn=Servers/cn=#{user_info['server_name']}/cn=Microsoft Private MDB"
+        xml.PublicFolderServer "#{user_info['server_name']}.#{host}"
+        xml.AD "NADS1.#{host}"
+        xml.ASUrl "https://#{host_with_port}/EWS/Exchange.asmx"
+        xml.EwsUrl "https://#{host_with_port}/EWS/Exchange.asmx"
+        xml.OOFUrl "https://#{host_with_port}/EWS/Exchange.asmx"
+        xml.UMUrl "https://#{host_with_port}/UnifiedMessaging/Service.asmx"
+        xml.OABUrl "https://#{host_with_port}/OAB/b1b85cdb-319d-41b3-8362-4a8956f28c9b/"
+      end
+      xml.Protocol do
+        xml.Type 'WEB'
+        xml.External do
+          xml.OWAUrl "https://#{host_with_port}/owa", :AuthenticationMethod => 'Fba'
+        end
+        xml.Internal do
+          xml.OWAUrl "https://#{host_with_port}/owa", :AuthenticationMethod => 'Basic, Fba'
+          xml.Protocol do
+            xml.Type 'EXCH'
+            xml.ASUrl "https://#{host_with_port}/EWS/Exchange.asmx"
+          end
+        end
+      end
+    end
+  end
+end

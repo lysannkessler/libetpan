@@ -1,0 +1,9 @@
+- email: test.user@example.com
+  name: 'User, Test'
+  dn_suffix: Test.User
+  server_name: 8MXMA1R
+
+- email: test.user2@example.com
+  name: 'User 2, Test'
+  dn_suffix: Test.User2
+  server_name: 8mxstu1r
