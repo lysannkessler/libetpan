@@ -41,7 +41,7 @@ CLEANFILES = stamp-prepare libetpan-config.h
 
 DISTCLEANFILES = libetpan-config
 
-SUBDIRS = build-windows include src tests doc
+SUBDIRS = build-windows include src examples doc
 
 BUILT_SOURCES += libetpan-config.h
 

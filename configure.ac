@@ -699,7 +699,7 @@ AC_CONFIG_FILES(libetpan-config
                 src/engine/Makefile
                 src/versioninfo.rc
                 doc/Makefile
-                tests/Makefile)
+                examples/Makefile)
 
 # We collect all files which could potentially install public header
 # files via HEADERS.  Updating any of these files will trigger
