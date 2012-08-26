@@ -37,7 +37,7 @@ bin_SCRIPTS = libetpan-config
 
 # The file stamp-prepare is generated in the top build directory by
 # rules defined in rules.mk.
-CLEANFILES = stamp-prepare libetpan-config.h 
+CLEANFILES = stamp-prepare libetpan-config.h
 
 DISTCLEANFILES = libetpan-config
 

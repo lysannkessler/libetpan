@@ -678,7 +678,7 @@ AC_CONFIG_FILES(libetpan-config
                 src/low-level/nntp/Makefile
                 src/low-level/pop3/Makefile
                 src/low-level/smtp/Makefile
-    src/low-level/oxws/Makefile
+                src/low-level/oxws/Makefile
                 src/driver/Makefile
                 src/driver/implementation/Makefile
                 src/driver/implementation/data-message/Makefile
