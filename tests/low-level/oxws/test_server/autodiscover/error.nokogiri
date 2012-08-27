@@ -1,8 +1,8 @@
 xml.Autodiscover :xmlns => 'http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006' do
   xml.Response do
     xml.Error :Time => Time.now.strftime('%H:%M:%S.0'), :id => 2510305131 do
-      xml.ErrorCode 500
-      xml.Message 'The e-mail address cannot be found.'
+      xml.ErrorCode error_code
+      xml.Message message
       xml.DebugData
     end
   end
