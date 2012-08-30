@@ -650,6 +650,17 @@ PKG_CHECK_MODULES([LIBXML2], [libxml-2.0])
 AC_SUBST([LIBXML2_CFLAGS])
 AC_SUBST([LIBXML2_LIBS])
 
+
+# tests
+AC_ARG_ENABLE(tests,   [  --enable-tests          compile tests (default=no)],[],[])
+AM_CONDITIONAL(ENABLE_TESTS, test x"$enable_tests" = xyes)
+AS_IF([test "x$enable_tests" = "xyes"], [
+   PKG_CHECK_MODULES(CUNIT, [cunit >= 2], [
+   AC_SUBST(CUNIT_CFLAGS)
+   AC_SUBST(CUNIT_LIBS)], [
+   AC_MSG_ERROR([Missing CUnit >= 2 although tests are enabled. Please install CUnit, adjust your PKG_CONFIG_PATH or disable tests.])])
+])
+
 dnl Version
 VERSION="$VERSION_MAJOR.$VERSION_MINOR"
 test -d .git && VERSION="$VERSION-dev-"`date +'%Y%m%d'`
@@ -699,7 +710,10 @@ AC_CONFIG_FILES(libetpan-config
                 src/engine/Makefile
                 src/versioninfo.rc
                 doc/Makefile
-                examples/Makefile)
+                examples/Makefile
+                tests/Makefile
+                tests/low-level/Makefile
+                tests/low-level/oxws/Makefile)
 
 # We collect all files which could potentially install public header
 # files via HEADERS.  Updating any of these files will trigger
