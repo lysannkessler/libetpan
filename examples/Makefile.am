@@ -31,7 +31,8 @@ include $(top_srcdir)/rules.mk
 
 EXTRA_DIST = README
 
-noinst_PROGRAMS = smime decrypt pgp frm frm-tree frm-simple	\
+exampledir=${datadir}/@PACKAGE@/examples
+example_PROGRAMS = smime decrypt pgp frm frm-tree frm-simple	\
 	readmsg-simple fetch-attachment smtpsend readmsg-uid \
 	readmsg compose-msg imap-sample mime-create mime-parse \
 	pop-sample oxws-sample
