@@ -45,7 +45,6 @@ API_AGE=`expr $API_CURRENT - $API_COMPATIBILITY`
 API_VERSION="$API_CURRENT:$API_REVISION:$API_AGE"
 AC_SUBST(API_VERSION)
 
-dnl FIXME: This should be the CVS revision.
 BUILD_REVISION=`((type -t git >/dev/null) && test -d $(top_srcdir)/.git -o -f $(top_srcdir)/.git && cd $(top_srcdir) && git describe --always && cd - 2>&1 >/dev/null) || echo 0`
 AC_SUBST(BUILD_REVISION)
 BUILD_TIMESTAMP=`date +'%Y-%m-%dT%H:%M%z'`
@@ -211,7 +210,7 @@ if test "x$with_gnutls" != "xno"; then
   OCPPFLAGS="$CPPFLAGS"
   OLDFLAGS="$LDFLAGS"
   if test "x$with_gnutls" != "xyes" ; then
-    CPPFLAGS="CPPFLAGS -I$with_gnutls/include"
+    CPPFLAGS="$CPPFLAGS -I$with_gnutls/include"
     LDFLAGS="$LDFLAGS -L$with_gnutls/lib"
   fi
   GNUTLSLIB=""
