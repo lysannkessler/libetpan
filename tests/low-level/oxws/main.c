@@ -29,21 +29,20 @@ void suite_autodiscover_test_foo() {
 
 
 int main() {
-   DECLARE_SUITE(autodiscover);
+  DECLARE_SUITE(autodiscover);
 
-   /* initialize the CUnit test registry */
-   if (CUE_SUCCESS != CU_initialize_registry())
-      return CU_get_error();
+  /* initialize the CUnit test registry */
+  if (CUE_SUCCESS != CU_initialize_registry())
+    return CU_get_error();
 
-   /* add a suite to the registry */
-   ADD_SUITE(autodiscover);
-   ADD_TEST(autodiscover, foo);
+  /* add a suite to the registry */
+  ADD_SUITE(autodiscover);
+  ADD_TEST(autodiscover, basic);
 
-   /* run tests */
-   CU_basic_set_mode(CU_BRM_VERBOSE);
-   CU_basic_run_tests();
+  /* run tests */
+  CU_basic_run_tests();
 
-   /* clean up */
-   CU_cleanup_registry();
-   return CU_get_error();
+  /* clean up */
+  CU_cleanup_registry();
+  return CU_get_error();
 }
