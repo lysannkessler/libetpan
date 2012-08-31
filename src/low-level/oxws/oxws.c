@@ -118,7 +118,7 @@ oxws_result oxws_autodiscover_connection_settings(oxws* oxws,
   if(oxws == NULL) return OXWS_ERROR_INVALID_PARAMETER;
   if(oxws->state != OXWS_STATE_NEW) return OXWS_ERROR_BAD_STATE;
 
-  int result = oxws_autodiscover(host, email_address, username, password, domain, &oxws->connection_settings);
+  int result = oxws_autodiscover(oxws, host, email_address, username, password, domain, &oxws->connection_settings);
 
   if(result == OXWS_NO_ERROR)
     oxws->state = OXWS_STATE_CONNECTION_SETTINGS_CONFIGURED;

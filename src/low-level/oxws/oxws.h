@@ -114,7 +114,7 @@ oxws_result oxws_set_connection_settings(oxws* oxws, oxws_connection_settings* s
           - (see oxws_autodiscover() for other return codes)
 
   @note This is identical to (error handling ommitted):
-        {@code oxws_autodiscover(host, email_address, username,
+        {@code oxws_autodiscover(oxws, host, email_address, username,
         password, domain, &oxws->connection_settings)}</pre>
 
   @see oxws_set_connection_settings()

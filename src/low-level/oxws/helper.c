@@ -55,30 +55,38 @@ oxws_result oxws_prepare_curl(oxws* oxws, const char* username, const char* pass
     return OXWS_ERROR_BAD_STATE;
 
   CURL* curl = NULL;
-  oxws_result result = oxws_prepare_curl_internal(&curl, username, password, domain);
+  oxws_result result = oxws_prepare_curl_internal(internal, &curl, username, password, domain);
   if(result == OXWS_NO_ERROR && curl != NULL) {
     internal->curl = curl;
   }
   return result;
 }
 
-oxws_result oxws_prepare_curl_internal(CURL** curl, const char* username, const char* password, const char* domain) {
+oxws_result oxws_prepare_curl_internal(oxws_internal* internal, CURL** curl, const char* username, const char* password, const char* domain) {
   if(curl == NULL || username == NULL || password == NULL)
     return OXWS_ERROR_INVALID_PARAMETER;
 
+  /* initialize */
   *curl = curl_easy_init();
   if(*curl == NULL) return OXWS_ERROR_INTERNAL;
 #ifdef DEBUG_CURL
   curl_easy_setopt(*curl, CURLOPT_VERBOSE, 1L);
 #endif
 
+  /* set credentials */
   int result = oxws_set_credentials(*curl, username, password, domain);
   if(result != OXWS_NO_ERROR) {
     curl_easy_cleanup(*curl);
     *curl = NULL;
+    return result;
   }
 
-  return result;
+  /* invoke callback */
+  if(internal != NULL && internal->curl_init_callback != NULL) {
+    internal->curl_init_callback(*curl);
+  }
+
+  return OXWS_NO_ERROR;
 }
 
 oxws_result oxws_set_credentials(CURL* curl, const char* username, const char* password, const char* domain) {

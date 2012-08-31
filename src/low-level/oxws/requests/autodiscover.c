@@ -45,13 +45,14 @@
 #include "xml.h"
 
 
-oxws_result oxws_autodiscover(const char* host, const char* email_address,
+oxws_result oxws_autodiscover(oxws* oxws, const char* host, const char* email_address,
         const char* username, const char* password, const char* domain,
         oxws_connection_settings* settings) {
   /* http://msdn.microsoft.com/en-us/library/exchange/ee332364(v=exchg.140).aspx */
 
   if(email_address == NULL || password == NULL || settings == NULL)
     return OXWS_ERROR_INVALID_PARAMETER;
+  oxws_internal* internal = oxws == NULL ? NULL : OXWS_INTERNAL(oxws);
 
   /* get host name and username */
   char* username_extracted = NULL;
@@ -84,7 +85,7 @@ oxws_result oxws_autodiscover(const char* host, const char* email_address,
 
   /* prepare curl: curl object + credentials */
   CURL* curl = NULL;
-  int result = oxws_prepare_curl_internal(&curl, username != NULL ? username : username_extracted, password, domain);
+  int result = oxws_prepare_curl_internal(internal, &curl, username != NULL ? username : username_extracted, password, domain);
   free(username_extracted);
   if(result != OXWS_NO_ERROR) return result;
 

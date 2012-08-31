@@ -53,6 +53,8 @@ extern const unsigned short oxws_distfolder_id_name_map_length;
   Autodiscover connection settings for given account and store them in a
   oxws_connection_settings structure.
 
+  @param oxws             [optional] session object; will be used to retrieve
+                          the curl callback.
   @param host             [optional] exchange server host name; if missing it is
                           extracted from email_address
   @param email_address    [required] email address of user whose connection
@@ -83,7 +85,7 @@ extern const unsigned short oxws_distfolder_id_name_map_length;
   @seealso http://msdn.microsoft.com/en-us/library/exchange/ee332364(v=exchg.140).aspx
 */
 LIBETPAN_EXPORT
-oxws_result oxws_autodiscover(const char* host, const char* email_address,
+oxws_result oxws_autodiscover(oxws* oxws, const char* host, const char* email_address,
         const char* username, const char* password, const char* domain,
         oxws_connection_settings* settings);
 

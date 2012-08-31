@@ -42,6 +42,7 @@ extern "C" {
 
 #include <libetpan/oxws_types.h>
 
+#include "types_internal.h"
 #include "mail.h"
 
 
@@ -67,13 +68,14 @@ extern "C" {
 */
 oxws_result oxws_prepare_curl(oxws* oxws, const char* username, const char* password, const char* domain);
 
-oxws_result oxws_prepare_curl_internal(CURL** curl, const char* username, const char* password, const char* domain);
+oxws_result oxws_prepare_curl_internal(oxws_internal* internal, CURL** curl, const char* username, const char* password, const char* domain);
 
 /*
   oxws_set_credentials()
 
   Update credentials of given CURL object.
 
+  @param internal [optional] oxws_internal* used to retrieve the curl callback
   @param curl     [required] CURL object to configure
   @param username [required] username to use for all further HTTP authentication
                   actions

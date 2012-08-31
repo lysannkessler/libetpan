@@ -58,6 +58,8 @@ struct oxws_internal {
   /* the CURL object used to perform HTTP requests to the service */
   CURL* curl;
   struct curl_slist *curl_headers;
+  /* called when the CURL object has been initialized */
+  void (*curl_init_callback) (CURL* curl);
 
   /* a buffer that typically stores the body of the last HTTP response */
   MMAPString* response_buffer;
