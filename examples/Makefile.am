@@ -41,7 +41,7 @@ example_PROGRAMS = smime decrypt pgp frm frm-tree frm-simple	\
 # after AM_CPPFLAGS, so we have to frob CFLAGS.
 AM_CFLAGS = -ULIBETPAN_DLL
 AM_CPPFLAGS = -I$(top_builddir)/include
-LDADD = ../src/libetpan.la
+LDADD = $(top_srcdir)/src/libetpan.la
 
 FRMCOMMON = frm-common.h frm-common.c option-parser.h option-parser.c
 
