@@ -40,8 +40,34 @@ extern "C" {
 #include <libetpan/oxws_types.h>
 
 
+#define CHECK_RESULT(error_condition) \
+  if(error_condition) { \
+    CU_cleanup_registry(); \
+    return CU_get_error(); \
+  }
+
+#define DECLARE_SUITE(suite) \
+  CU_pSuite suite_##suite = NULL;
+
+#define ADD_SUITE(suite) \
+  { \
+    suite_##suite = CU_add_suite(#suite, suite_##suite##_init, suite_##suite##_clean); \
+    CHECK_RESULT(suite_##suite == NULL); \
+    suite_##suite##_add_tests(); \
+  }
+
+#define ADD_TEST(suite, test) \
+  CHECK_RESULT(CU_add_test(suite_##suite, #test, suite_##suite##_test_##test) == NULL);
+
+
+#define OXWS_ASSERT_NO_ERROR(expr) \
+  CU_ASSERT_EQUAL((expr), OXWS_NO_ERROR);
+
+
 extern char* oxws_test_support_ca_file;
 oxws_result oxws_test_support_set_curl_init_callback(oxws* oxws);
+
+oxws* oxws_test_support_new();
 
 
 #ifdef __cplusplus

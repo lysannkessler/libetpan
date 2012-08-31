@@ -16,55 +16,14 @@
 
 #include <CUnit/Basic.h>
 
-#include <libetpan/libetpan.h>
 #include "test_support.h"
-
-
-#define CHECK_RESULT(error_condition) \
-  if(error_condition) { \
-    CU_cleanup_registry(); \
-    return CU_get_error(); \
-  }
-
-#define DECLARE_SUITE(suite) \
-  CU_pSuite suite_##suite = NULL;
-
-#define ADD_SUITE(suite) \
-  suite_##suite = CU_add_suite(#suite, suite_##suite##_init, suite_##suite##_clean); \
-  CHECK_RESULT(suite_##suite == NULL);
-
-#define ADD_TEST(suite, test) \
-  CHECK_RESULT(CU_add_test(suite_##suite, #test, suite_##suite##_test_##test) == NULL);
-
-
-#define OXWS_ASSERT_NO_ERROR(expr) \
-  CU_ASSERT_EQUAL((expr), OXWS_NO_ERROR);
-
-
-int suite_autodiscover_init() {
-  return 0;
-}
-int suite_autodiscover_clean() {
-  return 0;
-}
-void suite_autodiscover_test_basic() {
-  oxws* oxws = oxws_new();
-  CU_ASSERT_PTR_NOT_NULL(oxws);
-  OXWS_ASSERT_NO_ERROR(oxws_test_support_set_curl_init_callback(oxws));
-
-  const char* host = "localhost:3000";
-  const char* email = "test.user@example.com";
-  const char* user = "test.user";
-  const char* password = ""; // unused because the test server does not use authentication, but is required
-  const char* domain = NULL;
-  OXWS_ASSERT_NO_ERROR(oxws_autodiscover_connection_settings(oxws, host, email, user, password, domain));
-}
+#include "autodiscover.h"
 
 
 int parse_options(int argc, char** argv,
       char** ca_file) {
 
-    static const char* short_options = "c";
+  static const char* short_options = "c";
 #if HAVE_GETOPT_LONG
   static struct option long_options[] = {
     {"ca-file",  1, 0, 'c'},
@@ -117,9 +76,8 @@ int main(int argc, char** argv) {
   if (CUE_SUCCESS != CU_initialize_registry())
     return CU_get_error();
 
-  /* add a suite to the registry */
+  /* add suites to the registry */
   ADD_SUITE(autodiscover);
-  ADD_TEST(autodiscover, basic);
 
   /* run tests */
   CU_basic_run_tests();

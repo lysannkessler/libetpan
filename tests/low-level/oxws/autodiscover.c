@@ -34,41 +34,24 @@
 # include <config.h>
 #endif
 
-
-#include <CUnit/Basic.h>
-#include "test_support.h"
-
-#include <libetpan/libetpan.h>
-#include "../../../src/low-level/oxws/types_internal.h"
-
-#include <curl/curl.h>
+#include "autodiscover.h"
 
 
-#define OXWS_TEST_SUPPORT_CA_FILE_DEFAULT "test_server/cert/server.crt"
-char* oxws_test_support_ca_file = NULL;
-
-
-void oxws_test_support_curl_init_callback(CURL* curl) {
-  if(curl == NULL) return; /* TODO warn */
-  curl_easy_setopt(curl, CURLOPT_CAINFO,
-    oxws_test_support_ca_file != NULL ? oxws_test_support_ca_file : OXWS_TEST_SUPPORT_CA_FILE_DEFAULT);
+int suite_autodiscover_init() {
+  return 0;
 }
 
-oxws_result oxws_test_support_set_curl_init_callback(oxws* oxws) {
-  if(oxws == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-  if(oxws->state != OXWS_STATE_NEW) return OXWS_ERROR_BAD_STATE;
-
-  oxws_internal* internal = OXWS_INTERNAL(oxws);
-  if(internal == NULL) return OXWS_ERROR_INTERNAL;
-
-  internal->curl_init_callback = oxws_test_support_curl_init_callback;
-  return OXWS_NO_ERROR;
+int suite_autodiscover_clean() {
+  return 0;
 }
 
+void suite_autodiscover_test_basic() {
+  oxws* oxws = oxws_test_support_new();
 
-oxws* oxws_test_support_new() {
-  oxws* oxws = oxws_new();
-  CU_ASSERT_PTR_NOT_NULL(oxws);
-  OXWS_ASSERT_NO_ERROR(oxws_test_support_set_curl_init_callback(oxws));
-  return oxws;
+  const char* host = "localhost:3000";
+  const char* email = "test.user@example.com";
+  const char* user = "test.user";
+  const char* password = ""; // unused because the test server does not use authentication, but is required
+  const char* domain = NULL;
+  OXWS_ASSERT_NO_ERROR(oxws_autodiscover_connection_settings(oxws, host, email, user, password, domain));
 }

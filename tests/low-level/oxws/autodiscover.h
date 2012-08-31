@@ -30,8 +30,11 @@
  * SUCH DAMAGE.
  */
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
+#ifndef OXWS_TEST_AUTODISCOVER_H
+#define OXWS_TEST_AUTODISCOVER_H
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 
@@ -39,36 +42,21 @@
 #include "test_support.h"
 
 #include <libetpan/libetpan.h>
-#include "../../../src/low-level/oxws/types_internal.h"
-
-#include <curl/curl.h>
 
 
-#define OXWS_TEST_SUPPORT_CA_FILE_DEFAULT "test_server/cert/server.crt"
-char* oxws_test_support_ca_file = NULL;
+int suite_autodiscover_init();
+int suite_autodiscover_clean();
+
+#define suite_autodiscover_add_tests() \
+  { \
+    ADD_TEST(autodiscover, basic); \
+  }
+
+void suite_autodiscover_test_basic();
 
 
-void oxws_test_support_curl_init_callback(CURL* curl) {
-  if(curl == NULL) return; /* TODO warn */
-  curl_easy_setopt(curl, CURLOPT_CAINFO,
-    oxws_test_support_ca_file != NULL ? oxws_test_support_ca_file : OXWS_TEST_SUPPORT_CA_FILE_DEFAULT);
+#ifdef __cplusplus
 }
+#endif
 
-oxws_result oxws_test_support_set_curl_init_callback(oxws* oxws) {
-  if(oxws == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-  if(oxws->state != OXWS_STATE_NEW) return OXWS_ERROR_BAD_STATE;
-
-  oxws_internal* internal = OXWS_INTERNAL(oxws);
-  if(internal == NULL) return OXWS_ERROR_INTERNAL;
-
-  internal->curl_init_callback = oxws_test_support_curl_init_callback;
-  return OXWS_NO_ERROR;
-}
-
-
-oxws* oxws_test_support_new() {
-  oxws* oxws = oxws_new();
-  CU_ASSERT_PTR_NOT_NULL(oxws);
-  OXWS_ASSERT_NO_ERROR(oxws_test_support_set_curl_init_callback(oxws));
-  return oxws;
-}
+#endif
