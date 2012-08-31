@@ -1,4 +1,24 @@
+#define _GNU_SOURCE
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#ifdef _MSC_VER
+# include "../../../src/bsd/getopt.h"
+#else
+# include <getopt.h>
+#endif
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 #include <CUnit/Basic.h>
+
+#include <libetpan/libetpan.h>
+#include "test_support.h"
+
 
 #define CHECK_RESULT(error_condition) \
   if(error_condition) { \
@@ -17,19 +37,81 @@
   CHECK_RESULT(CU_add_test(suite_##suite, #test, suite_##suite##_test_##test) == NULL);
 
 
+#define OXWS_ASSERT_NO_ERROR(expr) \
+  CU_ASSERT_EQUAL((expr), OXWS_NO_ERROR);
+
+
 int suite_autodiscover_init() {
   return 0;
 }
 int suite_autodiscover_clean() {
   return 0;
 }
-void suite_autodiscover_test_foo() {
-  CU_ASSERT_PTR_NOT_NULL((void*)0x100);
+void suite_autodiscover_test_basic() {
+  oxws* oxws = oxws_new();
+  CU_ASSERT_PTR_NOT_NULL(oxws);
+  OXWS_ASSERT_NO_ERROR(oxws_test_support_set_curl_init_callback(oxws));
+
+  const char* host = "localhost:3000";
+  const char* email = "test.user@example.com";
+  const char* user = "test.user";
+  const char* password = ""; // unused because the test server does not use authentication, but is required
+  const char* domain = NULL;
+  OXWS_ASSERT_NO_ERROR(oxws_autodiscover_connection_settings(oxws, host, email, user, password, domain));
 }
 
 
-int main() {
+int parse_options(int argc, char** argv,
+      char** ca_file) {
+
+    static const char* short_options = "c";
+#if HAVE_GETOPT_LONG
+  static struct option long_options[] = {
+    {"ca-file",  1, 0, 'c'},
+  };
+#endif
+  int r = 0;
+
+  if(ca_file == NULL)
+    return -1;
+
+  *ca_file = NULL;
+
+  while (r != -1) {
+#if HAVE_GETOPT_LONG
+    r = getopt_long(argc, argv, short_options, long_options, NULL);
+#else
+    r = getopt(argc, argv, short_options);
+#endif
+    switch (r) {
+    case 'c': *ca_file = strdup(optarg); break;
+
+    case -1: break;
+    default: fprintf(stderr, "error: unknown argument %c.\n", r); break;
+    }
+  }
+
+  return 0;
+}
+
+void print_usage() {
+  fprintf(stderr, "usage: test_oxws [options]\n\n");
+  fprintf(stderr, "options:\n" \
+                  "    --ca-file  -c [FILE]    CA certificate to trust (optional).\n");
+}
+
+
+int main(int argc, char** argv) {
   DECLARE_SUITE(autodiscover);
+
+  int r = parse_options(argc, argv, &oxws_test_support_ca_file);
+  if(r < 0) {
+    fprintf(stderr, "parse_options: internal error\n");
+    exit(EXIT_FAILURE);
+  } else if(r > 0) {
+    print_usage();
+    exit(EXIT_FAILURE);
+  }
 
   /* initialize the CUnit test registry */
   if (CUE_SUCCESS != CU_initialize_registry())
