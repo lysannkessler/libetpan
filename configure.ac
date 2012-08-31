@@ -654,10 +654,10 @@ AC_SUBST([LIBXML2_LIBS])
 AC_ARG_ENABLE(tests,   [  --enable-tests          compile tests (default=no)],[],[])
 AM_CONDITIONAL(ENABLE_TESTS, test x"$enable_tests" = xyes)
 AS_IF([test "x$enable_tests" = "xyes"], [
-   PKG_CHECK_MODULES(CUNIT, [cunit >= 2], [
-   AC_SUBST(CUNIT_CFLAGS)
-   AC_SUBST(CUNIT_LIBS)], [
-   AC_MSG_ERROR([Missing CUnit >= 2 although tests are enabled. Please install CUnit, adjust your PKG_CONFIG_PATH or disable tests.])])
+  PKG_CHECK_MODULES(CUNIT, [cunit >= 2], [
+    AC_SUBST(CUNIT_CFLAGS)
+    AC_SUBST(CUNIT_LIBS)], [
+    AC_MSG_ERROR([Missing CUnit >= 2 although tests are enabled. Please install CUnit, adjust your PKG_CONFIG_PATH or disable tests.])])
 ])
 
 dnl Version
