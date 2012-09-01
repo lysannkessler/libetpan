@@ -1,0 +1,53 @@
+require 'rubygems'
+require 'rake'
+Rake::TaskManager.record_task_metadata = true
+
+task :default => :help
+
+desc "Show this help"
+task :help do
+  puts "Usage:"
+  Rake.application.options.show_tasks = :tasks
+  Rake.application.options.show_task_pattern = //
+  Rake.application.display_tasks_and_comments()
+end
+
+namespace 'test_server' do
+  server_actions = {
+    :run => {
+      :desc => 'Run the test server',
+      :args => 'start',
+    },
+    :start => {
+      :desc => 'Start the test server and put it to background',
+      :args => ['start', '--daemonize'],
+    },
+    :stop => {
+      :desc => 'Stop the test server running in the background',
+      :args => 'stop',
+    },
+  }
+
+  server_actions.each do |name, options|
+    desc options[:desc]
+    task name do
+      webserver_path = File.expand_path('test_server', File.dirname(__FILE__))
+      cert_dir = File.join(webserver_path, 'cert')
+      command = [
+        'thin', options[:args],
+        "--rackup \"#{File.join(webserver_path, 'config', 'main.ru')}\"",
+        "--chdir \"#{webserver_path}\"",
+        "--ssl",
+        "--ssl-key \"#{File.join(cert_dir, 'server.key')}\"",
+        "--ssl-cert \"#{File.join(cert_dir, 'server.crt')}\""
+      ].flatten.compact.join(' ')
+      sh *command
+    end
+  end
+
+  desc 'Restart the test server running in the background'
+  task :restart do |t|
+    Rake::Task[Rake::Task.scope_name(t.scope, 'stop')].invoke
+    Rake::Task[Rake::Task.scope_name(t.scope, 'start')].invoke
+  end
+end
