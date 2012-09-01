@@ -5,3 +5,4 @@
 /low-level/oxws/Makefile.in
 /low-level/oxws/Makefile
 /low-level/oxws/test_oxws
+/low-level/oxws/test_server/log
