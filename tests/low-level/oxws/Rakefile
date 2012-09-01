@@ -51,3 +51,33 @@ namespace 'test_server' do
     Rake::Task[Rake::Task.scope_name(t.scope, 'start')].invoke
   end
 end
+
+namespace 'tests' do
+  desc 'run all tests'
+  task 'run' do
+    main_path = File.dirname(__FILE__)
+    ca_file = File.expand_path(File.join('test_server', 'cert', 'server.crt'), main_path)
+    command = [
+      File.expand_path('test_oxws', main_path),
+      "--ca-file \"#{ca_file}\""
+    ].flatten.compact.join(' ')
+    sh *command
+  end
+end
+
+desc 'start test server and perform all tests'
+task 'run' do
+  begin
+    puts '### Starting test server ...'
+    Rake::Task['test_server:start'].invoke
+    sleep 1
+    puts
+
+    puts '### Running tests ...'
+    Rake::Task['tests:run'].invoke
+    puts
+  ensure
+    puts '### Shutting down test server ...'
+    Rake::Task['test_server:stop'].invoke
+  end
+end
