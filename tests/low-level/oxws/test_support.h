@@ -87,11 +87,25 @@ extern "C" {
     const char* actual_value = (const char*)(actual); \
     const char* expected_value = (const char*)(expected); \
     const char* static_message = "OXWS_ASSERT_STRING_EQUAL(" #actual "," #expected ")"; \
-    if(!(strcmp(actual_value, expected_value))) { \
+    if(strcmp(actual_value, expected_value) == 0) { \
       CU_assertImplementation(CU_TRUE, __LINE__, static_message, __FILE__, "", CU_TRUE); \
     } else { \
       char* message = (char*) alloca(strlen(static_message) + 29 + strlen(actual_value) + strlen(expected_value)); \
       sprintf(message, "%s; actual = \"%s\"; expected = \"%s\"", static_message, actual_value, expected_value); \
+      CU_assertImplementation(CU_FALSE, __LINE__, message, __FILE__, "", CU_TRUE); \
+    } \
+  }
+
+#define OXWS_ASSERT_NUMBER_EQUAL(actual, expected) \
+  { \
+    long long int actual_value = (actual); \
+    long long int expected_value = (expected); \
+    const char* static_message = "OXWS_ASSERT_NUMBER_EQUAL(" #actual "," #expected ")"; \
+    if(actual_value == expected_value) { \
+      CU_assertImplementation(CU_TRUE, __LINE__, static_message, __FILE__, "", CU_TRUE); \
+    } else { \
+      char* message = (char*) alloca(strlen(static_message) + 100); \
+      sprintf(message, "%s; actual = %lld; expected = %lld", static_message, actual_value, expected_value); \
       CU_assertImplementation(CU_FALSE, __LINE__, message, __FILE__, "", CU_TRUE); \
     } \
   }
