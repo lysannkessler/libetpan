@@ -60,8 +60,24 @@ extern "C" {
   CHECK_RESULT(CU_add_test(suite_##suite, #test, suite_##suite##_test_##test) == NULL);
 
 
+#define OXWS_ASSERT_RESULT_EQUAL(actual, expected) \
+  { \
+    oxws_result actual_value = (actual); \
+    oxws_result expected_value = (expected); \
+    const char* static_message = "OXWS_ASSERT_RESULT_EQUAL(" #actual "," #expected ")"; \
+    if(actual_value == expected_value) { \
+      CU_assertImplementation(CU_TRUE, __LINE__, static_message, __FILE__, "", CU_TRUE); \
+    } else { \
+      char* message = (char*) alloca(strlen(static_message) + 128); \
+      sprintf(message, "%s; actual = %s (%d); expected = %s (%d)", static_message, \
+        OXWS_ERROR_NAME(actual_value), actual_value, \
+        OXWS_ERROR_NAME(expected_value), expected_value); \
+      CU_assertImplementation(CU_FALSE, __LINE__, message, __FILE__, "", CU_TRUE); \
+    } \
+  }
+
 #define OXWS_ASSERT_NO_ERROR(expr) \
-  CU_ASSERT_EQUAL_FATAL((expr), OXWS_NO_ERROR);
+  OXWS_ASSERT_RESULT_EQUAL((expr), OXWS_NO_ERROR)
 
 
 extern char* oxws_test_support_ca_file;
