@@ -51,10 +51,12 @@ int suite_autodiscover_clean();
   { \
     ADD_TEST(autodiscover, basic); \
     ADD_TEST(autodiscover, connection_settings); \
+    ADD_TEST(autodiscover, state); \
   }
 
 DECLARE_TEST(autodiscover, basic);
 DECLARE_TEST(autodiscover, connection_settings);
+DECLARE_TEST(autodiscover, state);
 
 
 #ifdef __cplusplus

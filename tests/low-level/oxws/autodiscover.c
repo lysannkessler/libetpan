@@ -63,3 +63,12 @@ void suite_autodiscover_test_connection_settings() {
   OXWS_ASSERT_STRING_EQUAL(oxws->connection_settings.um_url,  "https://localhost:3000/UnifiedMessaging/Service.asmx");
   OXWS_ASSERT_STRING_EQUAL(oxws->connection_settings.oab_url, "https://localhost:3000/OAB/b1b85cdb-319d-41b3-8362-4a8956f28c9b/");
 }
+
+void suite_autodiscover_test_state() {
+  oxws* oxws = oxws_test_support_new();
+
+  OXWS_TEST_FIXTURE_AUTODISCOVER();
+  OXWS_ASSERT_NO_ERROR(oxws_autodiscover_connection_settings(oxws, host, email, user, password, domain));
+
+  OXWS_ASSERT_NUMBER_EQUAL(oxws->state, OXWS_STATE_CONNECTION_SETTINGS_CONFIGURED);
+}
