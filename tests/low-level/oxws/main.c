@@ -56,7 +56,7 @@ int parse_options(int argc, char** argv,
 void print_usage() {
   fprintf(stderr, "usage: test_oxws [options]\n\n");
   fprintf(stderr, "options:\n" \
-                  "    --ca-file  -c [FILE]    CA certificate to trust (optional).\n");
+                  "    --ssl-cert  -c [FILE]   Server certificate to trust (optional).\n");
 }
 
 

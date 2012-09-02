@@ -56,10 +56,10 @@ namespace 'tests' do
   desc 'run all tests'
   task 'run' do
     main_path = File.dirname(__FILE__)
-    ca_file = File.expand_path(File.join('test_server', 'cert', 'server.crt'), main_path)
+    ssl_cert = File.expand_path(File.join('test_server', 'cert', 'server.crt'), main_path)
     command = [
       File.expand_path('test_oxws', main_path),
-      "--ca-file \"#{ca_file}\""
+      "--ssl-cert \"#{ssl_cert}\""
     ].flatten.compact.join(' ')
     sh *command
   end
