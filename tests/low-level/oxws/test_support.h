@@ -79,6 +79,20 @@ extern "C" {
 #define OXWS_ASSERT_NO_ERROR(expr) \
   OXWS_ASSERT_RESULT_EQUAL((expr), OXWS_NO_ERROR)
 
+#define OXWS_ASSERT_STRING_EQUAL(actual, expected) \
+  { \
+    const char* actual_value = (const char*)(actual); \
+    const char* expected_value = (const char*)(expected); \
+    const char* static_message = "OXWS_ASSERT_STRING_EQUAL(" #actual "," #expected ")"; \
+    if(!(strcmp(actual_value, expected_value))) { \
+      CU_assertImplementation(CU_TRUE, __LINE__, static_message, __FILE__, "", CU_TRUE); \
+    } else { \
+      char* message = (char*) alloca(strlen(static_message) + 29 + strlen(actual_value) + strlen(expected_value)); \
+      sprintf(message, "%s; actual = \"%s\"; expected = \"%s\"", static_message, actual_value, expected_value); \
+      CU_assertImplementation(CU_FALSE, __LINE__, message, __FILE__, "", CU_TRUE); \
+    } \
+  }
+
 
 #define OXWS_TEST_FIXTURE_AUTODISCOVER() \
   const char* host = "localhost:3000"; \
