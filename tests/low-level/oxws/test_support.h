@@ -61,7 +61,7 @@ extern "C" {
 
 
 #define OXWS_ASSERT_NO_ERROR(expr) \
-  CU_ASSERT_EQUAL((expr), OXWS_NO_ERROR);
+  CU_ASSERT_EQUAL_FATAL((expr), OXWS_NO_ERROR);
 
 
 extern char* oxws_test_support_ca_file;

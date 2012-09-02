@@ -68,7 +68,7 @@ oxws_result oxws_test_support_set_curl_init_callback(oxws* oxws) {
 
 oxws* oxws_test_support_new() {
   oxws* oxws = oxws_new();
-  CU_ASSERT_PTR_NOT_NULL(oxws);
+  CU_ASSERT_PTR_NOT_NULL_FATAL(oxws);
   OXWS_ASSERT_NO_ERROR(oxws_test_support_set_curl_init_callback(oxws));
   return oxws;
 }
