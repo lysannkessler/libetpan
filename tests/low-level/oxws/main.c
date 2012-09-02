@@ -26,7 +26,7 @@ int parse_options(int argc, char** argv,
   static const char* short_options = "c";
 #if HAVE_GETOPT_LONG
   static struct option long_options[] = {
-    {"ca-file",  1, 0, 'c'},
+    {"ssl-cert",  1, 0, 'c'},
   };
 #endif
   int r = 0;
