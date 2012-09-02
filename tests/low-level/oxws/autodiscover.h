@@ -50,9 +50,11 @@ int suite_autodiscover_clean();
 #define suite_autodiscover_add_tests() \
   { \
     ADD_TEST(autodiscover, basic); \
+    ADD_TEST(autodiscover, connection_settings); \
   }
 
 void suite_autodiscover_test_basic();
+void suite_autodiscover_test_connection_settings();
 
 
 #ifdef __cplusplus
