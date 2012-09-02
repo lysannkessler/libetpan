@@ -53,8 +53,8 @@ int suite_autodiscover_clean();
     ADD_TEST(autodiscover, connection_settings); \
   }
 
-void suite_autodiscover_test_basic();
-void suite_autodiscover_test_connection_settings();
+DECLARE_TEST(autodiscover, basic);
+DECLARE_TEST(autodiscover, connection_settings);
 
 
 #ifdef __cplusplus

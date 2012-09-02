@@ -56,6 +56,9 @@ extern "C" {
     suite_##suite##_add_tests(); \
   }
 
+#define DECLARE_TEST(suite, test) \
+  void suite_##suite##_test_##test()
+
 #define ADD_TEST(suite, test) \
   CHECK_RESULT(CU_add_test(suite_##suite, #test, suite_##suite##_test_##test) == NULL);
 
