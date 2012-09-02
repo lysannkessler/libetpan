@@ -48,10 +48,6 @@ int suite_autodiscover_clean() {
 void suite_autodiscover_test_basic() {
   oxws* oxws = oxws_test_support_new();
 
-  const char* host = "localhost:3000";
-  const char* email = "test.user@example.com";
-  const char* user = "test.user";
-  const char* password = ""; // unused because the test server does not use authentication, but is required
-  const char* domain = NULL;
+  OXWS_TEST_FIXTURE_AUTODISCOVER();
   OXWS_ASSERT_NO_ERROR(oxws_autodiscover_connection_settings(oxws, host, email, user, password, domain));
 }

@@ -80,6 +80,14 @@ extern "C" {
   OXWS_ASSERT_RESULT_EQUAL((expr), OXWS_NO_ERROR)
 
 
+#define OXWS_TEST_FIXTURE_AUTODISCOVER() \
+  const char* host = "localhost:3000"; \
+  const char* email = "test.user@example.com"; \
+  const char* user = "test.user"; \
+  const char* password = ""; /* unused because the test server does not use authentication, but is required */ \
+  const char* domain = NULL;
+
+
 extern char* oxws_test_support_ca_file;
 oxws_result oxws_test_support_set_curl_init_callback(oxws* oxws);
 
