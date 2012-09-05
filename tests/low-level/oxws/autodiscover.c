@@ -37,38 +37,29 @@
 #include "autodiscover.h"
 
 
-int suite_autodiscover_init() {
-  return 0;
+void oxws_suite_autodiscover_test_basic() {
+  oxws* oxws = oxws_new();
+  CU_ASSERT_OXWS_NO_ERROR(oxws_autodiscover_connection_settings(oxws, OXWS_SUITE_AUTODISCOVER_PARAMS_LIST));
+  oxws_free(oxws);
 }
 
-int suite_autodiscover_clean() {
-  return 0;
+void oxws_suite_autodiscover_test_connection_settings() {
+  oxws* oxws = oxws_new();
+  CU_ASSERT_OXWS_NO_ERROR(oxws_autodiscover_connection_settings(oxws, OXWS_SUITE_AUTODISCOVER_PARAMS_LIST));
+
+  CU_ASSERT_STRING_EQUAL(oxws->connection_settings.as_url,  "https://" OXWS_SUITE_AUTODISCOVER_PARAM_HOST "/EWS/Exchange.asmx");
+  CU_ASSERT_STRING_EQUAL(oxws->connection_settings.oof_url, "https://" OXWS_SUITE_AUTODISCOVER_PARAM_HOST "/EWS/Exchange.asmx");
+  CU_ASSERT_STRING_EQUAL(oxws->connection_settings.um_url,  "https://" OXWS_SUITE_AUTODISCOVER_PARAM_HOST "/UnifiedMessaging/Service.asmx");
+  CU_ASSERT_STRING_EQUAL(oxws->connection_settings.oab_url, "https://" OXWS_SUITE_AUTODISCOVER_PARAM_HOST "/OAB/b1b85cdb-319d-41b3-8362-4a8956f28c9b/");
+
+  oxws_free(oxws);
 }
 
-void suite_autodiscover_test_basic() {
-  oxws* oxws = oxws_test_support_new();
+void oxws_suite_autodiscover_test_state() {
+  oxws* oxws = oxws_new();
+  CU_ASSERT_OXWS_NO_ERROR(oxws_autodiscover_connection_settings(oxws, OXWS_SUITE_AUTODISCOVER_PARAMS_LIST));
 
-  OXWS_TEST_FIXTURE_AUTODISCOVER();
-  OXWS_ASSERT_NO_ERROR(oxws_autodiscover_connection_settings(oxws, host, email, user, password, domain));
-}
+  CU_ASSERT_NUMBER_EQUAL(oxws->state, OXWS_STATE_CONNECTION_SETTINGS_CONFIGURED);
 
-void suite_autodiscover_test_connection_settings() {
-  oxws* oxws = oxws_test_support_new();
-
-  OXWS_TEST_FIXTURE_AUTODISCOVER();
-  OXWS_ASSERT_NO_ERROR(oxws_autodiscover_connection_settings(oxws, host, email, user, password, domain));
-
-  OXWS_ASSERT_STRING_EQUAL(oxws->connection_settings.as_url,  "https://localhost:3000/EWS/Exchange.asmx");
-  OXWS_ASSERT_STRING_EQUAL(oxws->connection_settings.oof_url, "https://localhost:3000/EWS/Exchange.asmx");
-  OXWS_ASSERT_STRING_EQUAL(oxws->connection_settings.um_url,  "https://localhost:3000/UnifiedMessaging/Service.asmx");
-  OXWS_ASSERT_STRING_EQUAL(oxws->connection_settings.oab_url, "https://localhost:3000/OAB/b1b85cdb-319d-41b3-8362-4a8956f28c9b/");
-}
-
-void suite_autodiscover_test_state() {
-  oxws* oxws = oxws_test_support_new();
-
-  OXWS_TEST_FIXTURE_AUTODISCOVER();
-  OXWS_ASSERT_NO_ERROR(oxws_autodiscover_connection_settings(oxws, host, email, user, password, domain));
-
-  OXWS_ASSERT_NUMBER_EQUAL(oxws->state, OXWS_STATE_CONNECTION_SETTINGS_CONFIGURED);
+  oxws_free(oxws);
 }

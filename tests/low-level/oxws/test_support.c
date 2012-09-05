@@ -65,10 +65,14 @@ oxws_result oxws_test_support_set_curl_init_callback(oxws* oxws) {
   return OXWS_NO_ERROR;
 }
 
-
-oxws* oxws_test_support_new() {
+/* this function must use the original oxws_new, not the macro */
+#ifdef oxws_new
+#undef oxws_new
+oxws* oxws_new();
+#endif
+oxws* oxws_new_for_testing() {
   oxws* oxws = oxws_new();
   CU_ASSERT_PTR_NOT_NULL_FATAL(oxws);
-  OXWS_ASSERT_NO_ERROR(oxws_test_support_set_curl_init_callback(oxws));
+  CU_ASSERT_OXWS_NO_ERROR(oxws_test_support_set_curl_init_callback(oxws));
   return oxws;
 }

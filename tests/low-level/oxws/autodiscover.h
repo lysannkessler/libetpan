@@ -44,20 +44,35 @@ extern "C" {
 #include <libetpan/libetpan.h>
 
 
-int suite_autodiscover_init();
-int suite_autodiscover_clean();
-
-#define suite_autodiscover_add_tests() \
+#define oxws_suite_autodiscover_add_tests() \
   { \
-    ADD_TEST(autodiscover, basic); \
-    ADD_TEST(autodiscover, connection_settings); \
-    ADD_TEST(autodiscover, state); \
+    OXWS_TEST_ADD_TEST(autodiscover, basic); \
+    OXWS_TEST_ADD_TEST(autodiscover, connection_settings); \
+    OXWS_TEST_ADD_TEST(autodiscover, state); \
   }
 
-DECLARE_TEST(autodiscover, basic);
-DECLARE_TEST(autodiscover, connection_settings);
-DECLARE_TEST(autodiscover, state);
+OXWS_TEST_DECLARE_TEST(autodiscover, basic);
+OXWS_TEST_DECLARE_TEST(autodiscover, connection_settings);
+OXWS_TEST_DECLARE_TEST(autodiscover, state);
 
+
+#define OXWS_SUITE_AUTODISCOVER_PARAM_HOST     "localhost:3000"
+#define OXWS_SUITE_AUTODISCOVER_PARAM_EMAIL    "test.user@example.com"
+#define OXWS_SUITE_AUTODISCOVER_PARAM_USER     "test.user"
+#define OXWS_SUITE_AUTODISCOVER_PARAM_PASSWORD "" /* unused because the test server does not use authentication, but is required */
+#define OXWS_SUITE_AUTODISCOVER_PARAM_DOMAIN   NULL
+#define OXWS_SUITE_AUTODISCOVER_DECLARE_PARAMS() \
+  const char* host = OXWS_SUITE_AUTODISCOVER_PARAM_HOST; \
+  const char* email = OXWS_SUITE_AUTODISCOVER_PARAM_EMAIL; \
+  const char* user = OXWS_SUITE_AUTODISCOVER_PARAM_USER; \
+  const char* password = OXWS_SUITE_AUTODISCOVER_PARAM_PASSWORD; \
+  const char* domain = OXWS_SUITE_AUTODISCOVER_PARAM_DOMAIN;
+#define OXWS_SUITE_AUTODISCOVER_PARAMS_LIST \
+  OXWS_SUITE_AUTODISCOVER_PARAM_HOST, \
+  OXWS_SUITE_AUTODISCOVER_PARAM_EMAIL, \
+  OXWS_SUITE_AUTODISCOVER_PARAM_USER, \
+  OXWS_SUITE_AUTODISCOVER_PARAM_PASSWORD, \
+  OXWS_SUITE_AUTODISCOVER_PARAM_DOMAIN
 
 #ifdef __cplusplus
 }

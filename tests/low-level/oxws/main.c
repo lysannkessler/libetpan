@@ -61,7 +61,7 @@ void print_usage() {
 
 
 int main(int argc, char** argv) {
-  DECLARE_SUITE(autodiscover);
+  OXWS_TEST_DECLARE_SUITE(autodiscover);
 
   int r = parse_options(argc, argv, &oxws_test_support_ca_file);
   if(r < 0) {
@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
     return CU_get_error();
 
   /* add suites to the registry */
-  ADD_SUITE(autodiscover);
+  OXWS_TEST_ADD_SUITE(autodiscover);
 
   /* run tests */
   CU_basic_run_tests();

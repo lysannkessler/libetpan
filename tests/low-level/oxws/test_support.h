@@ -39,90 +39,40 @@ extern "C" {
 
 #include <libetpan/oxws_types.h>
 
+#include "assert.h"
 
-#define CHECK_RESULT(error_condition) \
+
+#define OXWS_TEST_CHECK_RESULT(error_condition) \
   if(error_condition) { \
     CU_cleanup_registry(); \
     return CU_get_error(); \
   }
 
-#define DECLARE_SUITE(suite) \
-  CU_pSuite suite_##suite = NULL;
+#define OXWS_TEST_DECLARE_SUITE(suite) \
+  CU_pSuite oxws_suite_##suite = NULL;
 
-#define ADD_SUITE(suite) \
+#define OXWS_TEST_ADD_SUITE(suite) \
   { \
-    suite_##suite = CU_add_suite(#suite, suite_##suite##_init, suite_##suite##_clean); \
-    CHECK_RESULT(suite_##suite == NULL); \
-    suite_##suite##_add_tests(); \
+    oxws_suite_##suite = CU_add_suite(#suite, NULL, NULL); \
+    OXWS_TEST_CHECK_RESULT(oxws_suite_##suite == NULL); \
+    oxws_suite_##suite##_add_tests(); \
   }
 
-#define DECLARE_TEST(suite, test) \
-  void suite_##suite##_test_##test()
+#define OXWS_TEST_DECLARE_TEST(suite, test) \
+  void oxws_suite_##suite##_test_##test()
 
-#define ADD_TEST(suite, test) \
-  CHECK_RESULT(CU_add_test(suite_##suite, #test, suite_##suite##_test_##test) == NULL);
-
-
-#define OXWS_ASSERT_RESULT_EQUAL(actual, expected) \
-  { \
-    oxws_result actual_value = (actual); \
-    oxws_result expected_value = (expected); \
-    const char* static_message = "OXWS_ASSERT_RESULT_EQUAL(" #actual "," #expected ")"; \
-    if(actual_value == expected_value) { \
-      CU_assertImplementation(CU_TRUE, __LINE__, static_message, __FILE__, "", CU_TRUE); \
-    } else { \
-      char* message = (char*) alloca(strlen(static_message) + 128); \
-      sprintf(message, "%s; actual = %s (%d); expected = %s (%d)", static_message, \
-        OXWS_ERROR_NAME(actual_value), actual_value, \
-        OXWS_ERROR_NAME(expected_value), expected_value); \
-      CU_assertImplementation(CU_FALSE, __LINE__, message, __FILE__, "", CU_TRUE); \
-    } \
-  }
-
-#define OXWS_ASSERT_NO_ERROR(expr) \
-  OXWS_ASSERT_RESULT_EQUAL((expr), OXWS_NO_ERROR)
-
-#define OXWS_ASSERT_STRING_EQUAL(actual, expected) \
-  { \
-    const char* actual_value = (const char*)(actual); \
-    const char* expected_value = (const char*)(expected); \
-    const char* static_message = "OXWS_ASSERT_STRING_EQUAL(" #actual "," #expected ")"; \
-    if(strcmp(actual_value, expected_value) == 0) { \
-      CU_assertImplementation(CU_TRUE, __LINE__, static_message, __FILE__, "", CU_TRUE); \
-    } else { \
-      char* message = (char*) alloca(strlen(static_message) + 29 + strlen(actual_value) + strlen(expected_value)); \
-      sprintf(message, "%s; actual = \"%s\"; expected = \"%s\"", static_message, actual_value, expected_value); \
-      CU_assertImplementation(CU_FALSE, __LINE__, message, __FILE__, "", CU_TRUE); \
-    } \
-  }
-
-#define OXWS_ASSERT_NUMBER_EQUAL(actual, expected) \
-  { \
-    long long int actual_value = (actual); \
-    long long int expected_value = (expected); \
-    const char* static_message = "OXWS_ASSERT_NUMBER_EQUAL(" #actual "," #expected ")"; \
-    if(actual_value == expected_value) { \
-      CU_assertImplementation(CU_TRUE, __LINE__, static_message, __FILE__, "", CU_TRUE); \
-    } else { \
-      char* message = (char*) alloca(strlen(static_message) + 100); \
-      sprintf(message, "%s; actual = %lld; expected = %lld", static_message, actual_value, expected_value); \
-      CU_assertImplementation(CU_FALSE, __LINE__, message, __FILE__, "", CU_TRUE); \
-    } \
-  }
-
-
-#define OXWS_TEST_FIXTURE_AUTODISCOVER() \
-  const char* host = "localhost:3000"; \
-  const char* email = "test.user@example.com"; \
-  const char* user = "test.user"; \
-  const char* password = ""; /* unused because the test server does not use authentication, but is required */ \
-  const char* domain = NULL;
+#define OXWS_TEST_ADD_TEST(suite, test) \
+  OXWS_TEST_CHECK_RESULT(CU_add_test(oxws_suite_##suite, #suite "." #test, oxws_suite_##suite##_test_##test) == NULL);
 
 
 extern char* oxws_test_support_ca_file;
 oxws_result oxws_test_support_set_curl_init_callback(oxws* oxws);
 
-oxws* oxws_test_support_new();
+/* wrap oxws_new in order to register curl init callback */
+#ifdef LIBETPAN_TEST_MODE
+oxws* oxws_new_for_testing();
+#define oxws_new oxws_new_for_testing
+#endif
 
 
 #ifdef __cplusplus
