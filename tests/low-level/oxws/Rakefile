@@ -32,15 +32,20 @@ namespace 'test_server' do
     desc options[:desc]
     task name do
       webserver_path = File.expand_path('test_server', File.dirname(__FILE__))
-      cert_dir = File.join(webserver_path, 'cert')
       command = [
         'thin', options[:args],
-        "--rackup \"#{File.join(webserver_path, 'config', 'main.ru')}\"",
-        "--chdir \"#{webserver_path}\"",
-        "--ssl",
-        "--ssl-key \"#{File.join(cert_dir, 'server.key')}\"",
-        "--ssl-cert \"#{File.join(cert_dir, 'server.crt')}\""
-      ].flatten.compact.join(' ')
+        "--chdir \"#{webserver_path}\""
+      ]
+      if [:start, :run].include? name
+        cert_dir = File.join(webserver_path, 'cert')
+        command += [
+          "--rackup \"#{File.join(webserver_path, 'config', 'main.ru')}\"",
+          "--ssl",
+          "--ssl-key \"#{File.join(cert_dir, 'server.key')}\"",
+          "--ssl-cert \"#{File.join(cert_dir, 'server.crt')}\""
+        ]
+      end
+      command = command.flatten.compact.join(' ')
       sh *command
     end
   end
