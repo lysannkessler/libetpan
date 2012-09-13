@@ -76,3 +76,23 @@ void oxws_suite_oxws_test_connect_after_autodiscover() {
 
   oxws_free(oxws);
 }
+
+void oxws_suite_oxws_test_connect_invalid_ews_url_host() {
+  oxws* oxws = oxws_new();
+
+  OXWS_SUITE_OXWS_SET_CONNECTION_SETTINGS(OXWS_SUITE_OXWS_PARAM_EWS_URL_INVALID_HOST);
+  CU_ASSERT_OXWS_RESULT_EQUAL(oxws_connect(oxws, OXWS_SUITE_OXWS_CONNECT_PARAMS), OXWS_ERROR_CONNECT);
+
+  oxws_free(oxws);
+}
+
+void oxws_suite_oxws_test_connect_invalid_ews_url_path() {
+  oxws* oxws = oxws_new();
+
+  OXWS_SUITE_OXWS_SET_CONNECTION_SETTINGS(OXWS_SUITE_OXWS_PARAM_EWS_URL_INVALID_PATH);
+  CU_ASSERT_OXWS_RESULT_EQUAL(oxws_connect(oxws, OXWS_SUITE_OXWS_CONNECT_PARAMS), OXWS_ERROR_CONNECT);
+
+  oxws_free(oxws);
+}
+
+/* TODO add tests for invalid credentials */
