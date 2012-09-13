@@ -63,3 +63,66 @@ void oxws_suite_autodiscover_test_state() {
 
   oxws_free(oxws);
 }
+
+void oxws_suite_autodiscover_test_invalid_params() {
+  oxws* oxws = oxws_new();
+
+  /* invalid host */
+  CU_ASSERT_OXWS_RESULT_EQUAL(oxws_autodiscover_connection_settings(oxws,
+      OXWS_SUITE_AUTODISCOVER_PARAM_HOST_INVALID,
+      OXWS_SUITE_AUTODISCOVER_PARAM_EMAIL,
+      OXWS_SUITE_AUTODISCOVER_PARAM_USER,
+      OXWS_SUITE_AUTODISCOVER_PARAM_PASSWORD,
+      OXWS_SUITE_AUTODISCOVER_PARAM_DOMAIN),
+    OXWS_ERROR_AUTODISCOVER_UNAVAILABLE);
+
+  /* invalid email */
+  CU_ASSERT_OXWS_RESULT_EQUAL(oxws_autodiscover_connection_settings(oxws,
+      OXWS_SUITE_AUTODISCOVER_PARAM_HOST,
+      OXWS_SUITE_AUTODISCOVER_PARAM_EMAIL_INVALID,
+      OXWS_SUITE_AUTODISCOVER_PARAM_USER,
+      OXWS_SUITE_AUTODISCOVER_PARAM_PASSWORD,
+      OXWS_SUITE_AUTODISCOVER_PARAM_DOMAIN),
+    OXWS_ERROR_AUTODISCOVER_UNAVAILABLE);
+
+#if 0
+  /* test server does not support authorization, therefore the following 3 assertions fail */
+
+  /* invalid user */
+  CU_ASSERT_OXWS_RESULT_EQUAL(oxws_autodiscover_connection_settings(oxws,
+      OXWS_SUITE_AUTODISCOVER_PARAM_HOST,
+      OXWS_SUITE_AUTODISCOVER_PARAM_EMAIL,
+      OXWS_SUITE_AUTODISCOVER_PARAM_USER_INVALID,
+      OXWS_SUITE_AUTODISCOVER_PARAM_PASSWORD,
+      OXWS_SUITE_AUTODISCOVER_PARAM_DOMAIN),
+    OXWS_ERROR_AUTODISCOVER_UNAVAILABLE);
+
+  /* invalid password */
+  CU_ASSERT_OXWS_RESULT_EQUAL(oxws_autodiscover_connection_settings(oxws,
+      OXWS_SUITE_AUTODISCOVER_PARAM_HOST,
+      OXWS_SUITE_AUTODISCOVER_PARAM_EMAIL,
+      OXWS_SUITE_AUTODISCOVER_PARAM_USER,
+      OXWS_SUITE_AUTODISCOVER_PARAM_PASSWORD_INVALID,
+      OXWS_SUITE_AUTODISCOVER_PARAM_DOMAIN),
+    OXWS_ERROR_AUTODISCOVER_UNAVAILABLE);
+
+  /* invalid domain */
+  CU_ASSERT_OXWS_RESULT_EQUAL(oxws_autodiscover_connection_settings(oxws,
+      OXWS_SUITE_AUTODISCOVER_PARAM_HOST,
+      OXWS_SUITE_AUTODISCOVER_PARAM_EMAIL,
+      OXWS_SUITE_AUTODISCOVER_PARAM_USER,
+      OXWS_SUITE_AUTODISCOVER_PARAM_PASSWORD,
+      OXWS_SUITE_AUTODISCOVER_PARAM_DOMAIN_INVALID),
+    OXWS_ERROR_AUTODISCOVER_UNAVAILABLE);
+#endif
+
+  /* connection settings are empty */
+  CU_ASSERT_PTR_NULL_FATAL(oxws->connection_settings.as_url);
+  CU_ASSERT_PTR_NULL_FATAL(oxws->connection_settings.oof_url);
+  CU_ASSERT_PTR_NULL_FATAL(oxws->connection_settings.um_url);
+  CU_ASSERT_PTR_NULL_FATAL(oxws->connection_settings.oab_url);
+  /* state is still new */
+  CU_ASSERT_NUMBER_EQUAL(oxws->state, OXWS_STATE_NEW);
+
+  oxws_free(oxws);
+}
