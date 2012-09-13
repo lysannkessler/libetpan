@@ -18,6 +18,7 @@
 
 #include "test_support.h"
 #include "autodiscover.h"
+#include "oxws.h"
 
 
 int parse_options(int argc, char** argv,
@@ -61,6 +62,7 @@ void print_usage() {
 
 
 int main(int argc, char** argv) {
+  OXWS_TEST_DECLARE_SUITE(oxws);
   OXWS_TEST_DECLARE_SUITE(autodiscover);
 
   int r = parse_options(argc, argv, &oxws_test_support_ca_file);
@@ -77,6 +79,7 @@ int main(int argc, char** argv) {
     return CU_get_error();
 
   /* add suites to the registry */
+  OXWS_TEST_ADD_SUITE(oxws);
   OXWS_TEST_ADD_SUITE(autodiscover);
 
   /* run tests */

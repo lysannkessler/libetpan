@@ -30,8 +30,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef OXWS_TEST_AUTODISCOVER_H
-#define OXWS_TEST_AUTODISCOVER_H
+#ifndef OXWS_TEST_OXWS_H
+#define OXWS_TEST_OXWS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,37 +42,13 @@ extern "C" {
 #include "test_support.h"
 
 
-#define oxws_suite_autodiscover_add_tests() \
+#define oxws_suite_oxws_add_tests() \
   { \
-    OXWS_TEST_ADD_TEST(autodiscover, basic); \
-    OXWS_TEST_ADD_TEST(autodiscover, connection_settings); \
-    OXWS_TEST_ADD_TEST(autodiscover, state); \
-    OXWS_TEST_ADD_TEST(autodiscover, invalid_params); \
+    OXWS_TEST_ADD_TEST(oxws, new); \
   }
 
-OXWS_TEST_DECLARE_TEST(autodiscover, basic);
-OXWS_TEST_DECLARE_TEST(autodiscover, connection_settings);
-OXWS_TEST_DECLARE_TEST(autodiscover, state);
-OXWS_TEST_DECLARE_TEST(autodiscover, invalid_params);
+OXWS_TEST_DECLARE_TEST(oxws, new);
 
-
-#define OXWS_SUITE_AUTODISCOVER_PARAM_HOST     "localhost:3000"
-#define OXWS_SUITE_AUTODISCOVER_PARAM_EMAIL    "test.user@example.com"
-#define OXWS_SUITE_AUTODISCOVER_PARAM_USER     "" /* unused because the test server does not support authentication, but is required */
-#define OXWS_SUITE_AUTODISCOVER_PARAM_PASSWORD "" /* unused because the test server does not support authentication, but is required */
-#define OXWS_SUITE_AUTODISCOVER_PARAM_DOMAIN   NULL /* unused because the test server does not support authentication */
-#define OXWS_SUITE_AUTODISCOVER_PARAMS_LIST \
-  OXWS_SUITE_AUTODISCOVER_PARAM_HOST, \
-  OXWS_SUITE_AUTODISCOVER_PARAM_EMAIL, \
-  OXWS_SUITE_AUTODISCOVER_PARAM_USER, \
-  OXWS_SUITE_AUTODISCOVER_PARAM_PASSWORD, \
-  OXWS_SUITE_AUTODISCOVER_PARAM_DOMAIN
-
-#define OXWS_SUITE_AUTODISCOVER_PARAM_HOST_INVALID     "localhorst"
-#define OXWS_SUITE_AUTODISCOVER_PARAM_EMAIL_INVALID    "missing.user@example.com"
-#define OXWS_SUITE_AUTODISCOVER_PARAM_USER_INVALID     "missing.user"
-#define OXWS_SUITE_AUTODISCOVER_PARAM_PASSWORD_INVALID "invalid"
-#define OXWS_SUITE_AUTODISCOVER_PARAM_DOMAIN_INVALID   "INVALID"
 
 #ifdef __cplusplus
 }

@@ -6,7 +6,7 @@ exampledir=${datadir}/@PACKAGE@/tests/low-level
 example_PROGRAMS = test_oxws
 
 test_oxws_SOURCES = main.c \
-  autodiscover.c
+  oxws.c autodiscover.c
 test_oxws_CFLAGS = -Werror \
   $(AM_CFLAGS) \
   -I$(top_builddir)/include \

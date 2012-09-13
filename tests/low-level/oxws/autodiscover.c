@@ -34,6 +34,7 @@
 # include <config.h>
 #endif
 
+#include <libetpan/libetpan.h>
 #include "autodiscover.h"
 
 
