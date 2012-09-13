@@ -299,7 +299,7 @@ int main(int argc, char ** argv)
     uint32_t msg_num;
     struct mailmime * mime;
 
-    msg_num = strtoul(argv[optind], NULL, 10);
+    msg_num = atoi(argv[optind]);
     
     r = mailsession_get_message(folder->fld_session, msg_num, &msg);
     if (r != MAIL_NO_ERROR) {

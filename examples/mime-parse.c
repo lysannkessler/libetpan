@@ -17,10 +17,13 @@ static void display_mime_data(struct mailmime_data * data)
   }
 }
 
+#if 0
+/* TODO unused function? */
 static void display_mime_parameter(struct mailmime_parameter * param)
 {
   printf("%s = %s\n", param->pa_name, param->pa_value);
 }
+#endif
 
 static void display_mime_dsp_parm(struct mailmime_disposition_parm * param)
 {
@@ -96,9 +99,9 @@ static void display_mailbox_list(struct mailimf_mailbox_list * mb_list)
   for(cur = clist_begin(mb_list->mb_list) ; cur != NULL ;
     cur = clist_next(cur)) {
     struct mailimf_mailbox * mb;
-    
+
     mb = clist_content(cur);
-    
+
     display_mailbox(mb);
 		if (clist_next(cur) != NULL) {
 			printf(", ");
@@ -109,7 +112,7 @@ static void display_mailbox_list(struct mailimf_mailbox_list * mb_list)
 static void display_group(struct mailimf_group * group)
 {
 	clistiter * cur;
-	
+
   printf("%s: ", group->grp_display_name);
   for(cur = clist_begin(group->grp_mb_list->mb_list) ; cur != NULL ; cur = clist_next(cur)) {
     struct mailimf_mailbox * mb;
@@ -140,11 +143,11 @@ static void display_address_list(struct mailimf_address_list * addr_list)
   for(cur = clist_begin(addr_list->ad_list) ; cur != NULL ;
     cur = clist_next(cur)) {
     struct mailimf_address * addr;
-    
+
     addr = clist_content(cur);
-    
+
     display_address(addr);
-		
+
 		if (clist_next(cur) != NULL) {
 			printf(", ");
 		}
@@ -209,9 +212,9 @@ static void display_fields(struct mailimf_fields * fields)
   for(cur = clist_begin(fields->fld_list) ; cur != NULL ;
     cur = clist_next(cur)) {
     struct mailimf_field * f;
-    
+
     f = clist_content(cur);
-    
+
     display_field(f);
   }
 }
@@ -346,17 +349,17 @@ int main(int argc, char ** argv)
 	if (f == NULL) {
 		exit(EXIT_FAILURE);
 	}
-	
+
 	r = stat(filename, &stat_info);
 	if (r != 0) {
 		fclose(f);
 		exit(EXIT_FAILURE);
 	}
-	
+
 	data = malloc(stat_info.st_size);
 	fread(data, 1, stat_info.st_size, f);
 	fclose(f);
-	
+
 	current_index = 0;
 	r = mailmime_parse(data, stat_info.st_size,
 		&current_index, &mime);
@@ -365,7 +368,7 @@ int main(int argc, char ** argv)
 		exit(EXIT_FAILURE);
 		return EXIT_FAILURE;
 	}
-	
+
 	display_mime(mime);
 	mailmime_free(mime);
 	free(data);

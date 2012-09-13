@@ -33,7 +33,8 @@ etpaninclude_HEADERS = \
 	generic_cache_types.h \
 	mailthread.h mailthread_types.h
 
-AM_CPPFLAGS = -I$(top_builddir)/include \
+AM_CPPFLAGS = $(WERROR) \
+	-I$(top_builddir)/include \
 	-I$(top_srcdir)/src/low-level/imf \
 	-I$(top_srcdir)/src/low-level/mime \
 	-I$(top_srcdir)/src/data-types \

@@ -221,7 +221,7 @@ static inline int mailimap_sized_token_send_with_context(mailstream * fd, const 
 {
   if (mailstream_send_data_crlf_with_context(fd, atom, len, progr_fun, context) == -1)
     return MAILIMAP_ERROR_STREAM;
-  
+
   return MAILIMAP_NO_ERROR;
 }
 
@@ -271,7 +271,7 @@ mailimap_struct_list_send(mailstream * fd, clist * list,
 
   return MAILIMAP_NO_ERROR;
 }
-				   
+
 
 int
 mailimap_struct_spaced_list_send(mailstream * fd, clist * list,
@@ -397,25 +397,25 @@ static int is_atom(const char * str)
 {
   if (* str == '\0')
     return 0;
-  
+
   while (* str != '\0') {
     unsigned char uch = (unsigned char) * str;
-    
+
     if (uch != '-') {
       if (!isalnum(uch))
         return 0;
     }
-    
+
     str ++;
   }
-  
+
   return 1;
 }
 
 int mailimap_astring_send(mailstream * fd, const char * astring)
 {
   /*
-    workaround for buggy Courier-IMAP that does not accept 
+    workaround for buggy Courier-IMAP that does not accept
     quoted-strings for fields name but prefer atoms.
   */
   if (is_atom(astring))
@@ -445,7 +445,7 @@ static int mailimap_atom_send(mailstream * fd, const char * atom)
 /*
 =>   authenticate    = "AUTHENTICATE" SP auth-type *(CRLF base64)
 */
-  
+
 int mailimap_authenticate_send(mailstream * fd,
 			       const char * auth_type)
 {
@@ -472,7 +472,7 @@ int mailimap_authenticate_resp_send(mailstream * fd,
   r = mailimap_base64_send(fd, base64);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   return MAILIMAP_NO_ERROR;
 }
 
@@ -592,7 +592,7 @@ int mailimap_capability_send(mailstream * fd)
   r = mailimap_token_send(fd, "CAPABILITY");
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   return MAILIMAP_NO_ERROR;
 }
 
@@ -603,7 +603,7 @@ int mailimap_logout_send(mailstream * fd)
   r = mailimap_token_send(fd, "LOGOUT");
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   return MAILIMAP_NO_ERROR;
 }
 
@@ -614,7 +614,7 @@ int mailimap_noop_send(mailstream * fd)
   r = mailimap_token_send(fd, "NOOP");
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   return MAILIMAP_NO_ERROR;
 }
 
@@ -697,7 +697,7 @@ int mailimap_copy_send(mailstream * fd,
   r = mailimap_space_send(fd);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_mailbox_send(fd, mb);
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -824,14 +824,14 @@ static int mailimap_date_month_send(mailstream * fd, int month)
   int r;
 
   name = mailimap_month_get_token_str(month);
-  
+
   if (name == NULL)
     return MAILIMAP_ERROR_INVAL;
-    
+
   r = mailimap_token_send(fd, name);
     if (r != MAILIMAP_NO_ERROR)
       return r;
-  
+
   return MAILIMAP_NO_ERROR;
 }
 
@@ -866,10 +866,10 @@ static int mailimap_fixed_digit_send(mailstream * fd,
 				     int num, int count)
 {
   int r;
-  
+
   if (count == 0)
     return MAILIMAP_NO_ERROR;
-  
+
   r = mailimap_fixed_digit_send(fd, num / 10, count - 1);
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -877,7 +877,7 @@ static int mailimap_fixed_digit_send(mailstream * fd,
   r = mailimap_digit_send(fd, num % 10);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   return MAILIMAP_NO_ERROR;
 }
 
@@ -1033,7 +1033,7 @@ static int mailimap_digit_send(mailstream * fd, int digit)
 int mailimap_examine_send(mailstream * fd, const char * mb)
 {
   int r;
-  
+
   r = mailimap_token_send(fd, "EXAMINE");
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -1114,7 +1114,7 @@ mailimap_uid_fetch_send(mailstream * fd,
 			struct mailimap_fetch_type * fetch_type)
 {
   int r;
-  
+
   r = mailimap_token_send(fd, "UID");
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -1132,7 +1132,7 @@ static int
 mailimap_fetch_att_list_send(mailstream * fd, clist * fetch_att_list)
 {
   int r;
-  
+
   r = mailimap_oparenth_send(fd);
   if (r != MAILIMAP_NO_ERROR)
 	return r;
@@ -1252,7 +1252,7 @@ static int mailimap_fetch_att_send(mailstream * fd,
     if (r != MAILIMAP_NO_ERROR)
       return r;
     return MAILIMAP_NO_ERROR;
-  
+
   default:
     /* should not happen */
     return MAILIMAP_ERROR_INVAL;
@@ -1322,7 +1322,7 @@ static int mailimap_flag_extension_send(mailstream * fd,
 					     const char * flag_extension)
 {
   int r;
-  
+
   r = mailimap_char_send(fd, '\\');
   if (r != MAILIMAP_NO_ERROR)
 	return r;
@@ -1356,7 +1356,7 @@ static int mailimap_flag_list_send(mailstream * fd,
 					struct mailimap_flag_list * flag_list)
 {
   int r;
-  
+
   r = mailimap_oparenth_send(fd);
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -1399,7 +1399,7 @@ mailimap_header_list_send(mailstream * fd,
     struct mailimap_header_list * header_list)
 {
   int r;
-  
+
   r = mailimap_oparenth_send(fd);
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -1425,7 +1425,7 @@ int mailimap_list_send(mailstream * fd,
 				const char * list_mb)
 {
   int r;
-  
+
   r = mailimap_token_send(fd, "LIST");
   if (r != MAILIMAP_NO_ERROR)
 	return r;
@@ -1478,10 +1478,10 @@ mailimap_literal_send(mailstream * fd, const char * literal,
   size_t len;
   uint32_t literal_len;
   int r;
-  
+
   len = strlen(literal);
   literal_len = mailstream_get_data_crlf_size(literal, len);
-  
+
   r = mailimap_literal_count_send(fd, literal_len);
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -1500,7 +1500,7 @@ int
 mailimap_literal_count_send(mailstream * fd, uint32_t count)
 {
   int r;
-  
+
   r = mailimap_char_send(fd, '{');
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -1529,6 +1529,7 @@ mailimap_literal_data_send(mailstream * fd, const char * literal, uint32_t len,
 			   size_t progr_rate,
 			   progress_function * progr_fun)
 {
+  UNUSED(progr_rate); UNUSED(progr_fun);
   return mailimap_literal_data_send_with_context(fd, literal, len, NULL, NULL);
 }
 
@@ -1538,11 +1539,11 @@ mailimap_literal_data_send_with_context(mailstream * fd, const char * literal, u
                                         void * context)
 {
   int r;
-  
+
   r = mailimap_sized_token_send_with_context(fd, literal, len, progr_fun, context);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   return MAILIMAP_NO_ERROR;
 }
 
@@ -1554,7 +1555,7 @@ int mailimap_login_send(mailstream * fd,
 				const char * userid, const char * password)
 {
   int r;
-  
+
   r = mailimap_token_send(fd, "LOGIN");
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -1586,7 +1587,7 @@ int mailimap_lsub_send(mailstream * fd,
 				const char * mb, const char * list_mb)
 {
   int r;
-  
+
   r = mailimap_token_send(fd, "LSUB");
   if (r != MAILIMAP_NO_ERROR)
 	return r;
@@ -1694,7 +1695,7 @@ int mailimap_mailbox_send(mailstream * fd, const char * mb)
 static int mailimap_number_send(mailstream * fd, uint32_t number)
 {
   int r;
-  
+
   if (number / 10 != 0) {
     r = mailimap_number_send(fd, number / 10);
     if (r != MAILIMAP_NO_ERROR)
@@ -1734,7 +1735,7 @@ static int is_quoted_specials(char ch)
 static int mailimap_quoted_char_send(mailstream * fd, char ch)
 {
   int r;
-  
+
   if (is_quoted_specials(ch)) {
     r = mailimap_char_send(fd, '\\');
 	if (r != MAILIMAP_NO_ERROR)
@@ -1742,7 +1743,7 @@ static int mailimap_quoted_char_send(mailstream * fd, char ch)
     r = mailimap_char_send(fd, ch);
 	if (r != MAILIMAP_NO_ERROR)
       return r;
-	
+
     return MAILIMAP_NO_ERROR;
   }
   else
@@ -1753,7 +1754,7 @@ int mailimap_quoted_send(mailstream * fd, const char * quoted)
 {
   const char * pos;
   int r;
-  
+
   pos = quoted;
 
   r = mailimap_dquote_send(fd);
@@ -1783,7 +1784,7 @@ int mailimap_rename_send(mailstream * fd, const char * mb,
 				const char * new_name)
 {
   int r;
-  
+
   r = mailimap_token_send(fd, "RENAME");
   if (r != MAILIMAP_NO_ERROR)
 	return r;
@@ -1848,7 +1849,7 @@ mailimap_search_send(mailstream * fd, const char * charset,
 		     struct mailimap_search_key * key)
 {
   int r;
-  
+
   r = mailimap_token_send(fd, "SEARCH");
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -1857,7 +1858,7 @@ mailimap_search_send(mailstream * fd, const char * charset,
     r = mailimap_space_send(fd);
     if (r != MAILIMAP_NO_ERROR)
       return r;
-    
+
     r = mailimap_token_send(fd, "CHARSET");
 	if (r != MAILIMAP_NO_ERROR)
       return r;
@@ -1872,7 +1873,7 @@ mailimap_search_send(mailstream * fd, const char * charset,
   r = mailimap_space_send(fd);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_search_key_send(fd, key);
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -1885,7 +1886,7 @@ mailimap_uid_search_send(mailstream * fd, const char * charset,
    				struct mailimap_search_key * key)
 {
   int r;
-  
+
   r = mailimap_token_send(fd, "UID");
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -1923,7 +1924,7 @@ static int mailimap_search_key_send(mailstream * fd,
    				struct mailimap_search_key * key)
 {
   int r;
-  
+
   switch (key->sk_type) {
 
   case MAILIMAP_SEARCH_KEY_ALL:
@@ -2218,7 +2219,7 @@ static int mailimap_search_key_send(mailstream * fd,
 	if (r != MAILIMAP_NO_ERROR)
       return r;
     return MAILIMAP_NO_ERROR;
-    
+
   case MAILIMAP_SEARCH_KEY_UID:
     r = mailimap_token_send(fd, "UID");
 	if (r != MAILIMAP_NO_ERROR)
@@ -2268,7 +2269,7 @@ mailimap_section_send(mailstream * fd,
     struct mailimap_section * section)
 {
   int r;
-  
+
   r = mailimap_char_send(fd, '[');
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -2300,7 +2301,7 @@ mailimap_section_msgtext_send(mailstream * fd,
 			      section_msgtext)
 {
   int r;
-  
+
   switch (section_msgtext->sec_type) {
   case MAILIMAP_SECTION_MSGTEXT_HEADER:
     return mailimap_token_send(fd, "HEADER");
@@ -2354,7 +2355,7 @@ mailimap_section_part_send(mailstream * fd,
 			   struct mailimap_section_part * section)
 {
   int r;
-  
+
   r = mailimap_struct_list_send(fd, section->sec_id, '.',
       (mailimap_struct_sender *) mailimap_pnumber_send);
   if (r != MAILIMAP_NO_ERROR)
@@ -2372,7 +2373,7 @@ mailimap_section_spec_send(mailstream * fd,
 			   struct mailimap_section_spec * section_spec)
 {
   int r;
-  
+
   switch (section_spec->sec_type) {
   case MAILIMAP_SECTION_SPEC_SECTION_MSGTEXT:
     return mailimap_section_msgtext_send(fd,
@@ -2431,7 +2432,7 @@ int
 mailimap_select_send(mailstream * fd, const char * mb)
 {
   int r;
-  
+
   r = mailimap_token_send(fd, "SELECT");
   if (r != MAILIMAP_NO_ERROR)
 	return r;
@@ -2482,7 +2483,7 @@ static int mailimap_set_item_send(mailstream * fd,
  				struct mailimap_set_item * item)
 {
   int r;
-  
+
   if (item->set_first == item->set_last)
     return mailimap_sequence_num_send(fd, item->set_first);
   else {
@@ -2523,7 +2524,7 @@ mailimap_status_send(mailstream * fd, const char * mb,
     struct mailimap_status_att_list * status_att_list)
 {
   int r;
-  
+
   r = mailimap_token_send(fd, "STATUS");
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -2584,7 +2585,7 @@ mailimap_store_send(mailstream * fd,
 		    struct mailimap_store_att_flags * store_att_flags)
 {
   int r;
-  
+
   r = mailimap_token_send(fd, "STORE");
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -2611,7 +2612,7 @@ mailimap_uid_store_send(mailstream * fd,
 			struct mailimap_store_att_flags * store_att_flags)
 {
   int r;
-  
+
   r = mailimap_token_send(fd, "UID");
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -2632,7 +2633,7 @@ mailimap_store_att_flags_send(mailstream * fd,
 			      struct mailimap_store_att_flags * store_flags)
 {
   int r;
-  
+
   switch (store_flags->fl_sign) {
   case 1:
     r = mailimap_char_send(fd, '+');
@@ -2645,7 +2646,7 @@ mailimap_store_att_flags_send(mailstream * fd,
       return r;
     break;
   }
-  
+
   r = mailimap_token_send(fd, "FLAGS");
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -2655,7 +2656,7 @@ mailimap_store_att_flags_send(mailstream * fd,
     if (r != MAILIMAP_NO_ERROR)
       return r;
   }
-  
+
   r = mailimap_space_send(fd);
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -2678,7 +2679,7 @@ mailimap_store_att_flags_send(mailstream * fd,
 int mailimap_subscribe_send(mailstream * fd, const char * mb)
 {
   int r;
-  
+
   r = mailimap_token_send(fd, "SUBSCRIBE");
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -2734,7 +2735,7 @@ int mailimap_unsubscribe_send(mailstream * fd,
 				const char * mb)
 {
   int r;
-  
+
   r = mailimap_token_send(fd, "UNSUBSCRIBE");
   if (r != MAILIMAP_NO_ERROR)
     return r;

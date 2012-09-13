@@ -37,16 +37,22 @@ etpaninclude_HEADERS = \
 	carray.h clist.h chash.h \
 	charconv.h mailsem.h maillock.h
 
-AM_CPPFLAGS = -I$(top_builddir)/include
+AM_CPPFLAGS = $(WERROR) \
+	-I$(top_builddir)/include
 
-noinst_LTLIBRARIES = libdata-types.la
+noinst_LTLIBRARIES = libdata-types.la libdata-types-no-depr.la
 
 libdata_types_la_SOURCES = connect.h connect.c base64.h hmac-md5.h	\
 	md5global.h md5.h md5.c mmapstring.c mailstream_helper.c	\
 	mailstream_low.c mailstream.c mailstream_socket.c		\
-	mailstream_ssl.c carray.c clist.c chash.c		        \
+	carray.c clist.c chash.c		        \
 	charconv.c maillock.c base64.c mail_cache_db_types.h		\
 	mail_cache_db.h mail_cache_db.c mailsem.c mailsasl.h		\
 	mailsasl.c mailstream_cancel_types.h mailstream_cancel.h	\
 	mailstream_cancel.c timeutils.h timeutils.c \
 	mailstream_cfstream.c mailstream_cfstream.h
+libdata_types_la_LIBADD = libdata-types-no-depr.la
+
+libdata_types_no_depr_la_SOURCES = mailstream_ssl.c
+libdata_types_no_depr_la_CFLAGS = $(AM_CPPFLAGS) -Wno-deprecated-declarations
+# TODO get rid of deprecation warnings

@@ -318,11 +318,11 @@ static void nntpdriver_cached_uninitialize(mailsession * session)
       ancestor_data->nntp_group_name,
       cached_data->nntp_flags_store);
 
-  mail_flags_store_free(cached_data->nntp_flags_store); 
+  mail_flags_store_free(cached_data->nntp_flags_store);
 
   mailsession_free(cached_data->nntp_ancestor);
   free(cached_data);
-  
+
   session->sess_data = NULL;
 }
 
@@ -479,7 +479,7 @@ static int nntpdriver_cached_status_folder(mailsession * session,
   count = 0;
   recent = 0;
   unseen = 0;
-  
+
   ancestor_data = get_ancestor_data(session);
   cached_data = get_cached_data(session);
   if (ancestor_data->nntp_group_name == NULL) {
@@ -510,7 +510,7 @@ static int nntpdriver_cached_status_folder(mailsession * session,
 
   for(i = first ; i <= last ; i++) {
     struct mail_flags * flags;
-    
+
     r = nntpdriver_get_cached_flags(cache_db_flags, mmapstr,
         i, &flags);
     if (r == MAIL_NO_ERROR) {
@@ -518,7 +518,7 @@ static int nntpdriver_cached_status_folder(mailsession * session,
         mail_flags_free(flags);
         continue;
       }
-      
+
       count ++;
       if ((flags->fl_flags & MAIL_FLAG_NEW) != 0) {
 	recent ++;
@@ -535,18 +535,18 @@ static int nntpdriver_cached_status_folder(mailsession * session,
     recent = count;
     unseen = count;
   }
-  
+
   additionnal = ancestor_data->nntp_group_info->grp_last - last;
   recent += additionnal;
   unseen += additionnal;
-  
+
   mmap_string_free(mmapstr);
   mail_cache_db_close_unlock(filename_flags, cache_db_flags);
 
   * result_messages = count;
   * result_recent = recent;
   * result_unseen = unseen;
-  
+
   return MAIL_NO_ERROR;
 
  close_db_flags:
@@ -563,15 +563,15 @@ static int nntpdriver_cached_messages_number(mailsession * session,
   uint32_t recent;
   uint32_t unseen;
   int r;
-  
+
   r = nntpdriver_cached_status_folder(session, mb,
       &messages, &recent, &unseen);
   if (r != MAIL_NO_ERROR)
     return r;
-  
+
   * result = messages;
-  
-  return MAIL_NO_ERROR;  
+
+  return MAIL_NO_ERROR;
 }
 
 static int nntpdriver_cached_recent_number(mailsession * session,
@@ -582,15 +582,15 @@ static int nntpdriver_cached_recent_number(mailsession * session,
   uint32_t recent;
   uint32_t unseen;
   int r;
-  
+
   r = nntpdriver_cached_status_folder(session, mb,
       &messages, &recent, &unseen);
   if (r != MAIL_NO_ERROR)
     return r;
-  
+
   * result = recent;
-  
-  return MAIL_NO_ERROR;  
+
+  return MAIL_NO_ERROR;
 }
 
 static int nntpdriver_cached_unseen_number(mailsession * session,
@@ -601,15 +601,15 @@ static int nntpdriver_cached_unseen_number(mailsession * session,
   uint32_t recent;
   uint32_t unseen;
   int r;
-  
+
   r = nntpdriver_cached_status_folder(session, mb,
       &messages, &recent, &unseen);
   if (r != MAIL_NO_ERROR)
     return r;
-  
+
   * result = unseen;
-  
-  return MAIL_NO_ERROR;  
+
+  return MAIL_NO_ERROR;
 }
 
 static int nntpdriver_cached_list_folders(mailsession * session, const char * mb,
@@ -649,6 +649,7 @@ static int nntpdriver_cached_append_message(mailsession * session,
 static int nntpdriver_cached_append_message_flags(mailsession * session,
     const char * message, size_t size, struct mail_flags * flags)
 {
+  UNUSED(flags);
   return nntpdriver_cached_append_message(session, message, size);
 }
 
@@ -663,6 +664,7 @@ get_cached_envelope(struct mail_cache_db * cache_db, MMAPString * mmapstr,
   int r;
   struct mailimf_fields * fields;
   int res;
+  UNUSED(session);
 
   snprintf(keyname, PATH_MAX, "%i-envelope", num);
 
@@ -688,6 +690,7 @@ write_cached_envelope(struct mail_cache_db * cache_db, MMAPString * mmapstr,
   int r;
   int res;
   char keyname[PATH_MAX];
+  UNUSED(session);
 
   snprintf(keyname, PATH_MAX, "%i-envelope", num);
 
@@ -696,7 +699,7 @@ write_cached_envelope(struct mail_cache_db * cache_db, MMAPString * mmapstr,
     res = r;
     goto err;
   }
-  
+
   return MAIL_NO_ERROR;
 
  err:
@@ -734,24 +737,24 @@ static void read_article_seq(mailsession * session,
     int fd;
 
     fd = fileno(f);
-    
+
     r = maillock_read_lock(seq_filename, fd);
     if (r == 0) {
       MMAPString * mmapstr;
       size_t cur_token;
       char buf[sizeof(uint32_t) * 2];
       size_t read_size;
-      
+
       read_size = fread(buf, 1, sizeof(uint32_t) * 2, f);
       mmapstr = mmap_string_new_len(buf, read_size);
       if (mmapstr != NULL) {
 	cur_token = 0;
 	r = mailimf_cache_int_read(mmapstr, &cur_token, &first);
 	r = mailimf_cache_int_read(mmapstr, &cur_token, &last);
-	
+
 	mmap_string_free(mmapstr);
       }
-      
+
       maillock_read_unlock(seq_filename, fd);
     }
     fclose(f);
@@ -784,7 +787,7 @@ static void write_article_seq(mailsession * session,
   fd = creat(seq_filename, S_IRUSR | S_IWUSR);
   if (fd < 0)
     return;
-  
+
   f = fdopen(fd, "w");
   if (f != NULL) {
     r = maillock_write_lock(seq_filename, fd);
@@ -798,13 +801,13 @@ static void write_article_seq(mailsession * session,
 	if (r == MAIL_NO_ERROR) {
 	  r = mailimf_cache_int_write(mmapstr, &cur_token, first);
 	  r = mailimf_cache_int_write(mmapstr, &cur_token, last);
-	  
+
 	  fwrite(mmapstr->str, 1, mmapstr->len, f);
 	}
 
 	mmap_string_free(mmapstr);
       }
-	  
+
       r = maillock_write_unlock(seq_filename, fd);
     }
     fclose(f);
@@ -817,14 +820,14 @@ static void write_article_seq(mailsession * session,
 static void get_uid_from_filename(char * filename)
 {
   char * p;
-  
+
   if (strcmp(filename, SEQ_FILENAME) == 0)
     * filename = 0;
-  
+
   p = strstr(filename, "-header");
   if (p != NULL)
     * p = 0;
-}  
+}
 
 static int
 nntpdriver_cached_get_envelopes_list(mailsession * session,
@@ -881,8 +884,8 @@ nntpdriver_cached_get_envelopes_list(mailsession * session,
       ancestor_data->nntp_group_name, FLAGS_NAME);
 
   /* fill with cached */
-  
-  for(i = 0 ; i < carray_count(env_list->msg_tab) ; i ++) {   
+
+  for(i = 0 ; i < carray_count(env_list->msg_tab) ; i ++) {
     mailmessage * msg;
     struct mailimf_fields * fields;
 
@@ -900,7 +903,7 @@ nntpdriver_cached_get_envelopes_list(mailsession * session,
       }
     }
   }
-  
+
   mail_cache_db_close_unlock(filename_env, cache_db_env);
 
   r = mailsession_get_envelopes_list(get_ancestor(session), env_list);
@@ -915,17 +918,17 @@ nntpdriver_cached_get_envelopes_list(mailsession * session,
     res = MAIL_ERROR_FILE;
     goto free_mmapstr;
   }
-  
+
   /* add flags */
-  
+
   for(i = 0 ; i < carray_count(env_list->msg_tab) ; i ++) {
     mailmessage * msg;
 
     msg = carray_get(env_list->msg_tab, i);
-    
+
     if (msg->msg_flags == NULL) {
       struct mail_flags * flags;
-      
+
       r = nntpdriver_get_cached_flags(cache_db_flags, mmapstr,
           msg->msg_index, &flags);
       if (r == MAIL_NO_ERROR) {
@@ -940,15 +943,15 @@ nntpdriver_cached_get_envelopes_list(mailsession * session,
       }
     }
   }
-  
+
   mail_cache_db_close_unlock(filename_flags, cache_db_flags);
-  
+
   r = mail_cache_db_open_lock(filename_env, &cache_db_env);
   if (r < 0) {
     res = MAIL_ERROR_FILE;
     goto free_mmapstr;
   }
-  
+
   r = mail_cache_db_open_lock(filename_flags, &cache_db_flags);
   if (r < 0) {
     res = MAIL_ERROR_FILE;
@@ -992,14 +995,14 @@ nntpdriver_cached_get_envelopes_list(mailsession * session,
   write_article_seq(session, first, last);
 
   /* flush cache */
-  
+
   maildriver_cache_clean_up(cache_db_env, cache_db_flags, env_list);
-  
+
   /* remove cache files */
-  
+
   snprintf(cache_dir, PATH_MAX, "%s/%s",
       cached_data->nntp_cache_directory, ancestor_data->nntp_group_name);
-  
+
   mail_cache_db_close_unlock(filename_flags, cache_db_flags);
   mail_cache_db_close_unlock(filename_env, cache_db_env);
   mmap_string_free(mmapstr);
@@ -1057,13 +1060,13 @@ static int nntpdriver_cached_get_message_by_uid(mailsession * session,
 {
   uint32_t num;
   char * p;
-  
+
   if (uid == NULL)
     return MAIL_ERROR_INVAL;
-  
+
   num = strtoul(uid, &p, 10);
   if ((p == uid) || (* p != '\0'))
     return MAIL_ERROR_INVAL;
-  
+
   return nntpdriver_cached_get_message(session, num, result);
 }

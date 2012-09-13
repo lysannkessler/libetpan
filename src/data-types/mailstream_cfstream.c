@@ -43,6 +43,8 @@
 
 #include <pthread.h>
 
+#include "mail.h"
+
 #if LIBETPAN_APPLE_SSL && HAVE_CFNETWORK
 #define CFSTREAM_ENABLED_DEFAULT 1
 #else
@@ -75,33 +77,33 @@ enum {
 struct mailstream_cfstream_data {
   int state;
   CFStreamClientContext streamContext;
-  
+
   CFReadStreamRef readStream;
   void * readBuffer;
   size_t readBufferSize;
   ssize_t readResult;
   int readOpenResult;
   int readSSLResult;
-  
+
   CFWriteStreamRef writeStream;
   const void * writeBuffer;
   size_t writeBufferSize;
   ssize_t writeResult;
   int writeOpenResult;
   int writeSSLResult;
-  
+
   Boolean cancelled;
   CFRunLoopSourceRef cancelSource;
   CFRunLoopSourceContext cancelContext;
-  
+
   Boolean idleInterrupted;
   CFRunLoopSourceRef idleInterruptedSource;
   CFRunLoopSourceContext idleInterruptedContext;
   int idleMaxDelay;
-  
+
   CFRunLoopRef runloop;
   pthread_mutex_t runloop_lock;
-  
+
   int ssl_enabled;
   int ssl_level;
   int ssl_is_server;
@@ -145,14 +147,14 @@ mailstream_low_driver * mailstream_cfstream_driver =
 static struct mailstream_cfstream_data * cfstream_data_new(CFReadStreamRef readStream, CFWriteStreamRef writeStream)
 {
   struct mailstream_cfstream_data * cfstream_data;
-  
+
   cfstream_data = (struct mailstream_cfstream_data * ) malloc(sizeof(* cfstream_data));
   memset(cfstream_data, 0, sizeof(* cfstream_data));
   cfstream_data->readStream = (CFReadStreamRef) CFRetain(readStream);
   cfstream_data->writeStream = (CFWriteStreamRef) CFRetain(writeStream);
   cfstream_data->ssl_level = MAILSTREAM_CFSTREAM_SSL_LEVEL_NEGOCIATED_SSL;
   pthread_mutex_init(&cfstream_data->runloop_lock, NULL);
-  
+
   return cfstream_data;
 }
 
@@ -189,7 +191,7 @@ mailstream * mailstream_cfstream_open_voip(const char * hostname, int16_t port, 
 #if HAVE_CFNETWORK
   mailstream_low * low;
   mailstream * s;
-  
+
   low = mailstream_low_cfstream_open_voip(hostname, port, voip_enabled);
   if (low == NULL) {
     return NULL;
@@ -197,6 +199,7 @@ mailstream * mailstream_cfstream_open_voip(const char * hostname, int16_t port, 
   s = mailstream_new(low, 8192);
   return s;
 #else
+  UNUSED(hostname); UNUSED(port); UNUSED(voip_enabled);
   return NULL;
 #endif
 }
@@ -206,9 +209,9 @@ static void cancelPerform(void *info)
 {
   struct mailstream_cfstream_data * cfstream_data;
   mailstream_low * s;
-  
+
   //fprintf(stderr, "cancelled\n");
-  
+
   s = info;
   cfstream_data = (struct mailstream_cfstream_data *) s->data;
   cfstream_data->cancelled = true;
@@ -217,9 +220,9 @@ static void cancelPerform(void *info)
 static void readDataFromStream(mailstream_low * s)
 {
   struct mailstream_cfstream_data * cfstream_data;
-  
+
   cfstream_data = (struct mailstream_cfstream_data *) s->data;
-  
+
   cfstream_data->readResult = CFReadStreamRead(cfstream_data->readStream,
                                                cfstream_data->readBuffer,
                                                cfstream_data->readBufferSize);
@@ -229,9 +232,9 @@ static void readDataFromStream(mailstream_low * s)
 static void writeDataToStream(mailstream_low * s)
 {
   struct mailstream_cfstream_data * cfstream_data;
-  
+
   cfstream_data = (struct mailstream_cfstream_data *) s->data;
-  
+
   cfstream_data->writeResult = CFWriteStreamWrite(cfstream_data->writeStream,
                                                   cfstream_data->writeBuffer,
                                                   cfstream_data->writeBufferSize);
@@ -242,10 +245,10 @@ static void readStreamCallback(CFReadStreamRef stream, CFStreamEventType eventTy
 {
   mailstream_low * s;
   struct mailstream_cfstream_data * cfstream_data;
-  
+
   s = (mailstream_low *) clientCallBackInfo;
   cfstream_data = (struct mailstream_cfstream_data *) s->data;
-  
+
   switch (eventType) {
     case kCFStreamEventNone:
       break;
@@ -335,10 +338,10 @@ static void writeStreamCallback(CFWriteStreamRef stream, CFStreamEventType event
 {
   mailstream_low * s;
   struct mailstream_cfstream_data * cfstream_data;
-  
+
   s = (mailstream_low *) clientCallBackInfo;
   cfstream_data = (struct mailstream_cfstream_data *) s->data;
-  
+
   switch (eventType) {
     case kCFStreamEventNone:
       break;
@@ -430,57 +433,58 @@ mailstream_low * mailstream_low_cfstream_open_voip(const char * hostname, int16_
   CFOptionFlags readFlags;
   CFOptionFlags writeFlags;
   int r;
-  
+
   hostString = CFStringCreateWithCString(NULL, hostname, kCFStringEncodingUTF8);
   CFStreamCreatePairWithSocketToHost(NULL, hostString, port, &readStream, &writeStream);
   CFRelease(hostString);
 
-#if TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR  
+#if TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR
   if (voip_enabled) {
     CFReadStreamSetProperty(readStream, kCFStreamNetworkServiceType, kCFStreamNetworkServiceTypeVoIP);
     CFWriteStreamSetProperty(writeStream, kCFStreamNetworkServiceType, kCFStreamNetworkServiceTypeVoIP);
   }
 #endif
-  
+
   cfstream_data = cfstream_data_new(readStream, writeStream);
   s = mailstream_low_new(cfstream_data, mailstream_cfstream_driver);
-  
+
   //fprintf(stderr, "open %s %i -> %p\n", hostname, port, s);
-  
+
   /* setup streams */
   cfstream_data->streamContext.info = s;
-  
+
   readFlags = kCFStreamEventOpenCompleted |
   kCFStreamEventHasBytesAvailable |
   kCFStreamEventErrorOccurred |
   kCFStreamEventEndEncountered;
-  
+
   writeFlags = kCFStreamEventOpenCompleted |
   kCFStreamEventCanAcceptBytes |
   kCFStreamEventErrorOccurred |
   kCFStreamEventEndEncountered;
-  
+
   CFReadStreamSetClient(cfstream_data->readStream, readFlags, readStreamCallback, &cfstream_data->streamContext);
   CFWriteStreamSetClient(cfstream_data->writeStream, writeFlags, writeStreamCallback, &cfstream_data->streamContext);
-  
+
   CFRelease(readStream);
   CFRelease(writeStream);
   readStream = NULL;
   writeStream = NULL;
-  
+
   /* setup cancel */
   cfstream_data->cancelContext.info = s;
   cfstream_data->cancelContext.perform = cancelPerform;
   cfstream_data->cancelSource = CFRunLoopSourceCreate(NULL, 0, &cfstream_data->cancelContext);
-  
+
   r = low_open(s);
   if (r < 0) {
     mailstream_low_cfstream_close(s);
     return NULL;
   }
-  
+
   return s;
 #else
+  UNUSED(hostname); UNUSED(port); UNUSED(voip_enabled);
   return NULL;
 #endif
 }
@@ -490,18 +494,19 @@ static int mailstream_low_cfstream_close(mailstream_low * s)
 {
 #if HAVE_CFNETWORK
   struct mailstream_cfstream_data * cfstream_data;
-  
+
   cfstream_data = (struct mailstream_cfstream_data *) s->data;
-  
+
   if (cfstream_data->cancelSource != NULL) {
     CFRelease(cfstream_data->cancelSource);
     cfstream_data->cancelSource = NULL;
   }
-  
+
   cfstream_data_close(cfstream_data);
-  
+
   return 0;
 #else
+  UNUSED(s);
   return 0;
 #endif
 }
@@ -510,12 +515,14 @@ static void mailstream_low_cfstream_free(mailstream_low * s)
 {
 #if HAVE_CFNETWORK
   struct mailstream_cfstream_data * cfstream_data;
-  
+
   cfstream_data = (struct mailstream_cfstream_data *) s->data;
   cfstream_data_free(cfstream_data);
   s->data = NULL;
-  
+
   free(s);
+#else
+  UNUSED(s);
 #endif
 }
 
@@ -553,6 +560,7 @@ static int mailstream_low_cfstream_get_fd(mailstream_low * s)
 
   return native_handle_value;
 #else
+  UNUSED(s);
   return -1;
 #endif
 }
@@ -561,11 +569,11 @@ static int mailstream_low_cfstream_get_fd(mailstream_low * s)
 static void setup_runloop(mailstream_low * s)
 {
   struct mailstream_cfstream_data * cfstream_data;
-  
+
   cfstream_data = (struct mailstream_cfstream_data *) s->data;
-  
+
   pthread_mutex_lock(&cfstream_data->runloop_lock);
-  
+
   cfstream_data->runloop = (CFRunLoopRef) CFRetain(CFRunLoopGetCurrent());
   if (cfstream_data->cancelSource != NULL) {
     CFRunLoopAddSource(cfstream_data->runloop, cfstream_data->cancelSource, kCFRunLoopDefaultMode);
@@ -575,18 +583,18 @@ static void setup_runloop(mailstream_low * s)
     CFRunLoopAddSource(cfstream_data->runloop, cfstream_data->idleInterruptedSource, kCFRunLoopDefaultMode);
     //fprintf(stderr, "add idle source %p\n", cfstream_data->idleInterruptedSource);
   }
-  
+
   pthread_mutex_unlock(&cfstream_data->runloop_lock);
 }
 
 static void unsetup_runloop(mailstream_low * s)
 {
   struct mailstream_cfstream_data * cfstream_data;
-  
+
   cfstream_data = (struct mailstream_cfstream_data *) s->data;
-  
+
   pthread_mutex_lock(&cfstream_data->runloop_lock);
-  
+
   if (cfstream_data->idleInterruptedSource != NULL) {
     CFRunLoopRemoveSource(cfstream_data->runloop, cfstream_data->idleInterruptedSource, kCFRunLoopDefaultMode);
   }
@@ -597,8 +605,8 @@ static void unsetup_runloop(mailstream_low * s)
     CFRelease(cfstream_data->runloop);
     cfstream_data->runloop = NULL;
   }
-  
-  
+
+
   pthread_mutex_unlock(&cfstream_data->runloop_lock);
 }
 
@@ -615,16 +623,16 @@ static int wait_runloop(mailstream_low * s, int wait_state)
   int read_scheduled;
   int write_scheduled;
   int error;
-  
+
   setup_runloop(s);
-  
+
   cfstream_data = (struct mailstream_cfstream_data *) s->data;
   cfstream_data->state = wait_state;
-  
+
   read_scheduled = 0;
   write_scheduled = 0;
   error = WAIT_RUNLOOP_EXIT_NO_ERROR;
-  
+
   switch (wait_state) {
     case STATE_WAIT_OPEN:
       //fprintf(stderr, "wait open\n");
@@ -656,7 +664,7 @@ static int wait_runloop(mailstream_low * s, int wait_state)
       write_scheduled = 1;
       break;
   }
-  
+
   if (read_scheduled) {
     if (CFReadStreamHasBytesAvailable(cfstream_data->readStream)) {
       readStreamCallback(cfstream_data->readStream, kCFStreamEventHasBytesAvailable, s);
@@ -667,13 +675,13 @@ static int wait_runloop(mailstream_low * s, int wait_state)
       writeStreamCallback(cfstream_data->writeStream, kCFStreamEventCanAcceptBytes, s);
     }
   }
-  
+
   while (1) {
     struct timeval timeout;
     CFTimeInterval delay;
     int r;
     int done;
-    
+
     done = 0;
     switch (cfstream_data->state) {
       case STATE_OPEN_READ_DONE:
@@ -712,11 +720,11 @@ static int wait_runloop(mailstream_low * s, int wait_state)
         done = 1;
         break;
     }
-    
+
     if (done) {
       break;
     }
-    
+
     if (wait_state == STATE_WAIT_IDLE) {
       timeout.tv_sec = cfstream_data->idleMaxDelay;
       timeout.tv_usec = 0;
@@ -725,7 +733,7 @@ static int wait_runloop(mailstream_low * s, int wait_state)
       timeout = mailstream_network_delay;
     }
     delay = (CFTimeInterval) timeout.tv_sec + (CFTimeInterval) timeout.tv_usec / (CFTimeInterval) 1e6;
-    
+
     r = CFRunLoopRunInMode(kCFRunLoopDefaultMode, delay, true);
     if (r == kCFRunLoopRunTimedOut) {
       error = WAIT_RUNLOOP_EXIT_TIMEOUT;
@@ -742,19 +750,19 @@ static int wait_runloop(mailstream_low * s, int wait_state)
       }
     }
   }
-  
+
   if (read_scheduled) {
     CFReadStreamUnscheduleFromRunLoop(cfstream_data->readStream, cfstream_data->runloop, kCFRunLoopDefaultMode);
   }
   if (write_scheduled) {
     CFWriteStreamUnscheduleFromRunLoop(cfstream_data->writeStream, cfstream_data->runloop, kCFRunLoopDefaultMode);
   }
-  
+
   unsetup_runloop(s);
-  
+
   if (error != WAIT_RUNLOOP_EXIT_NO_ERROR)
     return error;
-  
+
   return WAIT_RUNLOOP_EXIT_NO_ERROR;
 }
 #endif
@@ -765,27 +773,28 @@ static ssize_t mailstream_low_cfstream_read(mailstream_low * s,
 #if HAVE_CFNETWORK
   struct mailstream_cfstream_data * cfstream_data;
   int r;
-  
+
   cfstream_data = (struct mailstream_cfstream_data *) s->data;
   cfstream_data->readBuffer = buf;
   cfstream_data->readBufferSize = count;
-  
+
   if (cfstream_data->cancelled) {
     return -1;
   }
-  
+
   if (CFReadStreamHasBytesAvailable(cfstream_data->readStream)) {
     readDataFromStream(s);
     return cfstream_data->readResult;
   }
-  
+
   r = wait_runloop(s, STATE_WAIT_READ);
   if (r != WAIT_RUNLOOP_EXIT_NO_ERROR) {
     return -1;
   }
-  
+
   return cfstream_data->readResult;
 #else
+  UNUSED(s); UNUSED(buf); UNUSED(count);
   return -1;
 #endif
 }
@@ -796,26 +805,27 @@ static ssize_t mailstream_low_cfstream_write(mailstream_low * s,
 #if HAVE_CFNETWORK
   struct mailstream_cfstream_data * cfstream_data;
   int r;
-  
+
   cfstream_data = (struct mailstream_cfstream_data *) s->data;
   cfstream_data->writeBuffer = buf;
   cfstream_data->writeBufferSize = count;
-  
+
   if (cfstream_data->cancelled)
     return -1;
-  
+
   if (CFWriteStreamCanAcceptBytes(cfstream_data->writeStream)) {
     writeDataToStream(s);
     return cfstream_data->writeResult;
   }
-  
+
   r = wait_runloop(s, STATE_WAIT_WRITE);
   if (r != WAIT_RUNLOOP_EXIT_NO_ERROR) {
     return -1;
   }
-  
+
   return cfstream_data->writeResult;
 #else
+  UNUSED(s); UNUSED(buf); UNUSED(count);
   return -1;
 #endif
 }
@@ -825,22 +835,22 @@ static int low_open(mailstream_low * s)
 {
   struct mailstream_cfstream_data * cfstream_data;
   int r;
-  
+
   cfstream_data = (struct mailstream_cfstream_data *) s->data;
-  
+
   CFReadStreamOpen(cfstream_data->readStream);
   CFWriteStreamOpen(cfstream_data->writeStream);
-  
+
   r = wait_runloop(s, STATE_WAIT_OPEN);
   if (r != WAIT_RUNLOOP_EXIT_NO_ERROR) {
     return -1;
   }
-  
+
   if (cfstream_data->writeOpenResult < 0)
     return -1;
   if (cfstream_data->readOpenResult < 0)
     return -1;
-  
+
   return 0;
 }
 #endif
@@ -849,19 +859,21 @@ static void mailstream_low_cfstream_cancel(mailstream_low * s)
 {
 #if HAVE_CFNETWORK
   struct mailstream_cfstream_data * cfstream_data;
-  
+
   cfstream_data = (struct mailstream_cfstream_data *) s->data;
-  
+
   pthread_mutex_lock(&cfstream_data->runloop_lock);
-  
+
   if (cfstream_data->cancelSource != NULL) {
     CFRunLoopSourceSignal(cfstream_data->cancelSource);
   }
   if (cfstream_data->runloop != NULL) {
     CFRunLoopWakeUp(cfstream_data->runloop);
   }
-  
+
   pthread_mutex_unlock(&cfstream_data->runloop_lock);
+#else
+  UNUSED(s);
 #endif
 }
 
@@ -870,12 +882,12 @@ int mailstream_cfstream_set_ssl_enabled(mailstream * s, int ssl_enabled)
 #if HAVE_CFNETWORK
   struct mailstream_cfstream_data * cfstream_data;
   int r;
-  
+
   cfstream_data = (struct mailstream_cfstream_data *) s->low->data;
   cfstream_data->ssl_enabled = ssl_enabled;
   if (ssl_enabled) {
     CFMutableDictionaryRef settings;
-    
+
     settings = CFDictionaryCreateMutable(NULL, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
     switch (cfstream_data->ssl_level) {
       case MAILSTREAM_CFSTREAM_SSL_LEVEL_NONE:
@@ -894,7 +906,7 @@ int mailstream_cfstream_set_ssl_enabled(mailstream * s, int ssl_enabled)
         CFDictionarySetValue(settings, kCFStreamSSLLevel, kCFStreamSocketSecurityLevelNegotiatedSSL);
         break;
     }
-    
+
     if ((cfstream_data->ssl_certificate_verification_mask & MAILSTREAM_CFSTREAM_SSL_ALLOWS_EXPIRED_CERTIFICATES) != 0) {
       CFDictionarySetValue(settings, kCFStreamSSLAllowsExpiredCertificates, kCFBooleanTrue);
     }
@@ -907,35 +919,36 @@ int mailstream_cfstream_set_ssl_enabled(mailstream * s, int ssl_enabled)
     if ((cfstream_data->ssl_certificate_verification_mask & MAILSTREAM_CFSTREAM_SSL_DISABLE_VALIDATES_CERTIFICATE_CHAIN) != 0) {
       CFDictionarySetValue(settings, kCFStreamSSLValidatesCertificateChain, kCFBooleanFalse);
     }
-    
+
     CFReadStreamSetProperty(cfstream_data->readStream, kCFStreamPropertySSLSettings, settings);
     CFWriteStreamSetProperty(cfstream_data->writeStream, kCFStreamPropertySSLSettings, settings);
     CFRelease(settings);
   }
   else {
     CFMutableDictionaryRef settings;
-    
+
     settings = CFDictionaryCreateMutable(NULL, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
     CFDictionarySetValue(settings, kCFStreamSSLLevel, kCFStreamSocketSecurityLevelNone);
 		CFReadStreamSetProperty(cfstream_data->readStream, kCFStreamPropertySSLSettings, settings);
 		CFWriteStreamSetProperty(cfstream_data->writeStream, kCFStreamPropertySSLSettings, settings);
     CFRelease(settings);
-    
+
     //fprintf(stderr, "is not ssl\n");
   }
-  
+
   r = wait_runloop(s->low, STATE_WAIT_SSL);
   if (r != WAIT_RUNLOOP_EXIT_NO_ERROR) {
     return -1;
   }
-  
+
   if (cfstream_data->writeSSLResult < 0)
     return -1;
   if (cfstream_data->readSSLResult < 0)
     return -1;
-  
+
   return 0;
 #else
+  UNUSED(s); UNUSED(ssl_enabled);
   return -1;
 #endif
 }
@@ -947,6 +960,7 @@ int mailstream_cfstream_is_ssl_enabled(mailstream * s)
   cfstream_data = (struct mailstream_cfstream_data *) s->low->data;
   return cfstream_data->ssl_enabled;
 #else
+  UNUSED(s);
   return 0;
 #endif
 }
@@ -957,6 +971,8 @@ void mailstream_cfstream_set_ssl_verification_mask(mailstream * s, int verificat
   struct mailstream_cfstream_data * cfstream_data;
   cfstream_data = (struct mailstream_cfstream_data *) s->low->data;
   cfstream_data->ssl_certificate_verification_mask = verification_mask;
+#else
+  UNUSED(s); UNUSED(verification_mask);
 #endif
 }
 
@@ -965,7 +981,7 @@ void mailstream_cfstream_set_ssl_peer_name(mailstream * s, const char * peer_nam
 #if HAVE_CFNETWORK
   struct mailstream_cfstream_data * cfstream_data;
   cfstream_data = (struct mailstream_cfstream_data *) s->low->data;
-  
+
   if (cfstream_data->ssl_peer_name != peer_name) {
     free(cfstream_data->ssl_peer_name);
     cfstream_data->ssl_peer_name = NULL;
@@ -973,6 +989,8 @@ void mailstream_cfstream_set_ssl_peer_name(mailstream * s, const char * peer_nam
       cfstream_data->ssl_peer_name = strdup(peer_name);
     }
   }
+#else
+  UNUSED(s); UNUSED(peer_name);
 #endif
 }
 
@@ -982,6 +1000,8 @@ void mailstream_cfstream_set_ssl_is_server(mailstream * s, int is_server)
   struct mailstream_cfstream_data * cfstream_data;
   cfstream_data = (struct mailstream_cfstream_data *) s->low->data;
   cfstream_data->ssl_is_server = is_server;
+#else
+  UNUSED(s); UNUSED(is_server);
 #endif
 }
 
@@ -991,6 +1011,8 @@ void mailstream_cfstream_set_ssl_level(mailstream * s, int ssl_level)
   struct mailstream_cfstream_data * cfstream_data;
   cfstream_data = (struct mailstream_cfstream_data *) s->low->data;
   cfstream_data->ssl_level = ssl_level;
+#else
+  UNUSED(s); UNUSED(ssl_level);
 #endif
 }
 
@@ -999,10 +1021,10 @@ int mailstream_cfstream_wait_idle(mailstream * s, int max_idle_delay)
 #if HAVE_CFNETWORK
   struct mailstream_cfstream_data * cfstream_data;
   int r;
-  
+
   cfstream_data = (struct mailstream_cfstream_data *) s->low->data;
   cfstream_data->idleMaxDelay = max_idle_delay;
-  
+
   r = wait_runloop(s->low, STATE_WAIT_IDLE);
   switch (r) {
     case WAIT_RUNLOOP_EXIT_TIMEOUT:
@@ -1014,6 +1036,7 @@ int mailstream_cfstream_wait_idle(mailstream * s, int max_idle_delay)
   }
   return MAILSTREAM_IDLE_HASDATA;
 #else
+  UNUSED(s); UNUSED(max_idle_delay);
   return MAILSTREAM_IDLE_ERROR;
 #endif
 }
@@ -1023,10 +1046,10 @@ static void idleInterruptedPerform(void *info)
 {
   struct mailstream_cfstream_data * cfstream_data;
   mailstream * s;
-  
+
   s = info;
   //fprintf(stderr, "interrupt idle\n");
-  
+
   cfstream_data = (struct mailstream_cfstream_data *) s->low->data;
   cfstream_data->idleInterrupted = true;
 }
@@ -1036,12 +1059,14 @@ void mailstream_cfstream_setup_idle(mailstream * s)
 {
 #if HAVE_CFNETWORK
   struct mailstream_cfstream_data * cfstream_data;
-  
+
   cfstream_data = (struct mailstream_cfstream_data *) s->low->data;
   cfstream_data->idleInterrupted = false;
   cfstream_data->idleInterruptedContext.info = s;
   cfstream_data->idleInterruptedContext.perform = idleInterruptedPerform;
   cfstream_data->idleInterruptedSource = CFRunLoopSourceCreate(NULL, 0, &cfstream_data->idleInterruptedContext);
+#else
+  UNUSED(s);
 #endif
 }
 
@@ -1049,12 +1074,14 @@ void mailstream_cfstream_unsetup_idle(mailstream * s)
 {
 #if HAVE_CFNETWORK
   struct mailstream_cfstream_data * cfstream_data;
-  
+
   cfstream_data = (struct mailstream_cfstream_data *) s->low->data;
   if (cfstream_data->idleInterruptedSource != NULL) {
     CFRelease(cfstream_data->idleInterruptedSource);
     cfstream_data->idleInterruptedSource = NULL;
   }
+#else
+  UNUSED(s);
 #endif
 }
 
@@ -1062,18 +1089,20 @@ void mailstream_cfstream_interrupt_idle(mailstream * s)
 {
 #if HAVE_CFNETWORK
   struct mailstream_cfstream_data * cfstream_data;
-  
+
   cfstream_data = (struct mailstream_cfstream_data *) s->low->data;
-  
+
   pthread_mutex_lock(&cfstream_data->runloop_lock);
-  
+
   if (cfstream_data->idleInterruptedSource != NULL) {
     CFRunLoopSourceSignal(cfstream_data->idleInterruptedSource);
   }
   if (cfstream_data->runloop != NULL) {
     CFRunLoopWakeUp(cfstream_data->runloop);
   }
-  
+
   pthread_mutex_unlock(&cfstream_data->runloop_lock);
+#else
+  UNUSED(s);
 #endif
 }

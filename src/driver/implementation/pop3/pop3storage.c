@@ -73,7 +73,7 @@ int pop3_mailstorage_init(struct mailstorage * storage,
     const char * pop3_cache_directory, const char * pop3_flags_directory)
 {
   char * sasl_auth_type;
-  
+
   sasl_auth_type = NULL;
   switch (pop3_auth_type) {
   case POP3_AUTH_TYPE_APOP:
@@ -83,7 +83,7 @@ int pop3_mailstorage_init(struct mailstorage * storage,
     sasl_auth_type = POP3_SASL_AUTH_TYPE_TRY_APOP;
     break;
   }
-  
+
   return pop3_mailstorage_init_sasl(storage,
       pop3_servername, pop3_port,
       pop3_command,
@@ -146,7 +146,7 @@ int pop3_mailstorage_init_sasl_with_local_address(struct mailstorage * storage,
   pop3_storage = malloc(sizeof(* pop3_storage));
   if (pop3_storage == NULL)
     goto err;
-  
+
   if (pop3_servername != NULL) {
     pop3_storage->pop3_servername = strdup(pop3_servername);
     if (pop3_storage->pop3_servername == NULL)
@@ -164,11 +164,11 @@ int pop3_mailstorage_init_sasl_with_local_address(struct mailstorage * storage,
   else {
     pop3_storage->pop3_local_address = NULL;
   }
-  
+
   pop3_storage->pop3_local_port = pop3_local_port;
-  
+
   pop3_storage->pop3_connection_type = pop3_connection_type;
-  
+
   if (pop3_port == 0) {
     switch (pop3_connection_type) {
     case CONNECTION_TYPE_PLAIN:
@@ -192,7 +192,7 @@ int pop3_mailstorage_init_sasl_with_local_address(struct mailstorage * storage,
   }
 
   pop3_storage->pop3_port = pop3_port;
-  
+
   if (pop3_command != NULL) {
     pop3_storage->pop3_command = strdup(pop3_command);
     if (pop3_storage->pop3_command == NULL)
@@ -200,11 +200,11 @@ int pop3_mailstorage_init_sasl_with_local_address(struct mailstorage * storage,
   }
   else
     pop3_storage->pop3_command = NULL;
-  
+
   pop3_storage->pop3_auth_type = POP3_AUTH_TYPE_PLAIN;
-  
+
   pop3_storage->pop3_sasl.sasl_enabled = (auth_type != NULL);
-  
+
   if (auth_type != NULL) {
     if (strcmp(auth_type, POP3_SASL_AUTH_TYPE_APOP) == 0) {
       pop3_storage->pop3_auth_type = POP3_AUTH_TYPE_APOP;
@@ -215,7 +215,7 @@ int pop3_mailstorage_init_sasl_with_local_address(struct mailstorage * storage,
       auth_type = NULL;
     }
   }
-  
+
   if (auth_type != NULL) {
     pop3_storage->pop3_sasl.sasl_auth_type = strdup(auth_type);
     if (pop3_storage->pop3_sasl.sasl_auth_type == NULL)
@@ -223,7 +223,7 @@ int pop3_mailstorage_init_sasl_with_local_address(struct mailstorage * storage,
   }
   else
     pop3_storage->pop3_sasl.sasl_auth_type = NULL;
-  
+
   if (server_fqdn != NULL) {
     pop3_storage->pop3_sasl.sasl_server_fqdn = strdup(server_fqdn);
     if (pop3_storage->pop3_sasl.sasl_server_fqdn == NULL)
@@ -231,7 +231,7 @@ int pop3_mailstorage_init_sasl_with_local_address(struct mailstorage * storage,
   }
   else
     pop3_storage->pop3_sasl.sasl_server_fqdn = NULL;
-  
+
   if (local_ip_port != NULL) {
     pop3_storage->pop3_sasl.sasl_local_ip_port = strdup(local_ip_port);
     if (pop3_storage->pop3_sasl.sasl_local_ip_port == NULL)
@@ -239,7 +239,7 @@ int pop3_mailstorage_init_sasl_with_local_address(struct mailstorage * storage,
   }
   else
     pop3_storage->pop3_sasl.sasl_local_ip_port = NULL;
-  
+
   if (remote_ip_port != NULL) {
     pop3_storage->pop3_sasl.sasl_remote_ip_port = strdup(remote_ip_port);
     if (pop3_storage->pop3_sasl.sasl_remote_ip_port == NULL)
@@ -247,7 +247,7 @@ int pop3_mailstorage_init_sasl_with_local_address(struct mailstorage * storage,
   }
   else
     pop3_storage->pop3_sasl.sasl_remote_ip_port = NULL;
-  
+
   if (login != NULL) {
     pop3_storage->pop3_sasl.sasl_login = strdup(login);
     if (pop3_storage->pop3_sasl.sasl_login == NULL)
@@ -279,7 +279,7 @@ int pop3_mailstorage_init_sasl_with_local_address(struct mailstorage * storage,
   }
   else
     pop3_storage->pop3_sasl.sasl_realm = NULL;
-  
+
   pop3_storage->pop3_cached = pop3_cached;
 
   if (pop3_cached && (pop3_cache_directory != NULL) &&
@@ -311,12 +311,12 @@ int pop3_mailstorage_init_sasl_with_local_address(struct mailstorage * storage,
     if (pop3_storage->pop3_password == NULL)
       goto free_copy_login;
   }
-  
+
   storage->sto_data = pop3_storage;
   storage->sto_driver = &pop3_mailstorage_driver;
-  
+
   return MAIL_NO_ERROR;
-  
+
  free_copy_login:
   free(pop3_storage->pop3_login);
  free_cache_directory:
@@ -352,15 +352,15 @@ int pop3_mailstorage_init_sasl_with_local_address(struct mailstorage * storage,
 static void pop3_mailstorage_uninitialize(struct mailstorage * storage)
 {
   struct pop3_mailstorage * pop3_storage;
-  
+
   pop3_storage = storage->sto_data;
-  
+
   free(pop3_storage->pop3_password);
   free(pop3_storage->pop3_login);
-  
+
   free(pop3_storage->pop3_flags_directory);
   free(pop3_storage->pop3_cache_directory);
-  
+
   free(pop3_storage->pop3_sasl.sasl_realm);
   free(pop3_storage->pop3_sasl.sasl_password);
   free(pop3_storage->pop3_sasl.sasl_auth_name);
@@ -369,12 +369,12 @@ static void pop3_mailstorage_uninitialize(struct mailstorage * storage)
   free(pop3_storage->pop3_sasl.sasl_local_ip_port);
   free(pop3_storage->pop3_sasl.sasl_server_fqdn);
   free(pop3_storage->pop3_sasl.sasl_auth_type);
-  
+
   free(pop3_storage->pop3_command);
   free(pop3_storage->pop3_local_address);
   free(pop3_storage->pop3_servername);
   free(pop3_storage);
-  
+
   storage->sto_data = NULL;
 }
 
@@ -432,7 +432,7 @@ static int pop3_mailstorage_connect(struct mailstorage * storage)
   if (auth_type != -1) {
     mailsession_parameters(session, POP3DRIVER_SET_AUTH_TYPE, &auth_type);
   }
-  
+
   r = mailstorage_generic_auth_sasl(session, r,
       pop3_storage->pop3_sasl.sasl_auth_type,
       pop3_storage->pop3_sasl.sasl_server_fqdn,
@@ -446,7 +446,7 @@ static int pop3_mailstorage_connect(struct mailstorage * storage)
     if (pop3_storage->pop3_auth_type == POP3_AUTH_TYPE_TRY_APOP) {
       /* try in clear authentication */
       mailsession_free(session);
-      
+
       pop3_storage->pop3_auth_type = POP3_AUTH_TYPE_PLAIN;
       r = mailstorage_connect(storage);
       pop3_storage->pop3_auth_type = POP3_AUTH_TYPE_TRY_APOP;
@@ -454,16 +454,16 @@ static int pop3_mailstorage_connect(struct mailstorage * storage)
         res = r;
         return res;
       }
-      
+
       return MAIL_NO_ERROR;
     }
-    
+
     res = r;
     goto free;
   }
-  
+
   storage->sto_session = session;
-  
+
   return MAIL_NO_ERROR;
 
  free:
@@ -475,8 +475,9 @@ static int pop3_mailstorage_connect(struct mailstorage * storage)
 static int pop3_mailstorage_get_folder_session(struct mailstorage * storage,
     char * pathname, mailsession ** result)
 {
+  UNUSED(pathname);
   * result = storage->sto_session;
- 
+
   return MAIL_NO_ERROR;
 }
 

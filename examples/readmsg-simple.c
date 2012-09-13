@@ -22,6 +22,7 @@ int main(int argc, char ** argv)
   struct mailstorage * storage;
   int cached;
   struct mailfolder * folder;
+  unsigned long bytes_written;
 
   /* get options */
 
@@ -67,7 +68,7 @@ int main(int argc, char ** argv)
     char * data;
     size_t size;
 
-    msg_num = strtoul(argv[optind], NULL, 10);
+    msg_num = atoi(argv[optind]);
     
     r = mailsession_get_message(folder->fld_session, msg_num, &msg);
     if (r != MAIL_NO_ERROR) {
@@ -85,8 +86,8 @@ int main(int argc, char ** argv)
       continue;
     }
 
-    r = fwrite(data, 1, size, stdout);
-    if (r != (int) size) {
+    bytes_written = fwrite(data, 1, size, stdout);
+    if (bytes_written != size) {
       printf("** failed to dump message %i on stdout\n", msg_num);
       mailmessage_fetch_result_free(msg, data);
       mailmessage_free(msg);

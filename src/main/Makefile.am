@@ -36,7 +36,8 @@ EXTRA_DIST = libetpan_version.h.in
 
 etpaninclude_HEADERS = libetpan.h libetpan_version.h
 
-AM_CPPFLAGS = -I$(top_builddir)/include
+AM_CPPFLAGS = $(WERROR) \
+	-I$(top_builddir)/include
 
 noinst_LTLIBRARIES = libmain.la
 

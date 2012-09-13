@@ -46,6 +46,7 @@
 #include "maildriver_tools.h"
 #include "pop3driver_tools.h"
 #include "mailmessage.h"
+#include "mail.h"
 
 static int pop3driver_initialize(mailsession * session);
 
@@ -185,14 +186,14 @@ static void pop3driver_uninitialize(mailsession * session)
 
   mailpop3_free(data->pop3_session);
   free(data);
-  
+
   session->sess_data = NULL;
 }
 
 static int pop3driver_connect_stream(mailsession * session, mailstream * s)
 {
   int r;
- 
+
   r = mailpop3_connect(get_pop3_session(session), s);
 
   switch (r) {
@@ -234,7 +235,7 @@ static int pop3driver_parameters(mailsession * session,
       data->pop3_auth_type = * param;
       return MAIL_NO_ERROR;
     }
-    break; 
+    break;
   case POP3DRIVER_CACHED_SET_SSL_CALLBACK:
     data->pop3_ssl_callback = value;
     break;
@@ -242,7 +243,7 @@ static int pop3driver_parameters(mailsession * session,
     data->pop3_ssl_cb_data = value;
     break;
   }
-  
+
   return MAIL_ERROR_INVAL;
 }
 
@@ -305,15 +306,15 @@ static int pop3driver_status_folder(mailsession * session, const char * mb,
 {
   uint32_t count;
   int r;
-  
+
   r = pop3driver_messages_number(session, mb, &count);
   if (r != MAIL_NO_ERROR)
     return r;
-          
+
   * result_messages = count;
   * result_recent = count;
   * result_unseen = count;
-  
+
   return MAIL_NO_ERROR;
 }
 
@@ -322,6 +323,7 @@ static int pop3driver_messages_number(mailsession * session, const char * mb,
 {
   carray * msg_tab;
   int r;
+  UNUSED(mb);
 
   r = mailpop3_list(get_pop3_session(session), &msg_tab);
   if (r != MAILPOP3_NO_ERROR) {
@@ -402,34 +404,34 @@ static int pop3driver_get_message_by_uid(mailsession * session,
   struct mailpop3_msg_info * msg_info;
   int found;
   unsigned int i;
-  
+
   if (uid == NULL)
     return MAIL_ERROR_INVAL;
-  
+
   pop3 = get_pop3_session(session);
-  
+
   found = 0;
-  
+
   /* iterate all messages and look for uid */
   for(i = 0 ; i < carray_count(pop3->pop3_msg_tab) ; i++) {
     msg_info = carray_get(pop3->pop3_msg_tab, i);
-    
+
     if (msg_info == NULL)
       continue;
-    
+
     if (msg_info->msg_deleted)
       continue;
-    
+
     /* uid found, stop looking */
     if (strcmp(msg_info->msg_uidl, uid) == 0) {
       found = 1;
       break;
     }
   }
-  
+
   if (!found)
     return MAIL_ERROR_MSG_NOT_FOUND;
-  
+
   return pop3driver_get_message(session, msg_info->msg_index, result);
 }
 
@@ -446,6 +448,6 @@ static int pop3driver_login_sasl(mailsession * session,
   r = mailpop3_auth(get_pop3_session(session),
       auth_type, server_fqdn, local_ip_port, remote_ip_port,
       login, auth_name, password, realm);
-  
+
   return pop3driver_pop3_error_to_mail_error(r);
 }

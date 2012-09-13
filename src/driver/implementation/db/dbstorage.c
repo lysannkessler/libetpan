@@ -68,20 +68,20 @@ int db_mailstorage_init(struct mailstorage * storage,
     char * db_pathname)
 {
   struct db_mailstorage * db_storage;
-  
+
   db_storage = malloc(sizeof(* db_storage));
   if (db_storage == NULL)
     goto err;
-  
+
   db_storage->db_pathname = strdup(db_pathname);
   if (db_storage->db_pathname == NULL)
     goto free;
-  
+
   storage->sto_data = db_storage;
   storage->sto_driver = &db_mailstorage_driver;
-  
+
   return MAIL_NO_ERROR;
-  
+
  free:
   free(db_storage);
  err:
@@ -95,7 +95,7 @@ static void db_mailstorage_uninitialize(struct mailstorage * storage)
   db_storage = storage->sto_data;
   free(db_storage->db_pathname);
   free(db_storage);
-  
+
   storage->sto_data = NULL;
 }
 
@@ -110,13 +110,13 @@ static int db_mailstorage_connect(struct mailstorage * storage)
   db_storage = storage->sto_data;
 
   driver = db_session_driver;
-  
+
   session = mailsession_new(driver);
   if (session == NULL) {
     res = MAIL_ERROR_MEMORY;
     goto err;
   }
-  
+
   r = mailsession_connect_path(session, db_storage->db_pathname);
   switch (r) {
   case MAIL_NO_ERROR_NON_AUTHENTICATED:
@@ -127,11 +127,11 @@ static int db_mailstorage_connect(struct mailstorage * storage)
     res = r;
     goto free;
   }
-  
+
   storage->sto_session = session;
-  
+
   return MAIL_NO_ERROR;
-  
+
  free:
   mailsession_free(session);
  err:
@@ -142,6 +142,7 @@ static int
 db_mailstorage_get_folder_session(struct mailstorage * storage,
     char * pathname, mailsession ** result)
 {
+  UNUSED(pathname);
   * result = storage->sto_session;
 
   return MAIL_NO_ERROR;

@@ -37,6 +37,7 @@
 #include "mailimap_keywords.h"
 #include "mailimap_extension.h"
 #include "annotatemore.h"
+#include "mail.h"
 
 #include <stdlib.h>
 
@@ -209,7 +210,7 @@ mailimap_annotatemore_entry_att_parse(mailstream * fd, MMAPString *buffer,
   struct mailimap_annotatemore_entry_att * entry_att;
   int r;
   int res;
-  
+
   cur_token = * indx;
   entry = NULL;
 
@@ -260,7 +261,7 @@ mailimap_annotatemore_entry_att_parse(mailstream * fd, MMAPString *buffer,
   * indx = cur_token;
 
   return MAILIMAP_NO_ERROR;
-  
+
  list_free:
   clist_foreach(list,
     (clist_func) mailimap_annotatemore_att_value_free, NULL);
@@ -363,6 +364,7 @@ mailimap_annotatemore_text_code_annotatemore_parse(mailstream * fd,
   size_t cur_token;
   int r;
   int res;
+  UNUSED(progr_rate); UNUSED(progr_fun);
 
   cur_token = * indx;
 

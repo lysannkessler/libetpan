@@ -66,6 +66,7 @@
 #include "maildirdriver_tools.h"
 #include "mailmessage.h"
 #include "generic_cache.h"
+#include "mail.h"
 
 static int initialize(mailsession * session);
 
@@ -182,15 +183,15 @@ static int initialize(mailsession * session)
     goto err;
 
   data->md_session = NULL;
-  
+
   data->md_flags_store = mail_flags_store_new();
   if (data->md_flags_store == NULL)
     goto free;
 
   session->sess_data = data;
-  
+
   return MAIL_NO_ERROR;
-  
+
  free:
   free(data);
  err:
@@ -200,18 +201,18 @@ static int initialize(mailsession * session)
 static void uninitialize(mailsession * session)
 {
   struct maildir_session_state_data * data;
-  
+
   data = get_data(session);
 
   if (data->md_session != NULL)
     flags_store_process(data->md_session, data->md_flags_store);
-  
+
   mail_flags_store_free(data->md_flags_store);
   if (data->md_session != NULL)
     maildir_free(data->md_session);
-  
+
   free(data);
-  
+
   session->sess_data = NULL;
 }
 
@@ -221,7 +222,7 @@ static int connect_path(mailsession * session, const char * path)
   struct maildir * md;
   int res;
   int r;
-  
+
   if (get_maildir_session(session) != NULL) {
     res = MAIL_ERROR_BAD_STATE;
     goto err;
@@ -232,7 +233,7 @@ static int connect_path(mailsession * session, const char * path)
     res = MAIL_ERROR_MEMORY;
     goto err;
   }
-  
+
   r = maildir_update(md);
   if (r != MAILDIR_NO_ERROR) {
     res = maildirdriver_maildir_error_to_mail_error(r);
@@ -240,9 +241,9 @@ static int connect_path(mailsession * session, const char * path)
   }
 
   get_data(session)->md_session = md;
-  
+
   return MAIL_NO_ERROR;
-  
+
  free:
   maildir_free(md);
  err:
@@ -252,13 +253,13 @@ static int connect_path(mailsession * session, const char * path)
 static int logout(mailsession * session)
 {
   struct maildir * md;
-  
+
   check_folder(session);
-  
+
   md = get_maildir_session(session);
   if (md == NULL)
     return MAIL_ERROR_BAD_STATE;
-  
+
   maildir_free(md);
   get_data(session)->md_session = NULL;
 
@@ -277,23 +278,24 @@ static int status_folder(mailsession * session, const char * mb,
   uint32_t messages;
   uint32_t recent;
   uint32_t unseen;
+  UNUSED(mb);
 
   check_folder(session);
-  
+
   md = get_maildir_session(session);
   if (md == NULL)
     return MAIL_ERROR_BAD_STATE;
-  
+
   r = maildir_update(md);
   if (r != MAILDIR_NO_ERROR)
     return maildirdriver_maildir_error_to_mail_error(r);
-  
+
   messages = 0;
   recent = 0;
   unseen = 0;
   for(i = 0 ; i < carray_count(md->mdir_msg_list) ; i ++) {
     struct maildir_msg * msg;
-    
+
     msg = carray_get(md->mdir_msg_list, i);
     if ((msg->msg_flags & MAILDIR_FLAG_NEW) != 0)
       recent ++;
@@ -301,7 +303,7 @@ static int status_folder(mailsession * session, const char * mb,
       unseen ++;
     messages ++;
   }
-  
+
   * result_messages = messages;
   * result_recent = recent;
   * result_unseen = unseen;
@@ -314,17 +316,18 @@ static int messages_number(mailsession * session, const char * mb,
 {
   struct maildir * md;
   int r;
+  UNUSED(mb);
 
   md = get_maildir_session(session);
   if (md == NULL)
     return MAIL_ERROR_BAD_STATE;
-  
+
   r = maildir_update(md);
   if (r != MAILDIR_NO_ERROR)
     return maildirdriver_maildir_error_to_mail_error(r);
-  
+
   * result = carray_count(md->mdir_msg_list);
-  
+
   return MAIL_NO_ERROR;
 }
 
@@ -335,13 +338,13 @@ static int unseen_number(mailsession * session, const char * mb,
   uint32_t recent;
   uint32_t unseen;
   int r;
-  
+
   r = status_folder(session, mb, &messages, &recent, &unseen);
   if (r != MAIL_NO_ERROR)
     return r;
 
   * result = unseen;
- 
+
   return MAIL_NO_ERROR;
 }
 
@@ -352,13 +355,13 @@ static int recent_number(mailsession * session, const char * mb,
   uint32_t recent;
   uint32_t unseen;
   int r;
-  
+
   r = status_folder(session, mb, &messages, &recent, &unseen);
   if (r != MAIL_NO_ERROR)
     return r;
 
   * result = recent;
- 
+
   return MAIL_NO_ERROR;
 }
 
@@ -375,14 +378,14 @@ static int append_message(mailsession * session,
   md = get_maildir_session(session);
   if (md == NULL)
     return MAIL_ERROR_BAD_STATE;
-  
+
   r = maildir_message_add(md, message, size);
   if (r != MAILDIR_NO_ERROR)
     return maildirdriver_maildir_error_to_mail_error(r);
-  
+
   return MAIL_NO_ERROR;
 #endif
-  
+
   return append_message_flags(session, message, size, NULL);
 }
 
@@ -396,35 +399,35 @@ static int append_message_flags(mailsession * session,
   chashdatum key;
   chashdatum value;
   uint32_t md_flags;
-  
+
   md = get_maildir_session(session);
   if (md == NULL)
     return MAIL_ERROR_BAD_STATE;
-  
+
   r = maildir_message_add_uid(md, message, size,
       uid, sizeof(uid));
   if (r != MAILDIR_NO_ERROR)
     return maildirdriver_maildir_error_to_mail_error(r);
-  
+
   if (flags == NULL)
     goto exit;
-  
+
   key.data = uid;
   key.len = strlen(uid);
   r = chash_get(md->mdir_msg_hash, &key, &value);
   if (r < 0)
     goto exit;
-  
+
   md_msg = value.data;
-  
+
   md_flags = maildirdriver_flags_to_maildir_flags(flags->fl_flags);
-  
+
   r = maildir_message_change_flags(md, uid, md_flags);
   if (r != MAILDIR_NO_ERROR)
     goto exit;
-  
+
   return MAIL_NO_ERROR;
-  
+
  exit:
   return MAIL_NO_ERROR;
 }
@@ -436,28 +439,28 @@ static int get_messages_list(mailsession * session,
   int r;
   struct mailmessage_list * env_list;
   int res;
-  
+
   md = get_maildir_session(session);
   if (md == NULL)
     return MAIL_ERROR_BAD_STATE;
-  
+
   r = maildir_update(md);
   if (r != MAILDIR_NO_ERROR) {
     res = maildirdriver_maildir_error_to_mail_error(r);
     goto err;
   }
-  
+
   r = maildir_get_messages_list(session, md,
       maildir_message_driver, &env_list);
   if (r != MAILDIR_NO_ERROR) {
     res = r;
     goto free_list;
   }
-  
+
   * result = env_list;
-  
+
   return MAIL_NO_ERROR;
-  
+
  free_list:
   mailmessage_list_free(env_list);
  err:
@@ -471,27 +474,27 @@ static int get_envelopes_list(mailsession * session,
   struct maildir * md;
   unsigned int i;
   int res;
-  
+
   check_folder(session);
-  
+
   md = get_maildir_session(session);
   if (md == NULL) {
     res = MAIL_ERROR_BAD_STATE;
     goto err;
   }
-  
+
   r = maildir_update(md);
   if (r != MAILDIR_NO_ERROR) {
     res = maildirdriver_maildir_error_to_mail_error(r);
     goto err;
   }
-  
+
   r = maildriver_generic_get_envelopes_list(session, env_list);
   if (r != MAIL_NO_ERROR) {
     res = r;
     goto err;
   }
-  
+
   for(i = 0 ; i < carray_count(env_list->msg_tab) ; i++) {
     struct maildir_msg * md_msg;
     mailmessage * msg;
@@ -499,33 +502,33 @@ static int get_envelopes_list(mailsession * session,
     clist * ext;
     chashdatum key;
     chashdatum value;
-    
+
     msg = carray_get(env_list->msg_tab, i);
-    
+
     key.data = msg->msg_uid;
     key.len = strlen(msg->msg_uid);
     r = chash_get(md->mdir_msg_hash, &key, &value);
     if (r < 0)
       continue;
-    
+
     md_msg = value.data;
-    
+
     driver_flags = maildirdriver_maildir_flags_to_flags(md_msg->msg_flags);
-    
+
     if (msg->msg_flags == NULL) {
       ext = clist_new();
       if (ext == NULL) {
         res = MAIL_ERROR_MEMORY;
         continue;
       }
-      
+
       msg->msg_flags = mail_flags_new(driver_flags, ext);
       if (msg->msg_flags == NULL) {
         clist_free(ext);
         res = MAIL_ERROR_MEMORY;
         continue;
       }
-      
+
       if ((md_msg->msg_flags & MAILDIR_FLAG_NEW) != 0) {
         mail_flags_store_set(get_data(session)->md_flags_store, msg);
       }
@@ -535,9 +538,9 @@ static int get_envelopes_list(mailsession * session,
       msg->msg_flags->fl_flags |= driver_flags;
     }
   }
-  
+
   return MAIL_NO_ERROR;
-  
+
  err:
   return res;
 }
@@ -551,26 +554,26 @@ static int expunge_folder(mailsession * session)
   struct maildir * md;
 
   check_folder(session);
-  
+
   md = get_maildir_session(session);
   if (md == NULL)
     return MAIL_ERROR_BAD_STATE;
-  
+
   r = maildir_update(md);
   if (r != MAILDIR_NO_ERROR) {
     res = maildirdriver_maildir_error_to_mail_error(r);
     goto err;
   }
-  
+
   for(i = 0 ; i < carray_count(md->mdir_msg_list) ; i++) {
     struct maildir_msg * md_msg;
-    
+
     md_msg = carray_get(md->mdir_msg_list, i);
-    
+
     if ((md_msg->msg_flags & MAILDIR_FLAG_TRASHED) != 0)
       maildir_message_remove(md, md_msg->msg_uid);
   }
-  
+
   return MAIL_NO_ERROR;
 
  err:
@@ -582,23 +585,23 @@ static int flags_store_process(struct maildir * md,
     struct mail_flags_store * flags_store)
 {
   unsigned int i;
-  
+
   if (carray_count(flags_store->fls_tab) == 0)
     return MAIL_NO_ERROR;
-  
+
   for(i = 0 ; i < carray_count(flags_store->fls_tab) ; i ++) {
     mailmessage * msg;
     uint32_t md_flags;
-    
+
     msg = carray_get(flags_store->fls_tab, i);
     md_flags = maildirdriver_flags_to_maildir_flags(msg->msg_flags->fl_flags);
     md_flags &= ~MAILDIR_FLAG_NEW;
-    
+
     maildir_message_change_flags(md, msg->msg_uid, md_flags);
   }
-  
+
   mail_flags_store_clear(flags_store);
-  
+
   return MAIL_NO_ERROR;
 }
 
@@ -607,13 +610,13 @@ static int flags_store_process(struct maildir * md,
 static int check_folder(mailsession * session)
 {
   struct mail_flags_store * flags_store;
-  struct maildir_session_state_data * data;  
+  struct maildir_session_state_data * data;
   struct maildir * md;
-  
+
   md = get_maildir_session(session);
   if (md == NULL)
     return MAIL_ERROR_BAD_STATE;
-  
+
   data = get_data(session);
   flags_store = data->md_flags_store;
 
@@ -629,38 +632,38 @@ static int get_message_by_uid(mailsession * session,
   mailmessage * msg;
   char * msg_filename;
   struct stat stat_info;
-  
+
   md = get_maildir_session(session);
-  
+
   /* update maildir data */
-  
+
   r = maildir_update(md);
   if (r != MAILDIR_NO_ERROR) {
     res = maildirdriver_maildir_error_to_mail_error(r);
     goto err;
   }
-  
+
   msg_filename = maildir_message_get(md, uid);
   if (msg_filename == NULL) {
     res = MAIL_ERROR_INVAL;
     goto err;
   }
-  
+
   r = stat(msg_filename, &stat_info);
   free(msg_filename);
   if (r < 0) {
     res = MAIL_ERROR_INVAL;
     goto err;
   }
-  
+
   /* create message */
-  
+
   msg = mailmessage_new();
   if (msg == NULL) {
     res = MAIL_ERROR_MEMORY;
     goto err;
   }
-  
+
   r = mailmessage_init(msg, session, maildir_message_driver,
       0, stat_info.st_size);
   if (r != MAIL_NO_ERROR) {
@@ -668,16 +671,16 @@ static int get_message_by_uid(mailsession * session,
     res = r;
     goto err;
   }
-  
+
   msg->msg_uid = strdup(uid);
   if (msg->msg_uid == NULL) {
     mailmessage_free(msg);
     res = r;
     goto err;
   }
-  
+
   * result = msg;
-  
+
   return MAIL_NO_ERROR;
 
  err:

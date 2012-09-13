@@ -56,8 +56,10 @@
 #define SERVICE_NAME_SMTP "smtp"
 #define SERVICE_TYPE_TCP "tcp"
 
+#ifdef HAVE_CFNETWORK
 static int mailsmtp_cfsocket_connect(mailsmtp * session,
                                      const char * server, uint16_t port);
+#endif
 
 int mailsmtp_socket_connect(mailsmtp * session,
     const char * server, uint16_t port)
@@ -70,7 +72,7 @@ int mailsmtp_socket_connect(mailsmtp * session,
     return mailsmtp_cfsocket_connect(session, server, port);
   }
 #endif
-  
+
   if (port == 0) {
     port = mail_get_service_port(SERVICE_NAME_SMTP, SERVICE_TYPE_TCP);
     if (port == 0)
@@ -116,7 +118,7 @@ int mailsmtp_socket_starttls_with_callback(mailsmtp * session,
     // won't use callback
     return mailsmtp_cfsocket_starttls(session);
   }
-  
+
   r = mailesmtp_starttls(session);
   if (r != MAILSMTP_NO_ERROR)
     return r;
@@ -135,32 +137,34 @@ int mailsmtp_socket_starttls_with_callback(mailsmtp * session,
   return MAILSMTP_NO_ERROR;
 }
 
+#ifdef HAVE_CFNETWORK
 static int mailsmtp_cfsocket_connect(mailsmtp * session,
                                      const char * server, uint16_t port)
 {
   mailstream * stream;
-  
+
   stream = mailstream_cfstream_open(server, port);
   if (stream == NULL) {
     return MAILSMTP_ERROR_CONNECTION_REFUSED;
   }
-  
+
   return mailsmtp_connect(session, stream);
 }
+#endif
 
 static int mailsmtp_cfsocket_starttls(mailsmtp * session)
 {
   int r;
-  
+
   r = mailesmtp_starttls(session);
   if (r != MAILSMTP_NO_ERROR)
     return r;
-  
+
   mailstream_cfstream_set_ssl_verification_mask(session->stream, MAILSTREAM_CFSTREAM_SSL_NO_VERIFICATION);
   r = mailstream_cfstream_set_ssl_enabled(session->stream, 1);
   if (r < 0) {
     return MAILSMTP_ERROR_SSL;
   }
-  
+
   return MAILSMTP_NO_ERROR;
 }

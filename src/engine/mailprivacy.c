@@ -65,35 +65,35 @@ static int recursive_check_privacy(struct mailprivacy * privacy,
 struct mailprivacy * mailprivacy_new(char * tmp_dir, int make_alternative)
 {
   struct mailprivacy * privacy;
-  
+
   privacy = malloc(sizeof(* privacy));
   if (privacy == NULL)
     goto err;
-  
-  privacy->tmp_dir = strdup(tmp_dir); 
+
+  privacy->tmp_dir = strdup(tmp_dir);
   if (privacy->tmp_dir == NULL)
     goto free;
-  
+
   privacy->msg_ref = chash_new(CHASH_DEFAULTSIZE, CHASH_COPYKEY);
   if (privacy->msg_ref == NULL)
     goto free_tmp_dir;
-  
+
   privacy->mmapstr = chash_new(CHASH_DEFAULTSIZE, CHASH_COPYKEY);
   if (privacy->mmapstr == NULL)
     goto free_msg_ref;
-  
+
   privacy->mime_ref = chash_new(CHASH_DEFAULTSIZE, CHASH_COPYKEY);
   if (privacy->mime_ref == NULL)
     goto free_mmapstr;
-  
+
   privacy->protocols = carray_new(16);
   if (privacy->protocols == NULL)
     goto free_mime_ref;
 
   privacy->make_alternative = make_alternative;
-  
+
   return privacy;
-  
+
  free_mime_ref:
   chash_free(privacy->mime_ref);
  free_mmapstr:
@@ -124,13 +124,13 @@ static int msg_is_modified(struct mailprivacy * privacy,
   chashdatum key;
   chashdatum data;
   int r;
-  
+
   if (privacy == NULL)
     return 0;
-  
+
   key.data = &msg;
   key.len = sizeof(msg);
-  
+
   r = chash_get(privacy->msg_ref, &key, &data);
   if (r < 0)
     return 0;
@@ -144,15 +144,15 @@ static int register_msg(struct mailprivacy * privacy,
   chashdatum key;
   chashdatum data;
   int r;
-  
+
   if (privacy == NULL)
     return MAIL_NO_ERROR;
-  
+
   key.data = &msg;
   key.len = sizeof(msg);
   data.data = msg;
   data.len = 0;
-  
+
   r = chash_set(privacy->msg_ref, &key, &data, NULL);
   if (r < 0)
     return MAIL_ERROR_MEMORY;
@@ -164,10 +164,10 @@ static void unregister_message(struct mailprivacy * privacy,
     mailmessage * msg)
 {
   chashdatum key;
-  
+
   key.data = &msg;
   key.len = sizeof(msg);
-  
+
   chash_delete(privacy->msg_ref, &key, NULL);
 }
 
@@ -176,10 +176,10 @@ static int result_is_mmapstr(struct mailprivacy * privacy, char * str)
   chashdatum key;
   chashdatum data;
   int r;
-  
+
   key.data = &str;
   key.len = sizeof(str);
-  
+
   r = chash_get(privacy->mmapstr, &key, &data);
   if (r < 0)
     return 0;
@@ -193,16 +193,16 @@ static int register_result_mmapstr(struct mailprivacy * privacy,
   chashdatum key;
   chashdatum data;
   int r;
-  
+
   key.data = &content;
   key.len = sizeof(content);
   data.data = content;
   data.len = 0;
-  
+
   r = chash_set(privacy->mmapstr, &key, &data, NULL);
   if (r < 0)
     return MAIL_ERROR_MEMORY;
-  
+
   return 0;
 }
 
@@ -210,12 +210,12 @@ static void unregister_result_mmapstr(struct mailprivacy * privacy,
     char * str)
 {
   chashdatum key;
-  
+
   mmap_string_unref(str);
-  
+
   key.data = &str;
   key.len = sizeof(str);
-  
+
   chash_delete(privacy->mmapstr, &key, NULL);
 }
 
@@ -225,12 +225,12 @@ static int register_mime(struct mailprivacy * privacy,
   chashdatum key;
   chashdatum data;
   int r;
-  
+
   key.data = &mime;
   key.len = sizeof(mime);
   data.data = mime;
   data.len = 0;
-  
+
   r = chash_set(privacy->mime_ref, &key, &data, NULL);
   if (r < 0)
     return MAIL_ERROR_MEMORY;
@@ -242,10 +242,10 @@ static void unregister_mime(struct mailprivacy * privacy,
     struct mailmime * mime)
 {
   chashdatum key;
-  
+
   key.data = &mime;
   key.len = sizeof(mime);
-  
+
   chash_delete(privacy->mime_ref, &key, NULL);
 }
 
@@ -255,10 +255,10 @@ static int mime_is_registered(struct mailprivacy * privacy,
   chashdatum key;
   chashdatum data;
   int r;
-  
+
   key.data = &mime;
   key.len = sizeof(mime);
-  
+
   r = chash_get(privacy->mime_ref, &key, &data);
   if (r < 0)
     return 0;
@@ -271,28 +271,28 @@ static int recursive_register_mime(struct mailprivacy * privacy,
 {
   clistiter * cur;
   int r;
-  
+
   r = register_mime(privacy, mime);
   if (r != MAIL_NO_ERROR)
     return r;
-  
+
   switch (mime->mm_type) {
   case MAILMIME_SINGLE:
     break;
-    
+
   case MAILMIME_MULTIPLE:
     for(cur = clist_begin(mime->mm_data.mm_multipart.mm_mp_list) ;
         cur != NULL ; cur = clist_next(cur)) {
       struct mailmime * child;
-      
+
       child = clist_content(cur);
-      
+
       r = recursive_register_mime(privacy, child);
       if (r != MAIL_NO_ERROR)
         return r;
     }
     break;
-    
+
   case MAILMIME_MESSAGE:
     if (mime->mm_data.mm_message.mm_msg_mime) {
       r = recursive_register_mime(privacy,
@@ -302,7 +302,7 @@ static int recursive_register_mime(struct mailprivacy * privacy,
     }
     break;
   }
-  
+
   return MAIL_NO_ERROR;
 }
 
@@ -310,24 +310,24 @@ void mailprivacy_recursive_unregister_mime(struct mailprivacy * privacy,
     struct mailmime * mime)
 {
   clistiter * cur;
-  
+
   unregister_mime(privacy, mime);
-  
+
   switch (mime->mm_type) {
   case MAILMIME_SINGLE:
     break;
-    
+
   case MAILMIME_MULTIPLE:
     for(cur = clist_begin(mime->mm_data.mm_multipart.mm_mp_list) ;
         cur != NULL ; cur = clist_next(cur)) {
       struct mailmime * child;
-      
+
       child = clist_content(cur);
-      
+
       mailprivacy_recursive_unregister_mime(privacy, child);
     }
     break;
-    
+
   case MAILMIME_MESSAGE:
     if (mime->mm_data.mm_message.mm_msg_mime)
       mailprivacy_recursive_unregister_mime(privacy,
@@ -341,7 +341,7 @@ static void recursive_clear_registered_mime(struct mailprivacy * privacy,
 {
   clistiter * cur;
   struct mailmime_data * data;
-  
+
   switch (mime->mm_type) {
   case MAILMIME_SINGLE:
     if (mime_is_registered(privacy, mime)) {
@@ -352,7 +352,7 @@ static void recursive_clear_registered_mime(struct mailprivacy * privacy,
       }
     }
     break;
-    
+
   case MAILMIME_MULTIPLE:
     if (mime_is_registered(privacy, mime)) {
       data = mime->mm_data.mm_multipart.mm_preamble;
@@ -369,13 +369,13 @@ static void recursive_clear_registered_mime(struct mailprivacy * privacy,
     for(cur = clist_begin(mime->mm_data.mm_multipart.mm_mp_list) ;
         cur != NULL ; cur = clist_next(cur)) {
       struct mailmime * child;
-      
+
       child = clist_content(cur);
-      
+
       recursive_clear_registered_mime(privacy, child);
     }
     break;
-    
+
   case MAILMIME_MESSAGE:
     if (mime->mm_data.mm_message.mm_msg_mime)
       recursive_clear_registered_mime(privacy,
@@ -397,7 +397,7 @@ static void recursive_clear_registered_mime(struct mailprivacy * privacy,
 static void display_recursive_part(struct mailmime * mime)
 {
   clistiter * cur;
-  
+
   fprintf(stderr, "part %p\n", mime->mm_body);
   switch (mime->mm_type) {
   case MAILMIME_SINGLE:
@@ -431,31 +431,31 @@ int mailprivacy_msg_get_bodystructure(struct mailprivacy * privacy,
 {
   int r;
   struct mailmime * mime;
-  
+
   if (msg_info->msg_mime != NULL)
     return MAIL_NO_ERROR;
-  
+
   if (msg_is_modified(privacy, msg_info))
     return MAIL_NO_ERROR;
-  
+
   r = mailmessage_get_bodystructure(msg_info, &mime);
   if (r != MAIL_NO_ERROR)
     return r;
-  
+
   /* modification on message if necessary */
   r = recursive_check_privacy(privacy, msg_info, msg_info->msg_mime);
   if (r != MAIL_NO_ERROR) {
     * result = msg_info->msg_mime;
     return MAIL_NO_ERROR;
   }
-  
+
   r = register_msg(privacy, msg_info);
   if (r != MAIL_NO_ERROR) {
     recursive_clear_registered_mime(privacy, mime);
     mailmessage_flush(msg_info);
     return MAIL_ERROR_MEMORY;
   }
-  
+
   * result = msg_info->msg_mime;
 
   return MAIL_NO_ERROR;
@@ -470,7 +470,7 @@ void mailprivacy_msg_flush(struct mailprivacy * privacy,
       recursive_clear_registered_mime(privacy, msg_info->msg_mime);
     unregister_message(privacy, msg_info);
   }
-  
+
   mailmessage_flush(msg_info);
 }
 
@@ -485,38 +485,38 @@ static int fetch_registered_part(struct mailprivacy * privacy,
   char * content;
   size_t content_len;
   int r;
-  
+
   dummy_msg = mime_message_init(NULL);
   if (dummy_msg == NULL) {
     res = MAIL_ERROR_MEMORY;
     goto err;
   }
-  
+
   r = mime_message_set_tmpdir(dummy_msg, privacy->tmp_dir);
   if (r != MAIL_NO_ERROR) {
     res = MAIL_ERROR_MEMORY;
     goto free_msg;
   }
-  
+
   r = fetch_section(dummy_msg, mime, &content, &content_len);
   if (r != MAIL_NO_ERROR) {
     res = r;
     goto free_msg;
   }
-  
+
   r = register_result_mmapstr(privacy, content);
   if (r != MAIL_NO_ERROR) {
     res = r;
     goto free_fetch;
   }
-  
+
   mailmessage_free(dummy_msg);
-  
+
   * result = content;
   * result_len = content_len;
-  
+
   return MAIL_NO_ERROR;
-  
+
  free_fetch:
   mailmessage_fetch_result_free(dummy_msg, content);
  free_msg:
@@ -550,7 +550,7 @@ int mailprivacy_msg_fetch_section_header(struct mailprivacy * privacy,
     return fetch_registered_part(privacy, mailmessage_fetch_section_header,
         mime, result, result_len);
   }
-  
+
   return mailmessage_fetch_section_header(msg_info, mime, result, result_len);
 }
 
@@ -565,7 +565,7 @@ int mailprivacy_msg_fetch_section_mime(struct mailprivacy * privacy,
     return fetch_registered_part(privacy, mailmessage_fetch_section_mime,
         mime, result, result_len);
   }
-  
+
   return mailmessage_fetch_section_mime(msg_info, mime, result, result_len);
 }
 
@@ -580,7 +580,7 @@ int mailprivacy_msg_fetch_section_body(struct mailprivacy * privacy,
     return fetch_registered_part(privacy, mailmessage_fetch_section_body,
         mime, result, result_len);
   }
-  
+
   return mailmessage_fetch_section_body(msg_info, mime, result, result_len);
 }
 
@@ -590,14 +590,14 @@ void mailprivacy_msg_fetch_result_free(struct mailprivacy * privacy,
 {
   if (msg == NULL)
     return;
-  
+
   if (msg_is_modified(privacy, msg_info)) {
     if (result_is_mmapstr(privacy, msg)) {
       unregister_result_mmapstr(privacy, msg);
       return;
     }
   }
-  
+
   mailmessage_fetch_result_free(msg_info, msg);
 }
 
@@ -606,6 +606,7 @@ int mailprivacy_msg_fetch(struct mailprivacy * privacy,
     char ** result,
     size_t * result_len)
 {
+  UNUSED(privacy);
   return mailmessage_fetch(msg_info, result, result_len);
 }
 
@@ -614,6 +615,7 @@ int mailprivacy_msg_fetch_header(struct mailprivacy * privacy,
     char ** result,
     size_t * result_len)
 {
+  UNUSED(privacy);
   return mailmessage_fetch_header(msg_info, result, result_len);
 }
 
@@ -636,49 +638,49 @@ mime_add_alternative(struct mailprivacy * privacy,
   int r;
   struct mailmime * mime_copy;
   char original_filename[PATH_MAX];
-  
+
   if (mime->mm_parent == NULL)
     goto err;
-  
+
   r = mailmime_new_with_content("multipart/alternative", NULL, &multipart);
   if (r != MAILIMF_NO_ERROR)
     goto err;
-  
+
   r = mailmime_smart_add_part(multipart, alternative);
   if (r != MAILIMF_NO_ERROR) {
     goto free_multipart;
   }
 
   /* get copy of mime part "mime" and set parts */
-  
+
   r = mailprivacy_fetch_mime_body_to_file(privacy,
       original_filename, sizeof(original_filename),
       msg, mime);
   if (r != MAIL_NO_ERROR)
     goto detach_alternative;
-  
+
   r = mailprivacy_get_part_from_file(privacy, 0, 0,
       original_filename, &mime_copy);
   unlink(original_filename);
   if (r != MAIL_NO_ERROR) {
     goto detach_alternative;
   }
-  
+
   r = mailmime_smart_add_part(multipart, mime_copy);
   if (r != MAILIMF_NO_ERROR) {
     goto free_mime_copy;
   }
-  
+
   r = recursive_register_mime(privacy, multipart);
   if (r != MAIL_NO_ERROR)
     goto detach_mime_copy;
-  
+
   mailmime_substitute(mime, multipart);
-  
+
   mailmime_free(mime);
-  
+
   return multipart;
-  
+
  detach_mime_copy:
   mailprivacy_recursive_unregister_mime(privacy, multipart);
   mailmime_remove_part(alternative);
@@ -694,7 +696,7 @@ mime_add_alternative(struct mailprivacy * privacy,
 }
 
 /*
-  recursive_check_privacy returns MAIL_NO_ERROR if at least one 
+  recursive_check_privacy returns MAIL_NO_ERROR if at least one
   part is using a privacy protocol.
 */
 
@@ -707,13 +709,13 @@ static int recursive_check_privacy(struct mailprivacy * privacy,
   struct mailmime * alternative;
   int res;
   struct mailmime * multipart;
-  
+
   if (privacy == NULL)
     return MAIL_NO_ERROR;
-  
+
   if (mime_is_registered(privacy, mime))
     return MAIL_ERROR_INVAL;
-  
+
   r = privacy_handler(privacy, msg, mime, &alternative);
   if (r == MAIL_NO_ERROR) {
     if (privacy->make_alternative) {
@@ -729,30 +731,30 @@ static int recursive_check_privacy(struct mailprivacy * privacy,
       mailmime_free(mime);
       mime = NULL;
     }
-    
+
     return MAIL_NO_ERROR;
   }
   else {
     switch (mime->mm_type) {
     case MAILMIME_SINGLE:
       return MAIL_ERROR_INVAL;
-    
+
     case MAILMIME_MULTIPLE:
       res = MAIL_ERROR_INVAL;
-    
+
       for(cur = clist_begin(mime->mm_data.mm_multipart.mm_mp_list) ;
           cur != NULL ; cur = clist_next(cur)) {
         struct mailmime * child;
-      
+
         child = clist_content(cur);
-      
+
         r = recursive_check_privacy(privacy, msg, child);
         if (r == MAIL_NO_ERROR)
           res = MAIL_NO_ERROR;
       }
-    
+
       return res;
-    
+
     case MAILMIME_MESSAGE:
       if (mime->mm_data.mm_message.mm_msg_mime != NULL)
         return recursive_check_privacy(privacy, msg,
@@ -772,24 +774,24 @@ static int privacy_handler(struct mailprivacy * privacy,
   int r;
   struct mailmime * alternative_mime;
   unsigned int i;
-  
+
   alternative_mime = NULL;
   for(i = 0 ; i < carray_count(privacy->protocols) ; i ++) {
     struct mailprivacy_protocol * protocol;
-    
+
     protocol = carray_get(privacy->protocols, i);
-    
+
     if (protocol->decrypt != NULL) {
       r = protocol->decrypt(privacy, msg, mime, &alternative_mime);
       if (r == MAIL_NO_ERROR) {
-        
+
         * result = alternative_mime;
-        
+
         return MAIL_NO_ERROR;
       }
     }
   }
-  
+
   return MAIL_ERROR_INVAL;
 }
 
@@ -797,11 +799,11 @@ int mailprivacy_register(struct mailprivacy * privacy,
     struct mailprivacy_protocol * protocol)
 {
   int r;
-  
+
   r = carray_add(privacy->protocols, protocol, NULL);
   if (r < 0)
     return MAIL_ERROR_MEMORY;
-  
+
   return MAIL_NO_ERROR;
 }
 
@@ -809,7 +811,7 @@ void mailprivacy_unregister(struct mailprivacy * privacy,
     struct mailprivacy_protocol * protocol)
 {
   unsigned int i;
-  
+
   for(i = 0 ; i < carray_count(privacy->protocols) ; i ++) {
     if (carray_get(privacy->protocols, i) == protocol) {
       carray_delete(privacy->protocols, i);
@@ -822,15 +824,15 @@ static struct mailprivacy_protocol *
 get_protocol(struct mailprivacy * privacy, char * privacy_driver)
 {
   unsigned int i;
-  
+
   for(i = 0 ; i < carray_count(privacy->protocols) ; i ++) {
     struct mailprivacy_protocol * protocol;
-    
+
     protocol = carray_get(privacy->protocols, i);
     if (strcasecmp(protocol->name, privacy_driver) == 0)
       return protocol;
   }
-  
+
   return NULL;
 }
 
@@ -839,15 +841,15 @@ get_encryption(struct mailprivacy_protocol * protocol,
     char * privacy_encryption)
 {
   int i;
-  
+
   for(i = 0 ; i < protocol->encryption_count ; i ++) {
     struct mailprivacy_encryption * encryption;
-    
+
     encryption = &protocol->encryption_tab[i];
     if (strcasecmp(encryption->name, privacy_encryption) == 0)
       return encryption;
   }
-  
+
   return NULL;
 }
 
@@ -873,18 +875,18 @@ int mailprivacy_encrypt_msg(struct mailprivacy * privacy,
   protocol = get_protocol(privacy, privacy_driver);
   if (protocol == NULL)
     return MAIL_ERROR_INVAL;
-  
+
   encryption = get_encryption(protocol, privacy_encryption);
   if (encryption == NULL)
     return MAIL_ERROR_INVAL;
-  
+
   if (encryption->encrypt == NULL)
     return MAIL_ERROR_NOT_IMPLEMENTED;
-  
+
   r = encryption->encrypt(privacy, msg, mime, result);
   if (r != MAIL_NO_ERROR)
     return r;
-  
+
   return MAIL_NO_ERROR;
 }
 
@@ -897,11 +899,11 @@ char * mailprivacy_get_encryption_name(struct mailprivacy * privacy,
   protocol = get_protocol(privacy, privacy_driver);
   if (protocol == NULL)
     return NULL;
-  
+
   encryption = get_encryption(protocol, privacy_encryption);
   if (encryption == NULL)
     return NULL;
-  
+
   return encryption->description;
 }
 
@@ -910,21 +912,21 @@ int mailprivacy_is_encrypted(struct mailprivacy * privacy,
     struct mailmime * mime)
 {
   unsigned int i;
-  
+
   if (mime_is_registered(privacy, mime))
     return 0;
-  
+
   for(i = 0 ; i < carray_count(privacy->protocols) ; i ++) {
     struct mailprivacy_protocol * protocol;
-    
+
     protocol = carray_get(privacy->protocols, i);
-    
+
     if (protocol->is_encrypted != NULL) {
       if (protocol->is_encrypted(privacy, msg, mime))
         return 1;
     }
   }
-  
+
   return 0;
 }
 

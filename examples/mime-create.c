@@ -24,24 +24,24 @@ static struct mailimf_fields * build_fields(void)
   /* build headers */
 
   fields_list = clist_new();
-  
+
   /* build header 'From' */
-  
+
   list = clist_new();
   mb = mailimf_mailbox_new(strdup("DINH =?iso-8859-1?Q?Vi=EAt_Ho=E0?="),
     strdup("dinh.viet.hoa@foobaremail.com"));
   clist_append(list, mb);
   mb_list = mailimf_mailbox_list_new(list);
-  
+
   from = mailimf_from_new(mb_list);
-  
+
   f = mailimf_field_new(MAILIMF_FIELD_FROM,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     from, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL);
 
   clist_append(fields_list, f);
-  
+
   /* build header To */
 
   list = clist_new();
@@ -50,18 +50,18 @@ static struct mailimf_fields * build_fields(void)
   addr = mailimf_address_new(MAILIMF_ADDRESS_MAILBOX, mb, NULL);
   clist_append(list, addr);
   addr_list = mailimf_address_list_new(list);
-  
+
   to = mailimf_to_new(addr_list);
 
   f = mailimf_field_new(MAILIMF_FIELD_TO,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, to, NULL, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL);
-  
+
   clist_append(fields_list, f);
-  
+
   fields = mailimf_fields_new(fields_list);
-  
+
   return fields;
 }
 
@@ -183,7 +183,7 @@ static struct mailmime * get_text_part(const char * mime_type,
 	struct mailmime_parameter * param;
 	struct mailmime_disposition * disposition;
 	struct mailmime_mechanism * encoding;
-    
+
 	encoding = mailmime_mechanism_new(encoding_type, NULL);
 	disposition = mailmime_disposition_new_with_data(MAILMIME_DISPOSITION_TYPE_INLINE,
 		NULL, NULL, NULL, NULL, (size_t) -1);
@@ -195,7 +195,7 @@ static struct mailmime * get_text_part(const char * mime_type,
 	clist_append(content->ct_parameters, param);
 	mime = part_new_empty(content, mime_fields, NULL, 1);
 	mailmime_set_body_text(mime, (char *) text, length);
-	
+
 	return mime;
 }
 
@@ -219,7 +219,7 @@ static struct mailmime * get_file_part(const char * filename, const char * mime_
 	struct mailmime_content * content;
 	struct mailmime * mime;
 	struct mailmime_fields * mime_fields;
-	
+
 	disposition_name = NULL;
 	if (filename != NULL) {
 		disposition_name = strdup(filename);
@@ -227,14 +227,14 @@ static struct mailmime * get_file_part(const char * filename, const char * mime_
 	disposition = mailmime_disposition_new_with_data(MAILMIME_DISPOSITION_TYPE_ATTACHMENT,
 		disposition_name, NULL, NULL, NULL, (size_t) -1);
 	content = mailmime_content_new_with_str(mime_type);
-	
+
 	encoding_type = MAILMIME_MECHANISM_BASE64;
 	encoding = mailmime_mechanism_new(encoding_type, NULL);
 	mime_fields = mailmime_fields_new_with_data(encoding,
 		NULL, NULL, disposition, NULL);
 	mime = part_new_empty(content, mime_fields, NULL, 1);
 	mailmime_set_body_text(mime, (char *) text, length);
-	
+
 	return mime;
 }
 
@@ -243,7 +243,7 @@ static struct mailmime * get_file_part(const char * filename, const char * mime_
 static struct mailmime * get_sample_file_part(void)
 {
 	struct mailmime * part;
-	
+
 	part = get_file_part("file-data.jpg", "image/jpeg",
 		FILEDATA, sizeof(FILEDATA) - 1);
 
@@ -258,17 +258,17 @@ static char * generate_boundary(const char * boundary_prefix)
     time_t now;
     char name[MAX_MESSAGE_ID];
     long value;
-    
+
     now = time(NULL);
     value = random();
-    
+
     gethostname(name, MAX_MESSAGE_ID);
-    
+
     if (boundary_prefix == NULL)
         boundary_prefix = "";
-    
+
     snprintf(id, MAX_MESSAGE_ID, "%s%lx_%lx_%x", boundary_prefix, now, value, getpid());
-    
+
     return strdup(id);
 }
 
@@ -277,21 +277,21 @@ static struct mailmime * part_multiple_new(const char * type, const char * bound
     struct mailmime_fields * mime_fields;
     struct mailmime_content * content;
     struct mailmime * mp;
-    
+
     mime_fields = mailmime_fields_new_empty();
     if (mime_fields == NULL)
         goto err;
-    
+
     content = mailmime_content_new_with_str(type);
     if (content == NULL)
         goto free_fields;
-    
+
     mp = part_new_empty(content, mime_fields, boundary_prefix, 0);
     if (mp == NULL)
         goto free_content;
-    
+
     return mp;
-    
+
 free_content:
     mailmime_content_free(content);
 free_fields:
@@ -303,31 +303,31 @@ err:
 static struct mailmime * get_multipart_mixed(const char * boundary_prefix)
 {
 	struct mailmime * mime;
-	
+
 	mime = part_multiple_new("multipart/mixed", boundary_prefix);
-	
+
 	return mime;
 }
 
-int main(int argc, char ** argv)
+int main()
 {
 	struct mailmime * msg_mime;
   struct mailmime * mime;
 	struct mailmime * submime;
   struct mailimf_fields * fields;
 	int col;
-	
+
 	msg_mime = mailmime_new_message_data(NULL);
 	fields = build_fields();
 	mailmime_set_imf_fields(msg_mime, fields);
-	
+
 	mime = get_multipart_mixed(NULL);
-  
+
   submime = get_plain_text_part();
 	mailmime_smart_add_part(mime, submime);
   submime = get_sample_file_part();
 	mailmime_smart_add_part(mime, submime);
-  
+
   mailmime_add_part(msg_mime, mime);
 
 	col = 0;
