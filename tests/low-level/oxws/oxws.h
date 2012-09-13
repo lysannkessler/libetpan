@@ -56,6 +56,13 @@ OXWS_TEST_DECLARE_TEST(oxws, connect_after_set_connection_settings);
 OXWS_TEST_DECLARE_TEST(oxws, connect_after_autodiscover);
 
 
+#define OXWS_SUITE_OXWS_SET_CONNECTION_SETTINGS(ews_url) \
+  oxws_connection_settings settings; \
+  memset(&settings, 0, sizeof(settings)); \
+  settings.as_url = ews_url; \
+  CU_ASSERT_OXWS_NO_ERROR(oxws_set_connection_settings(oxws, &settings));
+
+
 #define OXWS_SUITE_OXWS_PARAM_EWS_URL "https://" OXWS_TEST_HOST "/EWS/Exchange.asmx"
 
 #define OXWS_SUITE_OXWS_PARAM_USER     "" /* unused because the test server does not support authentication, but is required */
@@ -65,6 +72,7 @@ OXWS_TEST_DECLARE_TEST(oxws, connect_after_autodiscover);
   OXWS_SUITE_OXWS_PARAM_USER, \
   OXWS_SUITE_OXWS_PARAM_PASSWORD, \
   OXWS_SUITE_OXWS_PARAM_DOMAIN
+
 
 #ifdef __cplusplus
 }

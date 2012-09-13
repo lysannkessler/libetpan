@@ -87,7 +87,7 @@ void oxws_suite_autodiscover_test_invalid_params() {
     OXWS_ERROR_AUTODISCOVER_UNAVAILABLE);
 
 #if 0
-  /* test server does not support authorization, therefore the following 3 assertions fail */
+  /* TODO test server does not support authorization, therefore the following 3 assertions fail */
 
   /* invalid user */
   CU_ASSERT_OXWS_RESULT_EQUAL(oxws_autodiscover_connection_settings(oxws,
