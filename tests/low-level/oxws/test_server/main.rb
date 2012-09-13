@@ -10,6 +10,8 @@ module OXWS
 class WebApp < Sinatra::Base
   use EWS
   use Autodiscover
+
+  enable :logging
 end
 
 end
