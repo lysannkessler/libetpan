@@ -36,6 +36,7 @@
 
 #include <libetpan/libetpan.h>
 #include "oxws.h"
+#include "autodiscover.h"
 
 
 void oxws_suite_oxws_test_new() {
@@ -51,13 +52,37 @@ void oxws_suite_oxws_test_new() {
 
 void oxws_suite_oxws_test_set_connection_settings() {
   oxws* oxws = oxws_new();
-  CU_ASSERT_PTR_NOT_NULL(oxws);
 
   oxws_connection_settings settings;
   memset(&settings, 0, sizeof(settings));
   settings.as_url = OXWS_SUITE_OXWS_PARAM_EWS_URL;
   CU_ASSERT_OXWS_NO_ERROR(oxws_set_connection_settings(oxws, &settings));
   CU_ASSERT_NUMBER_EQUAL(oxws->state, OXWS_STATE_CONNECTION_SETTINGS_CONFIGURED);
+
+  oxws_free(oxws);
+}
+
+void oxws_suite_oxws_test_connect_after_set_connection_settings() {
+  oxws* oxws = oxws_new();
+
+  /* set connection settings manually */
+  oxws_connection_settings settings;
+  memset(&settings, 0, sizeof(settings));
+  settings.as_url = OXWS_SUITE_OXWS_PARAM_EWS_URL;
+  CU_ASSERT_OXWS_NO_ERROR(oxws_set_connection_settings(oxws, &settings));
+  /* connect */
+  CU_ASSERT_OXWS_NO_ERROR(oxws_connect(oxws, OXWS_SUITE_OXWS_CONNECT_PARAMS));
+
+  oxws_free(oxws);
+}
+
+void oxws_suite_oxws_test_connect_after_autodiscover() {
+  oxws* oxws = oxws_new();
+
+  /* set connection settings using autodiscover */
+  CU_ASSERT_OXWS_NO_ERROR(oxws_autodiscover_connection_settings(oxws, OXWS_SUITE_AUTODISCOVER_PARAMS_LIST));
+  /* connect */
+  CU_ASSERT_OXWS_NO_ERROR(oxws_connect(oxws, OXWS_SUITE_OXWS_CONNECT_PARAMS));
 
   oxws_free(oxws);
 }
