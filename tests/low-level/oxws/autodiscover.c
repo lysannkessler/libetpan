@@ -38,13 +38,13 @@
 #include "autodiscover.h"
 
 
-void oxws_suite_autodiscover_test_basic() {
+OXWS_TEST_DEFINE_TEST(autodiscover, basic) {
   oxws* oxws = oxws_new();
   CU_ASSERT_OXWS_NO_ERROR(oxws_autodiscover_connection_settings(oxws, OXWS_SUITE_AUTODISCOVER_PARAMS_LIST));
   oxws_free(oxws);
 }
 
-void oxws_suite_autodiscover_test_connection_settings() {
+OXWS_TEST_DEFINE_TEST(autodiscover, connection_settings) {
   oxws* oxws = oxws_new();
   CU_ASSERT_OXWS_NO_ERROR(oxws_autodiscover_connection_settings(oxws, OXWS_SUITE_AUTODISCOVER_PARAMS_LIST));
 
@@ -56,7 +56,7 @@ void oxws_suite_autodiscover_test_connection_settings() {
   oxws_free(oxws);
 }
 
-void oxws_suite_autodiscover_test_state() {
+OXWS_TEST_DEFINE_TEST(autodiscover, state) {
   oxws* oxws = oxws_new();
   CU_ASSERT_OXWS_NO_ERROR(oxws_autodiscover_connection_settings(oxws, OXWS_SUITE_AUTODISCOVER_PARAMS_LIST));
 
@@ -65,7 +65,7 @@ void oxws_suite_autodiscover_test_state() {
   oxws_free(oxws);
 }
 
-void oxws_suite_autodiscover_test_invalid_params() {
+OXWS_TEST_DEFINE_TEST(autodiscover, invalid_params) {
   oxws* oxws = oxws_new();
 
   /* invalid host */

@@ -39,7 +39,7 @@
 #include "autodiscover.h"
 
 
-void oxws_suite_oxws_test_new() {
+OXWS_TEST_DEFINE_TEST(oxws, new) {
   oxws* oxws = oxws_new();
 
   /* not null upon success */
@@ -50,7 +50,7 @@ void oxws_suite_oxws_test_new() {
   oxws_free(oxws);
 }
 
-void oxws_suite_oxws_test_set_connection_settings() {
+OXWS_TEST_DEFINE_TEST(oxws, set_connection_settings) {
   oxws* oxws = oxws_new();
 
   OXWS_SUITE_OXWS_SET_CONNECTION_SETTINGS(OXWS_SUITE_OXWS_PARAM_EWS_URL);
@@ -59,7 +59,7 @@ void oxws_suite_oxws_test_set_connection_settings() {
   oxws_free(oxws);
 }
 
-void oxws_suite_oxws_test_connect_after_set_connection_settings() {
+OXWS_TEST_DEFINE_TEST(oxws, connect_after_set_connection_settings) {
   oxws* oxws = oxws_new();
 
   OXWS_SUITE_OXWS_SET_CONNECTION_SETTINGS(OXWS_SUITE_OXWS_PARAM_EWS_URL);
@@ -68,7 +68,7 @@ void oxws_suite_oxws_test_connect_after_set_connection_settings() {
   oxws_free(oxws);
 }
 
-void oxws_suite_oxws_test_connect_after_autodiscover() {
+OXWS_TEST_DEFINE_TEST(oxws, connect_after_autodiscover) {
   oxws* oxws = oxws_new();
 
   CU_ASSERT_OXWS_NO_ERROR(oxws_autodiscover_connection_settings(oxws, OXWS_SUITE_AUTODISCOVER_PARAMS_LIST));
@@ -77,7 +77,7 @@ void oxws_suite_oxws_test_connect_after_autodiscover() {
   oxws_free(oxws);
 }
 
-void oxws_suite_oxws_test_connect_invalid_ews_url_host() {
+OXWS_TEST_DEFINE_TEST(oxws, connect_invalid_ews_url_host) {
   oxws* oxws = oxws_new();
 
   OXWS_SUITE_OXWS_SET_CONNECTION_SETTINGS(OXWS_SUITE_OXWS_PARAM_EWS_URL_INVALID_HOST);
@@ -86,7 +86,7 @@ void oxws_suite_oxws_test_connect_invalid_ews_url_host() {
   oxws_free(oxws);
 }
 
-void oxws_suite_oxws_test_connect_invalid_ews_url_path() {
+OXWS_TEST_DEFINE_TEST(oxws, connect_invalid_ews_url_path) {
   oxws* oxws = oxws_new();
 
   OXWS_SUITE_OXWS_SET_CONNECTION_SETTINGS(OXWS_SUITE_OXWS_PARAM_EWS_URL_INVALID_PATH);
