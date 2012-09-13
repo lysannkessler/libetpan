@@ -45,9 +45,14 @@ extern "C" {
 #define oxws_suite_oxws_add_tests() \
   { \
     OXWS_TEST_ADD_TEST(oxws, new); \
+    OXWS_TEST_ADD_TEST(oxws, set_connection_settings); \
   }
 
 OXWS_TEST_DECLARE_TEST(oxws, new);
+OXWS_TEST_DECLARE_TEST(oxws, set_connection_settings);
+
+
+#define OXWS_SUITE_OXWS_PARAM_EWS_URL "https://" OXWS_TEST_HOST "/EWS/Exchange.asmx"
 
 
 #ifdef __cplusplus

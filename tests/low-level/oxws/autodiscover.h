@@ -56,7 +56,7 @@ OXWS_TEST_DECLARE_TEST(autodiscover, state);
 OXWS_TEST_DECLARE_TEST(autodiscover, invalid_params);
 
 
-#define OXWS_SUITE_AUTODISCOVER_PARAM_HOST     "localhost:3000"
+#define OXWS_SUITE_AUTODISCOVER_PARAM_HOST     OXWS_TEST_HOST
 #define OXWS_SUITE_AUTODISCOVER_PARAM_EMAIL    "test.user@example.com"
 #define OXWS_SUITE_AUTODISCOVER_PARAM_USER     "" /* unused because the test server does not support authentication, but is required */
 #define OXWS_SUITE_AUTODISCOVER_PARAM_PASSWORD "" /* unused because the test server does not support authentication, but is required */

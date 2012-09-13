@@ -65,6 +65,9 @@ extern "C" {
   OXWS_TEST_CHECK_RESULT(CU_add_test(oxws_suite_##suite, #suite "." #test, oxws_suite_##suite##_test_##test) == NULL);
 
 
+#define OXWS_TEST_HOST "localhost:3000"
+
+
 extern char* oxws_test_support_ca_file;
 oxws_result oxws_test_support_set_curl_init_callback(oxws* oxws);
 

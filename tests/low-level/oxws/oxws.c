@@ -48,3 +48,16 @@ void oxws_suite_oxws_test_new() {
 
   oxws_free(oxws);
 }
+
+void oxws_suite_oxws_test_set_connection_settings() {
+  oxws* oxws = oxws_new();
+  CU_ASSERT_PTR_NOT_NULL(oxws);
+
+  oxws_connection_settings settings;
+  memset(&settings, 0, sizeof(settings));
+  settings.as_url = OXWS_SUITE_OXWS_PARAM_EWS_URL;
+  CU_ASSERT_OXWS_NO_ERROR(oxws_set_connection_settings(oxws, &settings));
+  CU_ASSERT_NUMBER_EQUAL(oxws->state, OXWS_STATE_CONNECTION_SETTINGS_CONFIGURED);
+
+  oxws_free(oxws);
+}
