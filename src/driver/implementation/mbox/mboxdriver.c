@@ -182,7 +182,7 @@ static int mboxdriver_initialize(mailsession * session)
   data->mbox_force_no_uid = TRUE;
 
   session->sess_data = data;
-  
+
   return MAIL_NO_ERROR;
 
  err:
@@ -257,7 +257,7 @@ static int mboxdriver_connect_path(mailsession * session, const char * path)
 		    mbox_data->mbox_force_no_uid,
 		    0,
 		    &folder);
-  
+
   if (r != MAILMBOX_NO_ERROR)
     return mboxdriver_mbox_error_to_mail_error(r);
 
@@ -304,16 +304,16 @@ static int mboxdriver_status_folder(mailsession * session, const char * mb,
     uint32_t * result_unseen)
 {
   uint32_t count;
-  int r; 
-  
+  int r;
+
   r = mboxdriver_messages_number(session, mb, &count);
   if (r != MAIL_NO_ERROR)
-    return r; 
-  
+    return r;
+
   * result_messages = count;
   * result_recent = count;
   * result_unseen = count;
-  
+
   return MAIL_NO_ERROR;
 }
 
@@ -322,6 +322,7 @@ static int mboxdriver_messages_number(mailsession * session, const char * mb,
 {
   struct mailmbox_folder * folder;
   int r;
+  UNUSED(mb);
 
   folder = get_mbox_session(session);
   if (folder == NULL)
@@ -334,7 +335,7 @@ static int mboxdriver_messages_number(mailsession * session, const char * mb,
   mailmbox_read_unlock(folder);
 
   * result = carray_count(folder->mb_tab) - folder->mb_deleted_count;
-  
+
   return MAILMBOX_NO_ERROR;
 }
 
@@ -363,6 +364,7 @@ static int mboxdriver_append_message(mailsession * session,
 static int mboxdriver_append_message_flags(mailsession * session,
     const char * message, size_t size, struct mail_flags * flags)
 {
+  UNUSED(flags);
   return mboxdriver_append_message(session, message, size);
 }
 
@@ -429,7 +431,7 @@ mboxdriver_get_envelopes_list(mailsession * session,
     cur_token = 0;
     r = mailimf_envelope_fields_parse(headers, headers_len,
 				      &cur_token, &fields);
-    
+
     if (r != MAILIMF_NO_ERROR)
       continue;
 
@@ -512,7 +514,7 @@ static int mboxdriver_get_message_by_uid(mailsession * session,
   if (r == 0) {
     char * body_len_p = p + 1;
     size_t body_len;
-    
+
     info = data.data;
     /* Check if the cached message has the same UID */
     body_len = strtoul(body_len_p, &p, 10);

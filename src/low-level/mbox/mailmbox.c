@@ -57,6 +57,7 @@
 #include <stdio.h>
 
 #include "libetpan-config.h"
+#include "mail.h"
 
 #include "mmapstring.h"
 #include "mailmbox_parse.h"
@@ -163,7 +164,7 @@ int mailmbox_map(struct mailmbox_folder * folder)
     res = MAILMBOX_ERROR_FILE;
     goto err;
   }
-  
+
   folder->mb_mapping = str;
   folder->mb_mapping_size = buf.st_size;
 
@@ -346,10 +347,10 @@ static inline size_t get_line(const char * line, size_t length,
       if (length > 0) {
         if (* line == '\n') {
           line ++;
-          
+
           count ++;
           length --;
-          
+
           break;
         }
       }
@@ -387,7 +388,7 @@ static inline size_t get_fixed_line_size(const char * line, size_t length,
   size_t count;
   const char * next_line;
   size_t fixed_count;
-  
+
   if (!get_line(line, length, &next_line, &count))
     return 0;
 
@@ -455,13 +456,13 @@ static size_t get_fixed_message_size(const char * message, size_t size,
 
   if (!force_no_uid) {
     /* UID header */
-    
+
 #ifdef CRLF_BADNESS
     fixed_size += strlen(UID_HEADER " \r\n");
 #else
     fixed_size += strlen(UID_HEADER " \n");
 #endif
-    
+
     tmp_uid = uid;
     while (tmp_uid >= 10) {
       tmp_uid /= 10;
@@ -496,7 +497,7 @@ static inline char * write_fixed_line(char * str,
 {
   size_t count;
   const char * next_line;
-  
+
   if (!get_line(line, length, &next_line, &count))
     return str;
 
@@ -510,7 +511,7 @@ static inline char * write_fixed_line(char * str,
   }
 
   memcpy(str, line, count);
-  
+
   * pnext_line = next_line;
   * pcount = count;
   str += count;
@@ -569,7 +570,7 @@ static char * write_fixed_message(char * str,
 
   if (!force_no_uid) {
     /* UID header */
-    
+
     memcpy(str, UID_HEADER " ", strlen(UID_HEADER " "));
     str += strlen(UID_HEADER " ");
 #ifdef CRLF_BADNESS
@@ -591,7 +592,7 @@ static char * write_fixed_message(char * str,
     count = 0;
     next = NULL;
     str = write_fixed_line(str, cur_src, left, &next, &count);
-    
+
     cur_src = next;
     left -= count;
   }
@@ -649,7 +650,7 @@ mailmbox_append_message_list_no_lock(struct mailmbox_folder * folder,
 #else
     extra_size += 1; /* CR LF */
 #endif
-    
+
     info->ai_uid = folder->mb_max_uid + i + 1;
   }
 
@@ -816,10 +817,10 @@ mailmbox_append_message_uid(struct mailmbox_folder * folder,
   }
 
   r = mailmbox_append_message_list(folder, tab);
-  
+
   if (puid != NULL)
     * puid = append_info->ai_uid;
-  
+
   mailmbox_append_info_free(append_info);
   carray_free(tab);
 
@@ -851,18 +852,18 @@ int mailmbox_fetch_msg_no_lock(struct mailmbox_folder * folder,
   chashdatum key;
   chashdatum data;
   int r;
-  
+
   key.data = &num;
   key.len = sizeof(num);
-  
+
   r = chash_get(folder->mb_hash, &key, &data);
   if (r < 0) {
     res = MAILMBOX_ERROR_MSG_NOT_FOUND;
     goto err;
   }
-  
+
   info = data.data;
-  
+
   if (info->msg_deleted) {
     res = MAILMBOX_ERROR_MSG_NOT_FOUND;
     goto err;
@@ -886,10 +887,10 @@ int mailmbox_fetch_msg_headers_no_lock(struct mailmbox_folder * folder,
   chashdatum key;
   chashdatum data;
   int r;
-  
+
   key.data = &num;
   key.len = sizeof(num);
-  
+
   r = chash_get(folder->mb_hash, &key, &data);
   if (r < 0) {
     res = MAILMBOX_ERROR_MSG_NOT_FOUND;
@@ -923,7 +924,7 @@ int mailmbox_fetch_msg(struct mailmbox_folder * folder,
   int r;
   size_t fixed_size;
   char * end;
-  
+
   r = mailmbox_validate_read_lock(folder);
   if (r != MAILMBOX_NO_ERROR) {
     res = r;
@@ -935,10 +936,10 @@ int mailmbox_fetch_msg(struct mailmbox_folder * folder,
     res = r;
     goto unlock;
   }
-  
+
   /* size with no uid */
   fixed_size = get_fixed_message_size(data, len, 0, 1 /* force no uid */);
-  
+
 #if 0
   mmapstr = mmap_string_new_len(data, fixed_size);
   if (mmapstr == NULL) {
@@ -951,11 +952,11 @@ int mailmbox_fetch_msg(struct mailmbox_folder * folder,
     res = MAILMBOX_ERROR_MEMORY;
     goto unlock;
   }
-  
+
   end = write_fixed_message(mmapstr->str, data, len, 0, 1 /* force no uid */);
   * end = '\0';
   mmapstr->len = fixed_size;
-  
+
   r = mmap_string_ref(mmapstr);
   if (r < 0) {
     mmap_string_free(mmapstr);
@@ -1009,13 +1010,13 @@ int mailmbox_fetch_msg_headers(struct mailmbox_folder * folder,
 #endif
   /* size with no uid */
   fixed_size = get_fixed_message_size(data, len, 0, 1 /* force no uid */);
-  
+
   mmapstr = mmap_string_sized_new(fixed_size);
   if (mmapstr == NULL) {
     res = MAILMBOX_ERROR_MEMORY;
     goto unlock;
   }
-  
+
   end = write_fixed_message(mmapstr->str, data, len, 0, 1 /* force no uid */);
   * end = '\0';
   mmapstr->len = fixed_size;
@@ -1080,20 +1081,20 @@ int mailmbox_copy_msg_list(struct mailmbox_folder * dest_folder,
       res = r;
       goto free_list;
     }
-    
+
     append_info = mailmbox_append_info_new(data, len);
     if (append_info == NULL) {
       res = MAILMBOX_ERROR_MEMORY;
       goto free_list;
     }
-    
+
     r = carray_add(append_tab, append_info, NULL);
     if (r < 0) {
       mailmbox_append_info_free(append_info);
       res = MAILMBOX_ERROR_MEMORY;
       goto free_list;
     }
-  }    
+  }
 
   r = mailmbox_append_message_list(dest_folder, append_tab);
   if (r != MAILMBOX_NO_ERROR) {
@@ -1148,7 +1149,7 @@ int mailmbox_copy_msg(struct mailmbox_folder * dest_folder,
     goto free_array;
   }
   * puid = uid;
-  
+
   r = mailmbox_copy_msg_list(dest_folder, src_folder, tab);
   res = r;
 
@@ -1169,6 +1170,7 @@ static int mailmbox_expunge_to_file_no_lock(char * dest_filename, int dest_fd,
   size_t cur_offset;
   char * dest;
   size_t size;
+  UNUSED(dest_filename);
 
   size = 0;
   for(i = 0 ; i < carray_count(folder->mb_tab) ; i ++) {
@@ -1182,13 +1184,13 @@ static int mailmbox_expunge_to_file_no_lock(char * dest_filename, int dest_fd,
       if (!folder->mb_no_uid) {
 	if (!info->msg_written_uid) {
 	  uint32_t uid;
-	  
+
 #ifdef CRLF_BADNESS
 	  size += strlen(UID_HEADER " \r\n");
 #else
 	  size += strlen(UID_HEADER " \n");
 #endif
-	  
+
 	  uid = info->msg_uid;
 	  while (uid >= 10) {
 	    uid /= 10;
@@ -1215,18 +1217,18 @@ static int mailmbox_expunge_to_file_no_lock(char * dest_filename, int dest_fd,
   cur_offset = 0;
   for(i = 0 ; i < carray_count(folder->mb_tab) ; i ++) {
     struct mailmbox_msg_info * info;
-    
+
     info = carray_get(folder->mb_tab, i);
 
     if (!info->msg_deleted) {
       memcpy(dest + cur_offset, folder->mb_mapping + info->msg_start,
 	     info->msg_headers_len + info->msg_start_len);
       cur_offset += info->msg_headers_len + info->msg_start_len;
-      
+
       if (!folder->mb_no_uid) {
 	if (!info->msg_written_uid) {
 	  size_t numlen;
-	  
+
 	  memcpy(dest + cur_offset, UID_HEADER " ", strlen(UID_HEADER " "));
 	  cur_offset += strlen(UID_HEADER " ");
 #ifdef CRLF_BADNESS
@@ -1239,19 +1241,19 @@ static int mailmbox_expunge_to_file_no_lock(char * dest_filename, int dest_fd,
 	  cur_offset += numlen;
 	}
       }
-      
+
       memcpy(dest + cur_offset,
 	     folder->mb_mapping + info->msg_headers + info->msg_headers_len,
 	     info->msg_size - (info->msg_start_len + info->msg_headers_len)
 	     + info->msg_padding);
-      
+
       cur_offset += info->msg_size -
         (info->msg_start_len + info->msg_headers_len)
 	+ info->msg_padding;
     }
   }
   fflush(stdout);
-  
+
   msync(dest, size, MS_SYNC);
   munmap(dest, size);
 
@@ -1272,47 +1274,47 @@ static int copy_to_old_file(char * source_filename,
   char * dest;
   int res;
   int r;
-  
+
   source_fd = open(source_filename, O_RDONLY);
   if (source_fd < 0) {
     res = MAILMBOX_ERROR_FILE;
     goto err;
   }
-  
+
   source = (char *) mmap(0, size, PROT_READ, MAP_PRIVATE, source_fd, 0);
   if (source == (char *)MAP_FAILED) {
     res = MAILMBOX_ERROR_FILE;
     goto close_source;
   }
-  
+
   dest_fd = open(destination_filename, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
   if (dest_fd < 0) {
     res = MAILMBOX_ERROR_FILE;
     goto unmap_source;
   }
-  
+
   r = ftruncate(dest_fd, size);
   if (r < 0) {
     res = MAILMBOX_ERROR_FILE;
     goto close_dest;
   }
-  
+
   dest = (char *) mmap(0, size, PROT_READ | PROT_WRITE,
       MAP_SHARED, dest_fd, 0);
   if (dest == (char *)MAP_FAILED) {
     res = MAILMBOX_ERROR_FILE;
     goto close_dest;
   }
-  
+
   memcpy(dest, source, size);
-  
+
   munmap(dest, size);
   close(dest_fd);
   munmap(source, size);
   close(source_fd);
-  
+
   return MAILMBOX_NO_ERROR;
-  
+
  close_dest:
   close(dest_fd);
  unmap_source:
@@ -1331,7 +1333,7 @@ int mailmbox_expunge_no_lock(struct mailmbox_folder * folder)
   int dest_fd;
   size_t size;
   mode_t old_mask;
-  
+
   if (folder->mb_read_only)
     return MAILMBOX_ERROR_READONLY;
 
@@ -1345,51 +1347,51 @@ int mailmbox_expunge_no_lock(struct mailmbox_folder * folder)
   old_mask = umask(0077);
   dest_fd = mkstemp(tmp_file);
   umask(old_mask);
-  
+
   if (dest_fd < 0) {
     /* fallback to tmp dir */
-    
+
     snprintf(tmp_file, PATH_MAX, TMPDIR "/etpan-unsafe-XXXXXX");
-    
+
     old_mask = umask(0077);
     dest_fd = mkstemp(tmp_file);
     umask(old_mask);
-    
+
     if (dest_fd < 0) {
       res = MAILMBOX_ERROR_FILE;
       goto err;
     }
   }
-  
+
   r = mailmbox_expunge_to_file_no_lock(tmp_file, dest_fd,
 				       folder, &size);
   if (r != MAILMBOX_NO_ERROR) {
     res = r;
     goto unlink;
   }
-  
+
   close(dest_fd);
 
   r = rename(tmp_file, folder->mb_filename);
   if (r < 0) {
     mailmbox_unmap(folder);
     mailmbox_close(folder);
-    
+
     /* fallback on copy to old file */
-    
+
     r = copy_to_old_file(tmp_file, folder->mb_filename, size);
     if (r != MAILMBOX_NO_ERROR) {
       res = r;
       goto err;
     }
-    
+
     unlink(tmp_file);
   }
   else {
     mailmbox_unmap(folder);
     mailmbox_close(folder);
   }
-  
+
   r = mailmbox_open(folder);
   if (r != MAILMBOX_NO_ERROR) {
     res = r;
@@ -1401,18 +1403,18 @@ int mailmbox_expunge_no_lock(struct mailmbox_folder * folder)
     res = r;
     goto err;
   }
-      
+
   r = mailmbox_parse(folder);
   if (r != MAILMBOX_NO_ERROR) {
     res = r;
     goto err;
   }
-  
+
   mailmbox_timestamp(folder);
 
   folder->mb_changed = FALSE;
   folder->mb_deleted_count = 0;
-  
+
   return MAILMBOX_NO_ERROR;
 
  unlink:
@@ -1453,10 +1455,10 @@ int mailmbox_delete_msg(struct mailmbox_folder * folder, uint32_t uid)
     res = MAILMBOX_ERROR_READONLY;
     goto err;
   }
-  
+
   key.data = &uid;
   key.len = sizeof(uid);
-  
+
   r = chash_get(folder->mb_hash, &key, &data);
   if (r < 0) {
     res = MAILMBOX_ERROR_MSG_NOT_FOUND;
@@ -1503,7 +1505,7 @@ int mailmbox_init(const char * filename,
   struct mailmbox_folder * folder;
   int r;
   int res;
-  
+
   folder = mailmbox_folder_new(filename);
   if (folder == NULL) {
     res = MAILMBOX_ERROR_MEMORY;
@@ -1512,10 +1514,10 @@ int mailmbox_init(const char * filename,
   folder->mb_no_uid = force_no_uid;
   folder->mb_read_only = force_readonly;
   folder->mb_written_uid = default_written_uid;
-  
+
   folder->mb_changed = FALSE;
   folder->mb_deleted_count = 0;
-  
+
   r = mailmbox_open(folder);
   if (r != MAILMBOX_NO_ERROR) {
     res = r;
@@ -1564,7 +1566,7 @@ void mailmbox_done(struct mailmbox_folder * folder)
 {
   if (!folder->mb_read_only)
     mailmbox_expunge(folder);
-  
+
   mailmbox_unmap(folder);
   mailmbox_close(folder);
 

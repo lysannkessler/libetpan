@@ -44,7 +44,8 @@ etpaninclude_HEADERS = \
 	namespace.h namespace_parser.h namespace_sender.h namespace_types.h \
 	xlist.h xgmlabels.h
 
-AM_CPPFLAGS = -I$(top_builddir)/include \
+AM_CPPFLAGS = $(WERROR) \
+	-I$(top_builddir)/include \
 	-I$(top_srcdir)/src/data-types
 
 noinst_LTLIBRARIES = libimap.la

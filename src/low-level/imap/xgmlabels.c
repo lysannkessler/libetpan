@@ -42,22 +42,23 @@
 #include "mailimap_parser.h"
 #include "mailimap_sender.h"
 #include "mailimap.h"
+#include "mail.h"
 
 struct mailimap_fetch_att * mailimap_fetch_att_new_xgmlabels(void)
 {
   char * keyword;
   struct mailimap_fetch_att * att;
-  
+
   keyword = strdup("X-GM-LABELS");
   if (keyword == NULL)
     return NULL;
-  
+
   att = mailimap_fetch_att_new_extension(keyword);
   if (att == NULL) {
     free(keyword);
     return NULL;
   }
-  
+
   return att;
 }
 
@@ -69,13 +70,13 @@ int mailimap_has_xgmlabels(mailimap * session)
 struct mailimap_msg_att_xgmlabels * mailimap_msg_att_xgmlabels_new(clist * att_labels)
 {
   struct mailimap_msg_att_xgmlabels * att;
-  
+
   att = malloc(sizeof(* att));
   if (att == NULL)
     return NULL;
-  
+
   att->att_labels = att_labels;
-  
+
   return att;
 }
 
@@ -90,18 +91,18 @@ struct mailimap_msg_att_xgmlabels * mailimap_msg_att_xgmlabels_new_empty(void)
 {
   clist * list;
   struct mailimap_msg_att_xgmlabels * att;
-  
+
   list = clist_new();
   if (list == NULL)
     return NULL;
-  
+
   att = mailimap_msg_att_xgmlabels_new(list);
   if (att == NULL) {
     clist_free(att->att_labels);
     free(att);
     return NULL;
   }
-  
+
   return att;
 }
 
@@ -141,15 +142,15 @@ static int mailimap_xgmlabels_parse(mailstream * fd,
     clist * list;
     int r;
     int res;
-    
+
     cur_token = * indx;
-    
+
     r = mailimap_oparenth_parse(fd, buffer, &cur_token);
     if (r != MAILIMAP_NO_ERROR) {
       res = r;
       goto err;
     }
-    
+
     r = mailimap_struct_spaced_list_parse(fd, buffer,
                                           &cur_token, &list,
                                           (mailimap_struct_parser * ) mailimap_astring_parse,
@@ -166,18 +167,18 @@ static int mailimap_xgmlabels_parse(mailstream * fd,
       res = r;
       goto err;
     }
-    
+
     r = mailimap_cparenth_parse(fd, buffer, &cur_token);
     if (r != MAILIMAP_NO_ERROR) {
       res = r;
       goto free_list;
     }
-    
+
     * indx = cur_token;
     * result = list;
-    
+
     return MAILIMAP_NO_ERROR;
-    
+
 free_list:
     clist_foreach(list, (clist_func) mailimap_astring_free, NULL);
     clist_free(list);
@@ -193,32 +194,32 @@ static int fetch_data_xgmlabels_parse(mailstream * fd,
   struct mailimap_msg_att_xgmlabels * att;
   clist * label_list;
   int r;
-  
+
   cur_token = * indx;
-  
+
   r = mailimap_token_case_insensitive_parse(fd, buffer,
                                             &cur_token, "X-GM-LABELS");
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_space_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_xgmlabels_parse(fd, buffer, &cur_token, &label_list);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   att = mailimap_msg_att_xgmlabels_new(label_list);
   if (att == NULL) {
     clist_foreach(label_list, (clist_func) mailimap_astring_free, NULL);
     clist_free(label_list);
     return MAILIMAP_ERROR_MEMORY;
   }
-  
+
   * indx = cur_token;
   * result = att;
-  
+
   return MAILIMAP_NO_ERROR;
 }
 
@@ -234,9 +235,10 @@ mailimap_xgmlabels_extension_parse(int calling_parser, mailstream * fd,
   void * data;
   struct mailimap_extension_data * ext_data;
   int r;
-  
+  UNUSED(progr_rate); UNUSED(progr_fun);
+
   cur_token = * indx;
-  
+
   switch (calling_parser)
   {
     case MAILIMAP_EXTENDED_PARSER_FETCH_DATA:
@@ -244,10 +246,10 @@ mailimap_xgmlabels_extension_parse(int calling_parser, mailstream * fd,
       r = fetch_data_xgmlabels_parse(fd, buffer, &cur_token, &att);
       if (r != MAILIMAP_NO_ERROR)
         return r;
-      
+
       type = MAILIMAP_XGMLABELS_TYPE_XGMLABELS;
       data = att;
-      
+
       ext_data = mailimap_extension_data_new(&mailimap_extension_xgmlabels,
                                              type, data);
       if (ext_data == NULL) {
@@ -255,12 +257,12 @@ mailimap_xgmlabels_extension_parse(int calling_parser, mailstream * fd,
           mailimap_msg_att_xgmlabels_free(att);
         return MAILIMAP_ERROR_MEMORY;
       }
-      
+
       * result = ext_data;
       * indx = cur_token;
-      
+
       return MAILIMAP_NO_ERROR;
-    
+
     default:
       return MAILIMAP_ERROR_PARSE;
   }
@@ -271,7 +273,7 @@ mailimap_xgmlabels_extension_data_free(struct mailimap_extension_data * ext_data
 {
   if (ext_data == NULL)
     return;
-  
+
   if (ext_data->ext_data != NULL) {
     if (ext_data->ext_type == MAILIMAP_XGMLABELS_TYPE_XGMLABELS) {
       mailimap_msg_att_xgmlabels_free((struct mailimap_msg_att_xgmlabels *) ext_data->ext_data);
@@ -293,22 +295,22 @@ static int mailimap_cparenth_send(mailstream * fd)
 static int mailimap_msg_att_xgmlabels_send(mailstream * fd, struct mailimap_msg_att_xgmlabels * labels)
 {
   int r;
-  
+
   r = mailimap_oparenth_send(fd);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   if (labels->att_labels != NULL) {
     r = mailimap_struct_spaced_list_send(fd, labels->att_labels,
                                          (mailimap_struct_sender *) mailimap_astring_send);
     if (r != MAILIMAP_NO_ERROR)
       return r;
   }
-  
+
   r = mailimap_cparenth_send(fd);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   return MAILIMAP_NO_ERROR;
 }
 
@@ -317,7 +319,7 @@ static int mailimap_store_xgmlabels_send(mailstream * fd, struct mailimap_set * 
                                          struct mailimap_msg_att_xgmlabels * labels)
 {
   int r;
-  
+
   r = mailimap_token_send(fd, "STORE");
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -330,7 +332,7 @@ static int mailimap_store_xgmlabels_send(mailstream * fd, struct mailimap_set * 
   r = mailimap_space_send(fd);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   switch (fl_sign) {
     case 1:
       r = mailimap_char_send(fd, '+');
@@ -343,25 +345,25 @@ static int mailimap_store_xgmlabels_send(mailstream * fd, struct mailimap_set * 
         return r;
       break;
   }
-  
+
   r = mailimap_token_send(fd, "X-GM-LABELS");
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   if (fl_silent) {
     r = mailimap_token_send(fd, ".SILENT");
     if (r != MAILIMAP_NO_ERROR)
       return r;
   }
-  
+
   r = mailimap_space_send(fd);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_msg_att_xgmlabels_send(fd, labels);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   return MAILIMAP_NO_ERROR;
 }
 
@@ -370,14 +372,14 @@ static int mailimap_uid_store_xgmlabels_send(mailstream * fd, struct mailimap_se
                                              struct mailimap_msg_att_xgmlabels * labels)
 {
   int r;
-  
+
   r = mailimap_token_send(fd, "UID");
   if (r != MAILIMAP_NO_ERROR)
     return r;
   r = mailimap_space_send(fd);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   return mailimap_store_xgmlabels_send(fd, set, fl_sign, fl_silent, labels);
 }
 
@@ -390,40 +392,40 @@ mailimap_store_xgmlabels(mailimap * session,
   struct mailimap_response * response;
   int r;
   int error_code;
-  
+
   if (session->imap_state != MAILIMAP_STATE_SELECTED)
     return MAILIMAP_ERROR_BAD_STATE;
-  
+
   r = mailimap_send_current_tag(session);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_store_xgmlabels_send(session->imap_stream, set, fl_sign, fl_silent, labels);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_crlf_send(session->imap_stream);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   if (mailstream_flush(session->imap_stream) == -1)
     return MAILIMAP_ERROR_STREAM;
-  
+
   if (mailimap_read_line(session) == NULL)
     return MAILIMAP_ERROR_STREAM;
-  
+
   r = mailimap_parse_response(session, &response);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   error_code = response->rsp_resp_done->rsp_data.rsp_tagged->rsp_cond_state->rsp_type;
-  
+
   mailimap_response_free(response);
-  
+
   switch (error_code) {
     case MAILIMAP_RESP_COND_STATE_OK:
       return MAILIMAP_NO_ERROR;
-      
+
     default:
       return MAILIMAP_ERROR_STORE;
   }
@@ -438,40 +440,40 @@ mailimap_uid_store_xgmlabels(mailimap * session,
   struct mailimap_response * response;
   int r;
   int error_code;
-  
+
   if (session->imap_state != MAILIMAP_STATE_SELECTED)
     return MAILIMAP_ERROR_BAD_STATE;
-  
+
   r = mailimap_send_current_tag(session);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_uid_store_xgmlabels_send(session->imap_stream, set, fl_sign, fl_silent, labels);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_crlf_send(session->imap_stream);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   if (mailstream_flush(session->imap_stream) == -1)
     return MAILIMAP_ERROR_STREAM;
-  
+
   if (mailimap_read_line(session) == NULL)
     return MAILIMAP_ERROR_STREAM;
-  
+
   r = mailimap_parse_response(session, &response);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   error_code = response->rsp_resp_done->rsp_data.rsp_tagged->rsp_cond_state->rsp_type;
-  
+
   mailimap_response_free(response);
-  
+
   switch (error_code) {
     case MAILIMAP_RESP_COND_STATE_OK:
       return MAILIMAP_NO_ERROR;
-      
+
     default:
       return MAILIMAP_ERROR_UID_STORE;
   }

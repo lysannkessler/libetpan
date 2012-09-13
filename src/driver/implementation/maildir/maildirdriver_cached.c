@@ -196,19 +196,19 @@ static int initialize(mailsession * session)
   data->md_ancestor = mailsession_new(maildir_session_driver);
   if (data->md_ancestor == NULL)
     goto free;
-  
+
   data->md_flags_store = mail_flags_store_new();
   if (data->md_flags_store == NULL)
     goto free_session;
-  
+
   data->md_quoted_mb = NULL;
   data->md_cache_directory[0] = '\0';
   data->md_flags_directory[0] = '\0';
 
   session->sess_data = data;
-  
+
   return MAIL_NO_ERROR;
-  
+
  free_session:
   mailsession_free(data->md_ancestor);
  free:
@@ -294,18 +294,18 @@ static int flags_store_process(char * flags_directory, char * quoted_mb,
 static void uninitialize(mailsession * session)
 {
   struct maildir_cached_session_state_data * data;
-  
+
   data = get_cached_data(session);
-  
+
   flags_store_process(data->md_flags_directory,
       data->md_quoted_mb,
       data->md_flags_store);
-  
+
   mail_flags_store_free(data->md_flags_store);
   mailsession_free(data->md_ancestor);
   free_quoted_mb(data);
   free(data);
-  
+
   session->sess_data = NULL;
 }
 
@@ -353,16 +353,16 @@ static int get_cache_folder(mailsession * session, char ** result)
   int r;
   char key[PATH_MAX];
   struct maildir_cached_session_state_data * data;
-  
+
   md = get_maildir_session(session);
   data = get_cached_data(session);
-  
+
   quoted_mb = maildriver_quote_mailbox(md->mdir_path);
   if (quoted_mb == NULL) {
     res = MAIL_ERROR_MEMORY;
     goto err;
   }
-  
+
   snprintf(key, PATH_MAX, "%s/%s", data->md_cache_directory, quoted_mb);
   r = generic_cache_create_dir(key);
   if (r != MAIL_NO_ERROR) {
@@ -376,9 +376,9 @@ static int get_cache_folder(mailsession * session, char ** result)
     res = r;
     goto free_quoted_mb;
   }
-  
+
   * result = quoted_mb;
-  
+
   return MAIL_NO_ERROR;
 
  free_quoted_mb:
@@ -399,18 +399,18 @@ static int connect_path(mailsession * session, const char * path)
     res = r;
     goto err;
   }
-  
+
   quoted_mb = NULL;
   r = get_cache_folder(session, &quoted_mb);
   if (r != MAIL_NO_ERROR) {
     res = r;
     goto logout;
   }
-  
+
   get_cached_data(session)->md_quoted_mb = quoted_mb;
-  
+
   return MAILDIR_NO_ERROR;
-  
+
  logout:
   mailsession_logout(get_ancestor(session));
  err:
@@ -421,18 +421,18 @@ static int logout(mailsession * session)
 {
   struct maildir_cached_session_state_data * data;
   int r;
-  
+
   data = get_cached_data(session);
 
   flags_store_process(data->md_flags_directory,
       data->md_quoted_mb, data->md_flags_store);
-  
+
   r = mailsession_logout(get_ancestor(session));
   if (r != MAIL_NO_ERROR)
     return r;
-  
+
   free_quoted_mb(get_cached_data(session));
-  
+
   return MAIL_NO_ERROR;
 }
 
@@ -486,58 +486,58 @@ static int append_message_flags(mailsession * session,
   char filename_flags[PATH_MAX];
   MMAPString * mmapstr;
   struct maildir_cached_session_state_data * data;
-  
+
   md = get_maildir_session(session);
   if (md == NULL)
     return MAIL_ERROR_BAD_STATE;
-  
+
   r = maildir_message_add_uid(md, message, size,
       uid, sizeof(uid));
   if (r != MAILDIR_NO_ERROR)
     return maildirdriver_maildir_error_to_mail_error(r);
-  
+
   if (flags == NULL)
     goto exit;
-  
+
   data = get_cached_data(session);
-  
+
   snprintf(filename_flags, PATH_MAX, "%s%c%s%c%s",
       data->md_flags_directory, MAIL_DIR_SEPARATOR, data->md_quoted_mb,
       MAIL_DIR_SEPARATOR, FLAGS_NAME);
-  
+
   r = mail_cache_db_open_lock(filename_flags, &cache_db_flags);
   if (r < 0)
     goto exit;
-  
+
   mmapstr = mmap_string_new("");
   if (mmapstr == NULL)
     goto close_db_flags;
-  
+
   r = write_cached_flags(cache_db_flags, mmapstr,
       uid, flags);
-  
+
   mmap_string_free(mmapstr);
   mail_cache_db_close_unlock(filename_flags, cache_db_flags);
-  
+
   if (r != MAIL_NO_ERROR)
     goto exit;
-  
+
   key.data = uid;
   key.len = strlen(uid);
   r = chash_get(md->mdir_msg_hash, &key, &value);
   if (r < 0)
     goto exit;
-  
+
   md_msg = value.data;
-  
+
   md_flags = maildirdriver_flags_to_maildir_flags(flags->fl_flags);
-  
+
   r = maildir_message_change_flags(md, uid, md_flags);
   if (r != MAILDIR_NO_ERROR)
     goto exit;
-  
+
   return MAIL_NO_ERROR;
-  
+
  close_db_flags:
   mail_cache_db_close_unlock(filename_flags, cache_db_flags);
  exit:
@@ -556,30 +556,30 @@ static int uid_clean_up(struct mail_cache_db * uid_db,
   chashdatum key;
   chashdatum value;
   char key_str[PATH_MAX];
-  
+
   /* flush cache */
-  
+
   hash_exist = chash_new(CHASH_DEFAULTSIZE, CHASH_COPYALL);
   if (hash_exist == NULL) {
     res = MAIL_ERROR_MEMORY;
     goto err;
   }
-  
+
   value.data = NULL;
   value.len = 0;
-  
+
   key.data = "max-uid";
   key.len = strlen("max-uid");
   r = chash_set(hash_exist, &key, &value, NULL);
-  
+
   for(i = 0 ; i < carray_count(env_list->msg_tab) ; i ++) {
     mailmessage * msg;
 
     msg = carray_get(env_list->msg_tab, i);
-    
+
     value.data = NULL;
     value.len = 0;
-    
+
     key.data = msg->msg_uid;
     key.len = strlen(msg->msg_uid);
     r = chash_set(hash_exist, &key, &value, NULL);
@@ -587,7 +587,7 @@ static int uid_clean_up(struct mail_cache_db * uid_db,
       res = MAIL_ERROR_MEMORY;
       goto free;
     }
-    
+
     snprintf(key_str, sizeof(key_str), "uid-%lu",
         (unsigned long) msg->msg_index);
     key.data = key_str;
@@ -598,11 +598,11 @@ static int uid_clean_up(struct mail_cache_db * uid_db,
       goto free;
     }
   }
-  
+
   mail_cache_db_clean_up(uid_db, hash_exist);
-  
+
   chash_free(hash_exist);
-  
+
   return MAIL_NO_ERROR;
 
  free:
@@ -626,55 +626,55 @@ static int get_messages_list(mailsession * session,
   unsigned long i;
   struct maildir_cached_session_state_data * data;
   char key[PATH_MAX];
-  
+
   data = get_cached_data(session);
-  
+
   md = get_maildir_session(session);
   if (md == NULL) {
     res = MAIL_ERROR_BAD_STATE;
     goto err;
   }
-  
+
   check_folder(session);
-  
+
   r = maildir_update(md);
   if (r != MAILDIR_NO_ERROR) {
     res = maildirdriver_maildir_error_to_mail_error(r);
     goto err;
   }
-  
+
   r = maildir_get_messages_list(session, md,
       maildir_cached_message_driver, &env_list);
   if (r != MAILDIR_NO_ERROR) {
     res = r;
     goto err;
   }
-  
+
   /* read/write DB */
-  
+
   snprintf(filename, sizeof(filename), "%s%c%s%c%s",
       data->md_flags_directory, MAIL_DIR_SEPARATOR, data->md_quoted_mb,
       MAIL_DIR_SEPARATOR, UID_NAME);
-  
+
   r = mail_cache_db_open_lock(filename, &uid_db);
   if (r < 0) {
     res = MAIL_ERROR_MEMORY;
     goto free_list;
   }
-  
+
   max_uid = 0;
   r = mail_cache_db_get(uid_db, "max-uid", sizeof("max-uid") - 1,
       &value, &value_len);
   if (r == 0) {
     memcpy(&max_uid, value, sizeof(max_uid));
   }
-  
+
   for(i = 0 ; i < carray_count(env_list->msg_tab) ; i ++) {
     mailmessage * msg;
     uint32_t indx;
-    
+
     msg = carray_get(env_list->msg_tab, i);
-    
+
     r = mail_cache_db_get(uid_db, msg->msg_uid,
         strlen(msg->msg_uid), &value, &value_len);
     if (r < 0) {
@@ -682,7 +682,7 @@ static int get_messages_list(mailsession * session,
       msg->msg_index = max_uid;
       mail_cache_db_put(uid_db, msg->msg_uid,
           strlen(msg->msg_uid), &msg->msg_index, sizeof(msg->msg_index));
-      
+
       snprintf(key, sizeof(key), "uid-%lu", (unsigned long) msg->msg_index);
       mail_cache_db_put(uid_db, key, strlen(key),
           msg->msg_uid, strlen(msg->msg_uid));
@@ -692,16 +692,16 @@ static int get_messages_list(mailsession * session,
       msg->msg_index = indx;
     }
   }
-  
+
   mail_cache_db_put(uid_db, "max-uid", sizeof("max-uid") - 1,
       &max_uid, sizeof(max_uid));
-  
+
   uid_clean_up(uid_db, env_list);
-  
+
   mail_cache_db_close_unlock(filename, uid_db);
-  
+
   * result = env_list;
-  
+
   return MAIL_NO_ERROR;
 
  free_list:
@@ -721,17 +721,18 @@ get_cached_flags(struct mail_cache_db * cache_db,
   char keyname[PATH_MAX];
   struct mail_flags * flags;
   int res;
+  UNUSED(session);
 
   snprintf(keyname, PATH_MAX, "%s-flags", uid);
-  
+
   r = generic_cache_flags_read(cache_db, mmapstr, keyname, &flags);
   if (r != MAIL_NO_ERROR) {
     res = r;
     goto err;
   }
-  
+
   * result = flags;
-  
+
   return MAIL_NO_ERROR;
 
  err:
@@ -747,15 +748,16 @@ get_cached_envelope(struct mail_cache_db * cache_db, MMAPString * mmapstr,
   char keyname[PATH_MAX];
   struct mailimf_fields * fields;
   int res;
+  UNUSED(session);
 
   snprintf(keyname, PATH_MAX, "%s-envelope", uid);
-  
+
   r = generic_cache_fields_read(cache_db, mmapstr, keyname, &fields);
   if (r != MAIL_NO_ERROR) {
     res = r;
     goto err;
   }
-  
+
   * result = fields;
 
   return MAIL_NO_ERROR;
@@ -773,6 +775,7 @@ write_cached_envelope(struct mail_cache_db * cache_db,
   int r;
   char keyname[PATH_MAX];
   int res;
+  UNUSED(session);
 
   snprintf(keyname, PATH_MAX, "%s-envelope", uid);
 
@@ -824,43 +827,43 @@ static int get_envelopes_list(mailsession * session,
   struct mail_cache_db * cache_db_env;
   struct mail_cache_db * cache_db_flags;
   MMAPString * mmapstr;
-  
+
   data = get_cached_data(session);
-  
+
   flags_store_process(data->md_flags_directory,
       data->md_quoted_mb, data->md_flags_store);
-  
+
   mmapstr = mmap_string_new("");
   if (mmapstr == NULL) {
     res = MAIL_ERROR_MEMORY;
     goto err;
   }
-  
+
   snprintf(filename_env, PATH_MAX, "%s%c%s%c%s",
       data->md_cache_directory, MAIL_DIR_SEPARATOR, data->md_quoted_mb,
       MAIL_DIR_SEPARATOR, ENV_NAME);
-  
+
   r = mail_cache_db_open_lock(filename_env, &cache_db_env);
   if (r < 0) {
     res = MAIL_ERROR_FILE;
     goto free_mmapstr;
   }
-  
+
   snprintf(filename_flags, PATH_MAX, "%s%c%s%c%s",
       data->md_flags_directory, MAIL_DIR_SEPARATOR, data->md_quoted_mb,
       MAIL_DIR_SEPARATOR, FLAGS_NAME);
-  
+
   r = mail_cache_db_open_lock(filename_flags, &cache_db_flags);
   if (r < 0) {
     res = MAIL_ERROR_FILE;
     goto close_db_env;
   }
-  
+
   for(i = 0 ; i < carray_count(env_list->msg_tab) ; i++) {
     mailmessage * msg;
     struct mailimf_fields * fields;
     struct mail_flags * flags;
-    
+
     msg = carray_get(env_list->msg_tab, i);
 
     if (msg->msg_fields == NULL) {
@@ -880,16 +883,16 @@ static int get_envelopes_list(mailsession * session,
       }
     }
   }
-  
+
   mail_cache_db_close_unlock(filename_flags, cache_db_flags);
   mail_cache_db_close_unlock(filename_env, cache_db_env);
-  
+
   r = mailsession_get_envelopes_list(get_ancestor(session), env_list);
   if (r != MAIL_NO_ERROR) {
     res = r;
     goto free_mmapstr;
   }
-  
+
   r = mail_cache_db_open_lock(filename_env, &cache_db_env);
   if (r < 0) {
     res = MAIL_ERROR_MEMORY;
@@ -922,18 +925,18 @@ static int get_envelopes_list(mailsession * session,
           msg->msg_uid, msg->msg_flags);
     }
   }
-  
+
   /* flush cache */
-  
+
   maildriver_cache_clean_up(cache_db_env, cache_db_flags, env_list);
-  
+
   mail_cache_db_close_unlock(filename_flags, cache_db_flags);
   mail_cache_db_close_unlock(filename_env, cache_db_env);
-  
+
   mmap_string_free(mmapstr);
-  
+
   return MAIL_NO_ERROR;
-  
+
  close_db_env:
   mail_cache_db_close_unlock(filename_env, cache_db_env);
  free_mmapstr:
@@ -950,12 +953,12 @@ static int expunge_folder(mailsession * session)
 static int check_folder(mailsession * session)
 {
   struct maildir_cached_session_state_data * data;
-  
+
   data = get_cached_data(session);
 
   flags_store_process(data->md_flags_directory,
       data->md_quoted_mb, data->md_flags_store);
-  
+
   return mailsession_check_folder(get_ancestor(session));
 }
 
@@ -977,70 +980,70 @@ static int get_message(mailsession * session,
   int r;
 
   data = get_cached_data(session);
-  
+
   md = get_maildir_session(session);
-  
+
   /* a get_messages_list() should have been done once before */
-  
+
   /* read DB */
-  
+
   snprintf(filename, sizeof(filename), "%s%c%s%c%s",
       data->md_flags_directory, MAIL_DIR_SEPARATOR, data->md_quoted_mb,
       MAIL_DIR_SEPARATOR, UID_NAME);
-  
+
   r = mail_cache_db_open_lock(filename, &uid_db);
   if (r < 0) {
     res = MAIL_ERROR_MEMORY;
     goto err;
   }
-  
+
   snprintf(key_str, sizeof(key_str), "uid-%lu", (unsigned long) num);
-  
+
   r = mail_cache_db_get(uid_db, key_str, strlen(key_str), &value, &value_len);
   if (r < 0) {
     res = MAIL_ERROR_INVAL;
     goto close_db;
   }
-  
+
   if (value_len >= PATH_MAX) {
     res = MAIL_ERROR_INVAL;
     goto close_db;
   }
-  
+
   memcpy(uid, value, value_len);
   uid[value_len] = '\0';
-  
+
   mail_cache_db_close_unlock(filename, uid_db);
-  
+
   /* update maildir data */
-  
+
   r = maildir_update(md);
   if (r != MAILDIR_NO_ERROR) {
     res = maildirdriver_maildir_error_to_mail_error(r);
     goto err;
   }
-  
+
   msg_filename = maildir_message_get(md, uid);
   if (msg_filename == NULL) {
     res = MAIL_ERROR_INVAL;
     goto err;
   }
-  
+
   r = stat(msg_filename, &stat_info);
   free(msg_filename);
   if (r < 0) {
     res = MAIL_ERROR_INVAL;
     goto err;
   }
-  
+
   /* create message */
-  
+
   msg = mailmessage_new();
   if (msg == NULL) {
     res = MAIL_ERROR_MEMORY;
     goto err;
   }
-  
+
   r = mailmessage_init(msg, session, maildir_cached_message_driver,
       num, stat_info.st_size);
   if (r != MAIL_NO_ERROR) {
@@ -1048,18 +1051,18 @@ static int get_message(mailsession * session,
     res = r;
     goto err;
   }
-  
+
   msg->msg_uid = strdup(uid);
   if (msg->msg_uid == NULL) {
     mailmessage_free(msg);
     res = r;
     goto err;
   }
-  
+
   * result = msg;
-  
+
   return MAIL_NO_ERROR;
-  
+
  close_db:
   mail_cache_db_close_unlock(filename, uid_db);
  err:
@@ -1082,64 +1085,64 @@ static int get_message_by_uid(mailsession * session,
   size_t value_len;
   struct maildir_cached_session_state_data * data;
   uint32_t indx;
-  
+
   data = get_cached_data(session);
-  
+
   md = get_maildir_session(session);
-  
+
   /* a get_messages_list() should have been done once before */
-  
+
   /* read DB */
-  
+
   snprintf(filename, sizeof(filename), "%s%c%s%c%s",
       data->md_flags_directory, MAIL_DIR_SEPARATOR, data->md_quoted_mb,
       MAIL_DIR_SEPARATOR, UID_NAME);
-  
+
   r = mail_cache_db_open_lock(filename, &uid_db);
   if (r < 0) {
     res = MAIL_ERROR_MEMORY;
     goto err;
   }
-  
+
   r = mail_cache_db_get(uid_db, uid, strlen(uid), &value, &value_len);
   if (r < 0) {
     res = MAIL_ERROR_INVAL;
     goto close_db;
   }
-  
+
   memcpy(&indx, value, sizeof(indx));
-  
+
   mail_cache_db_close_unlock(filename, uid_db);
 
   /* update maildir data */
-  
+
   r = maildir_update(md);
   if (r != MAILDIR_NO_ERROR) {
     res = maildirdriver_maildir_error_to_mail_error(r);
     goto err;
   }
-  
+
   msg_filename = maildir_message_get(md, uid);
   if (msg_filename == NULL) {
     res = MAIL_ERROR_INVAL;
     goto err;
   }
-  
+
   r = stat(msg_filename, &stat_info);
   free(msg_filename);
   if (r < 0) {
     res = MAIL_ERROR_INVAL;
     goto err;
   }
-  
+
   /* create message */
-  
+
   msg = mailmessage_new();
   if (msg == NULL) {
     res = MAIL_ERROR_MEMORY;
     goto err;
   }
-  
+
   r = mailmessage_init(msg, session, maildir_cached_message_driver,
       indx, stat_info.st_size);
   if (r != MAIL_NO_ERROR) {
@@ -1147,18 +1150,18 @@ static int get_message_by_uid(mailsession * session,
     res = r;
     goto err;
   }
-  
+
   msg->msg_uid = strdup(uid);
   if (msg->msg_uid == NULL) {
     mailmessage_free(msg);
     res = r;
     goto err;
   }
-  
+
   * result = msg;
-  
+
   return MAIL_NO_ERROR;
-  
+
  close_db:
   mail_cache_db_close_unlock(filename, uid_db);
  err:

@@ -79,13 +79,13 @@ static void do_exec_command(int fd, const char *command,
 #ifndef HAVE_SETENV
   char env_buffer[ENV_BUFFER_SIZE];
 #endif
-  
+
   if (fork() > 0) {
     /* Fork again to become a child of init rather than
        the etpan client. */
     exit(0);
   }
-  
+
 #ifndef HAVE_SETENV
   if (servername)
     snprintf(env_buffer, ENV_BUFFER_SIZE, "ETPANSERVER=%s", servername);
@@ -98,7 +98,7 @@ static void do_exec_command(int fd, const char *command,
   else
     unsetenv("ETPANSERVER");
 #endif
-  
+
 #ifndef HAVE_SETENV
   if (port)
     snprintf(env_buffer, ENV_BUFFER_SIZE, "ETPANPORT=%d", port);
@@ -108,7 +108,7 @@ static void do_exec_command(int fd, const char *command,
 #else
   if (port) {
     char porttext[20];
-    
+
     snprintf(porttext, sizeof(porttext), "%d", port);
     setenv("ETPANPORT", porttext, 1);
   }
@@ -116,19 +116,19 @@ static void do_exec_command(int fd, const char *command,
     unsetenv("ETPANPORT");
   }
 #endif
-  
+
   /* Not a lot we can do if there's an error other than bail. */
   if (dup2(fd, 0) == -1)
     exit(1);
   if (dup2(fd, 1) == -1)
     exit(1);
-  
+
   /* Should we close stderr and reopen /dev/null? */
-  
+
   maxopen = sysconf(_SC_OPEN_MAX);
   for (i=3; i < maxopen; i++)
     close(i);
-  
+
 #ifdef TIOCNOTTY
   /* Detach from the controlling tty if we have one. Otherwise,
      SSH might do something stupid like trying to use it instead
@@ -141,7 +141,7 @@ static void do_exec_command(int fd, const char *command,
 #endif /* TIOCNOTTY */
 
   execl("/bin/sh", "/bin/sh", "-c", command, NULL);
-  
+
   /* Eep. Shouldn't reach this */
   exit(1);
 }
@@ -156,10 +156,10 @@ static int subcommand_connect(char *command, char *servername, uint16_t port)
 
   int sockfds[2];
   pid_t childpid;
-  
+
   if (socketpair(AF_UNIX, SOCK_STREAM, 0, sockfds))
     return -1;
-  
+
   childpid = fork();
   if (!childpid) {
     do_exec_command(sockfds[1], command, servername, port);
@@ -169,12 +169,12 @@ static int subcommand_connect(char *command, char *servername, uint16_t port)
     close(sockfds[1]);
     return -1;
   }
-  
+
   close(sockfds[1]);
-  
+
   /* Reap child, leaving grandchild process to run */
   waitpid(childpid, NULL, 0);
-  
+
   return sockfds[0];
 #endif /* WIN32 */
 }
@@ -223,7 +223,7 @@ int mailstorage_generic_connect_with_local_address(mailsession_driver * driver,
   int fd;
   mailsession * session;
   int connect_result;
-  
+
   switch (connection_type) {
   case CONNECTION_TYPE_PLAIN:
   case CONNECTION_TYPE_TRY_STARTTLS:
@@ -247,12 +247,12 @@ int mailstorage_generic_connect_with_local_address(mailsession_driver * driver,
     fd = -1;
     break;
   }
-  
+
   if (fd == -1) {
     res = MAIL_ERROR_INVAL;
     goto err;
   }
-  
+
   switch (connection_type) {
   case CONNECTION_TYPE_PLAIN:
   case CONNECTION_TYPE_TRY_STARTTLS:
@@ -262,12 +262,12 @@ int mailstorage_generic_connect_with_local_address(mailsession_driver * driver,
   case CONNECTION_TYPE_COMMAND_STARTTLS:
     stream = mailstream_socket_open(fd);
     break;
-    
+
   case CONNECTION_TYPE_TLS:
   case CONNECTION_TYPE_COMMAND_TLS:
     stream = mailstream_ssl_open(fd);
     break;
-    
+
   default:
     stream = NULL;
     break;
@@ -287,10 +287,10 @@ int mailstorage_generic_connect_with_local_address(mailsession_driver * driver,
 
   if (cache_directory != NULL) {
     char cache_directory_server[PATH_MAX];
-    
+
     snprintf(cache_directory_server, PATH_MAX, "%s/%s",
         cache_directory, servername);
-    
+
     r = mailsession_parameters(session,
 			       cache_function_id,
 			       cache_directory_server);
@@ -302,10 +302,10 @@ int mailstorage_generic_connect_with_local_address(mailsession_driver * driver,
 
   if (flags_directory != NULL) {
     char flags_directory_server[PATH_MAX];
-    
+
     snprintf(flags_directory_server, PATH_MAX, "%s/%s",
         flags_directory, servername);
-    
+
     r = mailsession_parameters(session,
         flags_function_id,
         flags_directory_server);
@@ -369,6 +369,7 @@ int mailstorage_generic_auth(mailsession * session,
     char * login,
     char * password)
 {
+  UNUSED(auth_type);
   return mailstorage_generic_auth_sasl(session,
       connect_result,
       NULL, NULL, NULL, NULL,

@@ -18,7 +18,7 @@
 
 int get_content_of_file(char * filename, char ** p_content, size_t * p_length)
 {
-  int r;
+  long r;
   struct stat stat_buf;
   int fd;
   char * content;

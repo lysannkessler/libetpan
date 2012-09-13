@@ -40,6 +40,10 @@
 #include <libetpan/mailmessage.h>
 #include <libetpan/mailprivacy_types.h>
 
+#ifndef UNUSED
+#define UNUSED(x) (void)(x)
+#endif
+
 LIBETPAN_EXPORT
 void mailprivacy_mime_clear(struct mailmime * mime);
 

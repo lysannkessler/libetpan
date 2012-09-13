@@ -134,7 +134,7 @@ int parse_options(int argc, char ** argv,
       * server = strdup(optarg);
       break;
     case 'p':
-      * port = strtoul(optarg, NULL, 10);
+      * port = atoi(optarg);
       break;
     case 't':
       * connection_type = CONNECTION_TYPE_TLS;

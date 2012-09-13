@@ -59,6 +59,7 @@
 #include "mhdriver_tools.h"
 #include "mhdriver_message.h"
 #include "mailmessage.h"
+#include "mail.h"
 
 static int mhdriver_initialize(mailsession * session);
 
@@ -149,7 +150,7 @@ static mailsession_driver local_mh_session_driver = {
   /* sess_subscribe_folder */ mhdriver_subscribe_folder,
   /* sess_unsubscribe_folder */ mhdriver_unsubscribe_folder,
 
-  /* sess_append_message */ mhdriver_append_message, 
+  /* sess_append_message */ mhdriver_append_message,
   /* sess_append_message_flags */ mhdriver_append_message_flags,
   /* sess_copy_message */ mhdriver_copy_message,
   /* sess_move_message */ mhdriver_move_message,
@@ -242,7 +243,7 @@ static int mhdriver_initialize(mailsession * session)
     goto free;
 
   session->sess_data = data;
-  
+
   return MAIL_NO_ERROR;
 
  free:
@@ -264,7 +265,7 @@ static void mhdriver_uninitialize(mailsession * session)
   clist_free(data->mh_subscribed_list);
 
   free(data);
-  
+
   session->sess_data = NULL;
 }
 
@@ -279,7 +280,7 @@ static int mhdriver_connect_path(mailsession * session, const char * path)
   mh = mailmh_new(path);
   if (mh == NULL)
     return MAIL_ERROR_MEMORY;
-  
+
   get_data(session)->mh_session = mh;
 
   return MAIL_NO_ERROR;
@@ -306,6 +307,7 @@ static int mhdriver_build_folder_name(mailsession * session, const char * mb,
 				      const char * name, char ** result)
 {
   char * folder_name;
+  UNUSED(session);
 
   folder_name = malloc(strlen(mb) + 2 + strlen(name));
   if (folder_name == NULL)
@@ -316,7 +318,7 @@ static int mhdriver_build_folder_name(mailsession * session, const char * mb,
   strcat(folder_name, name);
 
   * result = folder_name;
-  
+
   return MAIL_NO_ERROR;
 }
 
@@ -350,7 +352,7 @@ static int get_parent(mailsession * session, const char * mb,
   else {
     return MAIL_ERROR_INVAL;
   }
-  
+
   parent_name = malloc(i + 1);
   /* strndup(mb, i) */
   if (parent_name == NULL)
@@ -375,13 +377,13 @@ static int mhdriver_create_folder(mailsession * session, const char * mb)
   int r;
   struct mailmh_folder * parent;
   const char * name;
-  
+
   r = get_parent(session, mb, &parent, &name);
   if (r != MAIL_NO_ERROR)
     return r;
 
   r = mailmh_folder_add_subfolder(parent, name);
-  
+
   return mhdriver_mh_error_to_mail_error(r);
 }
 
@@ -430,8 +432,8 @@ static int mhdriver_rename_folder(mailsession * session, const char * mb,
 
   if (get_mh_cur_folder(session) == src_folder)
     get_data(session)->mh_cur_folder = NULL;
-  
-  r = mailmh_folder_rename_subfolder(src_folder, dst_folder, name);  
+
+  r = mailmh_folder_rename_subfolder(src_folder, dst_folder, name);
 
   return mhdriver_mh_error_to_mail_error(r);
 }
@@ -447,7 +449,7 @@ static int mhdriver_select_folder(mailsession * session, const char * mb)
     return MAIL_ERROR_BAD_STATE;
 
   r = mailmh_folder_update(mh->mh_main);
-  
+
   folder = mailmh_folder_find(mh->mh_main, mb);
   if (folder == NULL)
     return MAIL_ERROR_FOLDER_NOT_FOUND;
@@ -464,11 +466,11 @@ static int mhdriver_status_folder(mailsession * session, const char * mb,
 {
   uint32_t count;
   int r;
-  
+
   r = mhdriver_messages_number(session, mb, &count);
   if (r != MAIL_NO_ERROR)
     return r;
-  
+
   * result_messages = count;
   * result_recent = count;
   * result_unseen = count;
@@ -503,12 +505,12 @@ static int mhdriver_messages_number(mailsession * session, const char * mb,
   count = 0;
   for (i = 0 ; i < carray_count(folder->fl_msgs_tab) ; i ++) {
     struct mailmh_msg_info * msg_info;
-    
+
     msg_info = carray_get(folder->fl_msgs_tab, i);
     if (msg_info != NULL)
       count ++;
   }
-  
+
   * result = count;
 
   return MAIL_NO_ERROR;
@@ -549,7 +551,7 @@ static int get_list_folders(struct mailmh_folder * folder, clist ** result)
     res = MAIL_ERROR_MEMORY;
     goto free;
   }
-  
+
   if (folder->fl_subfolders_tab != NULL) {
     for(i = 0 ; i < carray_count(folder->fl_subfolders_tab) ; i++) {
       struct mailmh_folder * subfolder;
@@ -566,7 +568,7 @@ static int get_list_folders(struct mailmh_folder * folder, clist ** result)
   }
 
   * result = list;
-  
+
   free(new_filename);
   return MAIL_NO_ERROR;
 
@@ -584,6 +586,7 @@ static int mhdriver_list_folders(mailsession * session, const char * mb,
   int r;
   struct mailmh * mh;
   struct mail_list * ml;
+  UNUSED(mb);
 
   mh = get_mh_session(session);
 
@@ -634,22 +637,22 @@ static int mhdriver_lsub_folders(mailsession * session, const char * mb,
       cur = clist_next(cur)) {
     char * cur_mb;
     char * new_mb;
-    
+
     cur_mb = clist_content(cur);
 
     if (strncmp(mb, cur_mb, length) == 0) {
       new_mb = strdup(cur_mb);
       if (new_mb == NULL)
 	goto free_list;
-      
+
       r = clist_append(lsub_result, new_mb);
       if (r < 0) {
 	free(new_mb);
 	goto free_list;
       }
     }
-  }    
-  
+  }
+
   lsub = mail_list_new(lsub_result);
   if (lsub == NULL)
     goto free_list;
@@ -712,6 +715,7 @@ static int mhdriver_append_message(mailsession * session,
 static int mhdriver_append_message_flags(mailsession * session,
     const char * message, size_t size, struct mail_flags * flags)
 {
+  UNUSED(flags);
   return mhdriver_append_message(session, message, size);
 }
 
@@ -757,7 +761,7 @@ static int mhdriver_copy_message(mailsession * session,
   close(fd);
 
   return MAIL_NO_ERROR;
-  
+
  close:
   close(fd);
  err:
@@ -785,7 +789,7 @@ static int mhdriver_move_message(mailsession * session,
   struct mailmh_folder * src_folder;
   struct mailmh_folder * dest_folder;
   struct mailmh * mh;
-  
+
   mh = get_mh_session(session);
   if (mh == NULL)
     return MAIL_ERROR_BAD_STATE;
@@ -828,7 +832,7 @@ static int mhdriver_get_message(mailsession * session,
 {
   mailmessage * msg_info;
   int r;
-  
+
   msg_info = mailmessage_new();
   if (msg_info == NULL)
     return MAIL_ERROR_MEMORY;
@@ -857,30 +861,30 @@ static int mhdriver_get_message_by_uid(mailsession * session,
   int r;
   time_t mtime;
   char * mtime_p;
-  
+
   if (uid == NULL)
     return MAIL_ERROR_INVAL;
 
   indx = strtoul(uid, &p, 10);
   if (p == uid || * p != '-')
     return MAIL_ERROR_INVAL;
-  
+
   mh_data = session->sess_data;
   key.data = &indx;
   key.len = sizeof(indx);
   r = chash_get(mh_data->mh_cur_folder->fl_msgs_hash, &key, &data);
   if (r < 0)
     return MAIL_ERROR_MSG_NOT_FOUND;
-  
+
   mh_msg_info = data.data;
-  
+
   mtime_p = p + 1;
-  
+
   mtime = strtoul(mtime_p, &p, 10);
   if ((* p == '-') && (mtime == mh_msg_info->msg_mtime)) {
     size_t size;
     char *size_p;
-    
+
     size_p = p + 1;
     size = strtoul(size_p, &p, 10);
     if ((* p == '\0') && (size == mh_msg_info->msg_size))
@@ -889,6 +893,6 @@ static int mhdriver_get_message_by_uid(mailsession * session,
   else if (* p != '-') {
     return MAIL_ERROR_INVAL;
   }
-  
+
   return MAIL_ERROR_MSG_NOT_FOUND;
 }

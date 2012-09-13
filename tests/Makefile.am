@@ -39,7 +39,8 @@ noinst_PROGRAMS = smime decrypt pgp frm frm-tree frm-simple	\
 # For W32, reverse the -DLIBETPAN_DLL.  Unfortunately, CFLAGS comes
 # after AM_CPPFLAGS, so we have to frob CFLAGS.
 AM_CFLAGS = -ULIBETPAN_DLL
-AM_CPPFLAGS = -I$(top_builddir)/include
+AM_CPPFLAGS = $(WERROR) \
+	-I$(top_builddir)/include
 LDADD = ../src/libetpan.la
 
 FRMCOMMON = frm-common.h frm-common.c option-parser.h option-parser.c
@@ -61,5 +62,5 @@ readmsg_uid_SOURCES = $(READMSGCOMMON) readmsg-uid.c
 
 fetch_attachment_SOURCES = $(READMSGCOMMON) fetch-attachment.c
 
-oxws_sample_CFLAGS = $(AM_CFLAGS) -Werror
+oxws_sample_CFLAGS = $(AM_CFLAGS)
 

@@ -298,12 +298,12 @@ static void pop3driver_cached_uninitialize(mailsession * session)
   pop3_flags_store_process(data->pop3_flags_directory,
       data->pop3_flags_store);
 
-  mail_flags_store_free(data->pop3_flags_store); 
+  mail_flags_store_free(data->pop3_flags_store);
 
   chash_free(data->pop3_flags_hash);
   mailsession_free(data->pop3_ancestor);
   free(data);
-  
+
   session->sess_data = NULL;
 }
 
@@ -437,7 +437,7 @@ static int pop3driver_cached_expunge_folder(mailsession * session)
   for(i = 0 ; i < carray_count(msg_tab) ; i++) {
     struct mailpop3_msg_info * pop3_info;
     struct mail_flags * flags;
-    
+
     pop3_info = carray_get(msg_tab, i);
     if (pop3_info == NULL)
       continue;
@@ -456,7 +456,7 @@ static int pop3driver_cached_expunge_folder(mailsession * session)
 
     mail_flags_free(flags);
   }
-  
+
   mmap_string_free(mmapstr);
   mail_cache_db_close_unlock(filename_flags, cache_db_flags);
 
@@ -485,10 +485,11 @@ static int pop3driver_cached_status_folder(mailsession * session,
   mailpop3 * pop3;
   uint32_t recent;
   uint32_t unseen;
-  
+  UNUSED(mb);
+
   recent = 0;
   unseen = 0;
-  
+
   pop3 = get_pop3_session(session);
 
   cached_data = get_cached_data(session);
@@ -520,7 +521,7 @@ static int pop3driver_cached_status_folder(mailsession * session,
   for(i = 0 ; i < carray_count(msg_tab) ; i++) {
     struct mailpop3_msg_info * pop3_info;
     struct mail_flags * flags;
-    
+
     pop3_info = carray_get(msg_tab, i);
     if (pop3_info == NULL)
       continue;
@@ -545,14 +546,14 @@ static int pop3driver_cached_status_folder(mailsession * session,
     mail_flags_free(flags);
 
   }
-  
+
   mmap_string_free(mmapstr);
   mail_cache_db_close_unlock(filename_flags, cache_db_flags);
 
   * result_messages = carray_count(msg_tab) - pop3->pop3_deleted_count;
   * result_recent = recent;
   * result_unseen = unseen;
-  
+
   return MAIL_NO_ERROR;
 
  free_mmapstr:
@@ -578,15 +579,15 @@ static int pop3driver_cached_recent_number(mailsession * session,
   uint32_t recent;
   uint32_t unseen;
   int r;
-  
+
   r = pop3driver_cached_status_folder(session, mb,
       &messages, &recent, &unseen);
   if (r != MAIL_NO_ERROR)
     return r;
-  
+
   * result = recent;
-  
-  return MAIL_NO_ERROR;  
+
+  return MAIL_NO_ERROR;
 }
 
 static int pop3driver_cached_unseen_number(mailsession * session,
@@ -597,15 +598,15 @@ static int pop3driver_cached_unseen_number(mailsession * session,
   uint32_t recent;
   uint32_t unseen;
   int r;
-  
+
   r = pop3driver_cached_status_folder(session, mb,
       &messages, &recent, &unseen);
   if (r != MAIL_NO_ERROR)
     return r;
-  
+
   * result = unseen;
-  
-  return MAIL_NO_ERROR;  
+
+  return MAIL_NO_ERROR;
 }
 
 /* messages operations */
@@ -714,11 +715,11 @@ write_cached_envelope(struct mail_cache_db * cache_db,
 static void get_uid_from_filename(char * filename)
 {
   char * p;
-  
+
   p = strstr(filename, "-header");
   if (p != NULL)
     * p = 0;
-}  
+}
 
 static int
 pop3driver_cached_get_envelopes_list(mailsession * session,
@@ -765,7 +766,7 @@ pop3driver_cached_get_envelopes_list(mailsession * session,
 
   /* fill with cached */
 
-  for(i = 0 ; i < carray_count(env_list->msg_tab) ; i ++) {   
+  for(i = 0 ; i < carray_count(env_list->msg_tab) ; i ++) {
     mailmessage * msg;
     struct mailimf_fields * fields;
     struct mail_flags * flags;
@@ -789,7 +790,7 @@ pop3driver_cached_get_envelopes_list(mailsession * session,
       }
     }
   }
-  
+
   mail_cache_db_close_unlock(filename_flags, cache_db_flags);
   mail_cache_db_close_unlock(filename_env, cache_db_env);
 
@@ -801,7 +802,7 @@ pop3driver_cached_get_envelopes_list(mailsession * session,
   }
 
   /* add flags */
-  
+
   for(i = 0 ; i < carray_count(env_list->msg_tab) ; i ++) {
     mailmessage * msg;
 
@@ -810,13 +811,13 @@ pop3driver_cached_get_envelopes_list(mailsession * session,
     if (msg->msg_flags == NULL)
       msg->msg_flags = mail_flags_new_empty();
   }
-  
+
   r = mail_cache_db_open_lock(filename_env, &cache_db_env);
   if (r < 0) {
     res = MAIL_ERROR_FILE;
     goto free_mmapstr;
   }
-  
+
   r = mail_cache_db_open_lock(filename_flags, &cache_db_flags);
   if (r < 0) {
     res = MAIL_ERROR_FILE;
@@ -836,7 +837,7 @@ pop3driver_cached_get_envelopes_list(mailsession * session,
             session, msg->msg_index, msg->msg_fields);
       }
     }
-    
+
     if (msg->msg_flags != NULL) {
       r = pop3driver_write_cached_flags(cache_db_flags, mmapstr,
           msg->msg_uid, msg->msg_flags);
@@ -844,18 +845,18 @@ pop3driver_cached_get_envelopes_list(mailsession * session,
   }
 
   /* flush cache */
-  
+
   maildriver_cache_clean_up(cache_db_env, cache_db_flags, env_list);
-  
+
   mail_cache_db_close_unlock(filename_flags, cache_db_flags);
   mail_cache_db_close_unlock(filename_env, cache_db_env);
   mmap_string_free(mmapstr);
 
   /* remove cache files */
-  
+
   maildriver_message_cache_clean_up(cached_data->pop3_cache_directory,
       env_list, get_uid_from_filename);
-  
+
   return MAIL_NO_ERROR;
 
  close_db_env:
@@ -894,34 +895,34 @@ static int pop3driver_cached_get_message_by_uid(mailsession * session,
   struct mailpop3_msg_info * msg_info;
   int found;
   unsigned int i;
-  
+
   if (uid == NULL)
     return MAIL_ERROR_INVAL;
-  
+
   pop3 = get_pop3_session(session);
-  
+
   found = 0;
-  
+
   /* iterate all messages and look for uid */
   for(i = 0 ; i < carray_count(pop3->pop3_msg_tab) ; i++) {
     msg_info = carray_get(pop3->pop3_msg_tab, i);
-    
+
     if (msg_info == NULL)
       continue;
-    
+
     if (msg_info->msg_deleted)
       continue;
-    
+
     /* uid found, stop looking */
     if (strcmp(msg_info->msg_uidl, uid) == 0) {
       found = 1;
       break;
     }
   }
-  
+
   if (!found)
     return MAIL_ERROR_MSG_NOT_FOUND;
-  
+
   return pop3driver_cached_get_message(session, msg_info->msg_index, result);
 }
 

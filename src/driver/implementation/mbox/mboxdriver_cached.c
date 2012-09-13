@@ -149,7 +149,7 @@ static mailsession_driver local_mbox_cached_session_driver = {
 
   /* sess_append_message */ mboxdriver_cached_append_message,
   /* sess_append_message_flags */ mboxdriver_cached_append_message_flags,
-  
+
   /* sess_copy_message */ NULL,
   /* sess_move_message */ NULL,
 
@@ -346,12 +346,12 @@ static void mboxdriver_cached_uninitialize(mailsession * session)
       data->mbox_quoted_mb,
       data->mbox_flags_store);
 
-  mail_flags_store_free(data->mbox_flags_store); 
+  mail_flags_store_free(data->mbox_flags_store);
 
   free_state(data);
   mailsession_free(data->mbox_ancestor);
   free(data);
-  
+
   session->sess_data = NULL;
 }
 
@@ -492,7 +492,7 @@ static int write_max_uid_value(mailsession * session)
     res = MAIL_ERROR_FILE;
     goto err;
   }
-  
+
   f = fdopen(fd, "w");
   if (f == NULL) {
     close(fd);
@@ -577,7 +577,7 @@ static int read_max_uid_value(mailsession * session, uint32_t * result)
   }
 
   cur_token = 0;
-  
+
   r = mailimf_cache_int_read(mmapstr, &cur_token, &written_uid);
   if (r != MAIL_NO_ERROR) {
     res = r;
@@ -608,13 +608,13 @@ static int mboxdriver_cached_connect_path(mailsession * session, const char * pa
   struct mbox_session_state_data * ancestor_data;
   struct mailmbox_folder * folder;
   uint32_t written_uid;
-  
+
   folder = get_mbox_session(session);
   if (folder != NULL) {
     res = MAIL_ERROR_BAD_STATE;
     goto err;
   }
-  
+
   quoted_mb = NULL;
   r = get_cache_directory(session, path, &quoted_mb);
   if (r != MAIL_NO_ERROR) {
@@ -624,7 +624,7 @@ static int mboxdriver_cached_connect_path(mailsession * session, const char * pa
 
   cached_data = get_cached_data(session);
   free_state(cached_data);
-  
+
   cached_data->mbox_quoted_mb = quoted_mb;
 
   written_uid = 0;
@@ -649,7 +649,7 @@ static int mboxdriver_cached_connect_path(mailsession * session, const char * pa
   ancestor_data->mbox_folder = folder;
 
   return MAIL_NO_ERROR;
-  
+
  free:
   free(quoted_mb);
  err:
@@ -757,10 +757,10 @@ static int mboxdriver_cached_expunge_folder(mailsession * session)
 
     mail_flags_free(flags);
   }
-  
+
   mmap_string_free(mmapstr);
   mail_cache_db_close_unlock(filename_flags, cache_db_flags);
-  
+
   r = mailmbox_expunge(folder);
 
   return MAIL_NO_ERROR;
@@ -786,11 +786,12 @@ static int mboxdriver_cached_status_folder(mailsession * session, const char * m
   uint32_t recent;
   uint32_t unseen;
   uint32_t num;
-  
+  UNUSED(mb);
+
   num = 0;
   recent = 0;
   unseen = 0;
-  
+
   folder = get_mbox_session(session);
   if (folder == NULL) {
     res = MAIL_ERROR_BAD_STATE;
@@ -868,7 +869,7 @@ static int mboxdriver_cached_status_folder(mailsession * session, const char * m
   * result_messages = num;
   * result_recent = recent;
   * result_unseen = unseen;
-  
+
   return MAIL_NO_ERROR;
 
  close_db_flags:
@@ -891,14 +892,14 @@ static int mboxdriver_cached_recent_number(mailsession * session, const char * m
   uint32_t recent;
   uint32_t unseen;
   int r;
-  
+
   r = mboxdriver_cached_status_folder(session, mb, &messages, &recent, &unseen);
   if (r != MAIL_NO_ERROR)
     return r;
-  
+
   * result = recent;
-  
-  return MAIL_NO_ERROR;  
+
+  return MAIL_NO_ERROR;
 }
 
 static int mboxdriver_cached_unseen_number(mailsession * session, const char * mb,
@@ -908,14 +909,14 @@ static int mboxdriver_cached_unseen_number(mailsession * session, const char * m
   uint32_t recent;
   uint32_t unseen;
   int r;
-  
+
   r = mboxdriver_cached_status_folder(session, mb,
       &messages, &recent, &unseen);
   if (r != MAIL_NO_ERROR)
     return r;
-  
+
   * result = unseen;
-  
+
   return MAIL_NO_ERROR;
 }
 
@@ -942,13 +943,13 @@ static int mboxdriver_cached_append_message_flags(mailsession * session,
   char filename_flags[PATH_MAX];
   MMAPString * mmapstr;
   char keyname[PATH_MAX];
-  
+
   folder = get_mbox_session(session);
   if (folder == NULL)
     return MAIL_ERROR_APPEND;
-  
+
   r = mailmbox_append_message_uid(folder, message, size, &uid);
-  
+
   switch (r) {
   case MAILMBOX_ERROR_FILE:
     return MAIL_ERROR_DISKSPACE;
@@ -957,47 +958,47 @@ static int mboxdriver_cached_append_message_flags(mailsession * session,
   default:
     return mboxdriver_mbox_error_to_mail_error(r);
   }
-  
+
   /* could store in flags store instead */
-  
+
   if (flags == NULL)
     goto exit;
-  
+
   key.data = &uid;
-  key.len = sizeof(uid); 
+  key.len = sizeof(uid);
   r = chash_get(folder->mb_hash, &key, &value);
   if (r < 0)
     goto exit;
-  
+
   msg_info = value.data;
-  
+
   data = get_cached_data(session);
-  
+
   snprintf(filename_flags, PATH_MAX, "%s%c%s%c%s",
       data->mbox_flags_directory, MAIL_DIR_SEPARATOR, data->mbox_quoted_mb,
       MAIL_DIR_SEPARATOR, FLAGS_NAME);
-  
+
   r = mail_cache_db_open_lock(filename_flags, &cache_db_flags);
   if (r < 0)
     goto exit;
-  
+
   mmapstr = mmap_string_new("");
   if (mmapstr == NULL)
     goto close_db_flags;
-  
+
   snprintf(keyname, PATH_MAX, "%u-%lu", uid,
       (unsigned long) msg_info->msg_body_len);
-  
+
   r = mboxdriver_write_cached_flags(cache_db_flags, mmapstr, keyname, flags);
-  
+
   mmap_string_free(mmapstr);
   mail_cache_db_close_unlock(filename_flags, cache_db_flags);
-  
+
   if (r != MAIL_NO_ERROR)
     goto exit;
-  
+
   return MAIL_NO_ERROR;
-  
+
  close_db_flags:
   mail_cache_db_close_unlock(filename_flags, cache_db_flags);
  exit:
@@ -1037,24 +1038,24 @@ get_cached_envelope(struct mail_cache_db * cache_db, MMAPString * mmapstr,
   struct mailmbox_folder * folder;
   chashdatum key;
   chashdatum data;
-  
+
   folder = get_mbox_session(session);
   if (folder == NULL) {
     res = MAIL_ERROR_BAD_STATE;
     goto err;
   }
-  
+
   key.data = &num;
   key.len = sizeof(num);
-  
+
   r = chash_get(folder->mb_hash, &key, &data);
   if (r < 0) {
     res = MAIL_ERROR_MSG_NOT_FOUND;
     goto err;
   }
-  
+
   info = data.data;
-  
+
   snprintf(keyname, PATH_MAX, "%u-%lu-envelope", num,
       (unsigned long) info->msg_body_len);
 
@@ -1084,7 +1085,7 @@ write_cached_envelope(struct mail_cache_db * cache_db, MMAPString * mmapstr,
   struct mailmbox_folder * folder;
   chashdatum key;
   chashdatum data;
-  
+
   folder = get_mbox_session(session);
   if (folder == NULL) {
     res = MAIL_ERROR_BAD_STATE;
@@ -1093,15 +1094,15 @@ write_cached_envelope(struct mail_cache_db * cache_db, MMAPString * mmapstr,
 
   key.data = &num;
   key.len = sizeof(num);
-  
+
   r = chash_get(folder->mb_hash, &key, &data);
   if (r < 0) {
     res = MAIL_ERROR_MSG_NOT_FOUND;
     goto err;
   }
-  
+
   info = data.data;
-  
+
   snprintf(keyname, PATH_MAX, "%u-%lu-envelope", num,
       (unsigned long) info->msg_body_len);
 
@@ -1178,11 +1179,11 @@ mboxdriver_cached_get_envelopes_list(mailsession * session,
 
   /* fill with cached */
 
-  for(i = 0 ; i < carray_count(env_list->msg_tab) ; i ++) {   
+  for(i = 0 ; i < carray_count(env_list->msg_tab) ; i ++) {
     mailmessage * msg;
     struct mailimf_fields * fields;
     struct mail_flags * flags;
-    
+
     msg = carray_get(env_list->msg_tab, i);
 
     if (msg->msg_fields == NULL) {
@@ -1203,7 +1204,7 @@ mboxdriver_cached_get_envelopes_list(mailsession * session,
       }
     }
   }
-  
+
   mail_cache_db_close_unlock(filename_flags, cache_db_flags);
   mail_cache_db_close_unlock(filename_env, cache_db_env);
 
@@ -1213,9 +1214,9 @@ mboxdriver_cached_get_envelopes_list(mailsession * session,
     res = r;
     goto free_mmapstr;
   }
-  
+
   /* add flags */
-  
+
   for(i = 0 ; i < carray_count(env_list->msg_tab) ; i ++) {
     mailmessage * msg;
 
@@ -1224,7 +1225,7 @@ mboxdriver_cached_get_envelopes_list(mailsession * session,
     if (msg->msg_flags == NULL)
       msg->msg_flags = mail_flags_new_empty();
   }
-  
+
   r = mail_cache_db_open_lock(filename_env, &cache_db_env);
   if (r < 0) {
     res = MAIL_ERROR_FILE;
@@ -1251,24 +1252,24 @@ mboxdriver_cached_get_envelopes_list(mailsession * session,
             session, msg->msg_index, msg->msg_fields);
       }
     }
-    
+
     if (msg->msg_flags != NULL) {
       r = mboxdriver_write_cached_flags(cache_db_flags, mmapstr,
           msg->msg_uid, msg->msg_flags);
     }
   }
-  
+
   /* flush cache */
-  
+
   maildriver_cache_clean_up(cache_db_env, cache_db_flags, env_list);
-  
+
   mail_cache_db_close_unlock(filename_flags, cache_db_flags);
   mail_cache_db_close_unlock(filename_env, cache_db_env);
-  
+
   mmap_string_free(mmapstr);
-  
+
   return MAIL_NO_ERROR;
-  
+
  close_db_env:
   mail_cache_db_close_unlock(filename_env, cache_db_env);
  free_mmapstr:
@@ -1335,7 +1336,7 @@ static int mboxdriver_cached_get_message_by_uid(mailsession * session,
   if (r == 0) {
     char * body_len_p = p + 1;
     size_t body_len;
-    
+
     info = data.data;
     /* Check if the cached message has the same UID */
     body_len = strtoul(body_len_p, &p, 10);

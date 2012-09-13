@@ -110,7 +110,7 @@ int imap_error_to_mail_error(int error)
 
   case MAILIMAP_ERROR_MEMORY:
     return MAIL_ERROR_MEMORY;
-    
+
   case MAILIMAP_ERROR_FATAL:
     return MAIL_ERROR_FATAL;
 
@@ -192,10 +192,10 @@ int imap_error_to_mail_error(int error)
 
   case MAILIMAP_ERROR_STARTTLS:
     return MAIL_ERROR_STARTTLS;
-    
+
   case MAILIMAP_ERROR_SSL:
     return MAIL_ERROR_SSL;
-    
+
   case MAILIMAP_ERROR_INVAL:
     return MAIL_ERROR_INVAL;
 
@@ -239,7 +239,7 @@ int imap_list_to_list(clist * imap_list, struct mail_list ** result)
   for(cur = clist_begin(imap_list) ; cur != NULL ; cur = clist_next(cur)) {
     struct mailimap_mailbox_list * mb_list;
     char * new_mb;
-    
+
     mb_list = clist_content(cur);
 
     new_mb = strdup(mb_list->mb_name);
@@ -433,7 +433,7 @@ imap_body_media_basic_to_content_type(struct mailimap_media_basic *
         goto err;
       }
     }
-    
+
     discrete_type = mailmime_discrete_type_new(discrete_type_type,
 					       discrete_type_extension);
     if (discrete_type == NULL) {
@@ -443,8 +443,8 @@ imap_body_media_basic_to_content_type(struct mailimap_media_basic *
       goto err;
     }
 
-    break; 
-    
+    break;
+
   case MAILMIME_TYPE_COMPOSITE_TYPE:
     composite_type = mailmime_composite_type_new(composite_type_type,
 						 NULL);
@@ -452,8 +452,8 @@ imap_body_media_basic_to_content_type(struct mailimap_media_basic *
       res = MAIL_ERROR_MEMORY;
       goto err;
     }
-    
-    break; 
+
+    break;
 
   default:
     res = MAIL_ERROR_INVAL;
@@ -583,7 +583,7 @@ imap_disposition_to_mime_disposition(struct mailimap_body_fld_dsp * imap_dsp,
 	  goto free_dsp_type;
 	}
 	break;
-    
+
       case MAILMIME_DISPOSITION_PARM_READ_DATE:
 	if (strcasecmp(imap_param->pa_name, "read-date") != 0) {
 	  type = MAILMIME_DISPOSITION_PARM_PARAMETER;
@@ -614,7 +614,7 @@ imap_disposition_to_mime_disposition(struct mailimap_body_fld_dsp * imap_dsp,
 	  res = MAIL_ERROR_MEMORY;
 	  goto free_dsp_type;
 	}
-	
+
 	value = strdup(imap_param->pa_value);
 	if (value == NULL) {
 	  res = MAIL_ERROR_MEMORY;
@@ -668,7 +668,7 @@ imap_disposition_to_mime_disposition(struct mailimap_body_fld_dsp * imap_dsp,
   }
 
   * result = dsp;
- 
+
   return MAIL_NO_ERROR;
 
  free_list:
@@ -720,9 +720,9 @@ imap_language_to_mime_language(struct mailimap_body_fld_lang * imap_lang,
     for(cur = clist_begin(imap_lang->lg_data.lg_list) ;
         cur != NULL ; cur = clist_next(cur)) {
       char * original_single;
-      
+
       original_single = clist_content(cur);
-      
+
       single = strdup(original_single);
       if (single == NULL) {
 	res = MAIL_ERROR_MEMORY;
@@ -747,11 +747,11 @@ imap_language_to_mime_language(struct mailimap_body_fld_lang * imap_lang,
 
   return MAIL_NO_ERROR;
 
- free: 
+ free:
   clist_foreach(list, (clist_func) free, NULL);
   clist_free(list);
  err:
-  return res; 
+  return res;
 }
 
 static int
@@ -780,12 +780,12 @@ imap_body_fields_to_mime_fields(struct mailimap_body_fields * body_fields,
     res = MAIL_ERROR_MEMORY;
     goto err;
   }
- 
+
   if (body_fields != NULL) {
-    
+
     if (pbody_size != NULL)
       * pbody_size = body_fields->bd_size;
-    
+
     if (body_fields->bd_id != NULL) {
       type = MAILMIME_FIELD_ID;
       id = strdup(body_fields->bd_id);
@@ -833,7 +833,7 @@ imap_body_fields_to_mime_fields(struct mailimap_body_fields * body_fields,
 	goto free_list;
       }
     }
-  
+
     if (body_fields->bd_encoding != NULL) {
       char * encoding_value;
       int encoding_type;
@@ -902,9 +902,9 @@ imap_body_fields_to_mime_fields(struct mailimap_body_fields * body_fields,
 	res = MAIL_ERROR_MEMORY;
 	goto free_list;
       }
-      
+
       type = MAILMIME_FIELD_DISPOSITION;
-      
+
       mime_field = mailmime_field_new(type, NULL,
 				      NULL, NULL, NULL, 0, dsp, NULL, NULL);
       if (mime_field == NULL) {
@@ -912,7 +912,7 @@ imap_body_fields_to_mime_fields(struct mailimap_body_fields * body_fields,
 	res = MAIL_ERROR_MEMORY;
 	goto free_list;
       }
-      
+
       r = clist_append(list, mime_field);
       if (r != 0) {
 	mailmime_field_free(mime_field);
@@ -924,19 +924,19 @@ imap_body_fields_to_mime_fields(struct mailimap_body_fields * body_fields,
 
   if (imap_lang != NULL) {
     int has_lang;
-    
+
     has_lang = 1;
     if (imap_lang->lg_type == MAILIMAP_BODY_FLD_LANG_SINGLE)
       if (imap_lang->lg_data.lg_single == NULL)
         has_lang = 0;
-    
+
     if (has_lang) {
       r = imap_language_to_mime_language(imap_lang, &lang);
       if (r != MAIL_NO_ERROR) {
         res = MAIL_ERROR_MEMORY;
         goto free_list;
       }
-      
+
       type = MAILMIME_FIELD_LANGUAGE;
 
       mime_field = mailmime_field_new(type, NULL,
@@ -958,13 +958,13 @@ imap_body_fields_to_mime_fields(struct mailimap_body_fields * body_fields,
 
   if (imap_loc != NULL) {
     type = MAILMIME_FIELD_LOCATION;
-    
+
     loc = strdup(imap_loc);
     if (loc == NULL) {
       res = MAIL_ERROR_MEMORY;
       goto free_list;
     }
-    
+
     mime_field = mailmime_field_new(type, NULL,
                                     NULL, NULL, NULL, 0, NULL, NULL, loc);
     if (mime_field == NULL) {
@@ -972,7 +972,7 @@ imap_body_fields_to_mime_fields(struct mailimap_body_fields * body_fields,
       res = MAIL_ERROR_MEMORY;
       goto free_list;
     }
-    
+
     r = clist_append(list, mime_field);
     if (r != 0) {
       mailmime_field_free(mime_field);
@@ -980,7 +980,7 @@ imap_body_fields_to_mime_fields(struct mailimap_body_fields * body_fields,
       goto free_list;
     }
   }
-  
+
   mime_fields = mailmime_fields_new(list);
   if (mime_fields == NULL) {
     res = MAIL_ERROR_MEMORY;
@@ -988,7 +988,7 @@ imap_body_fields_to_mime_fields(struct mailimap_body_fields * body_fields,
   }
 
   * result = mime_fields;
-  
+
   return MAIL_NO_ERROR;
 
  free_list:
@@ -1221,7 +1221,7 @@ imap_body_type_text_to_content_type(char * subtype,
     res = MAIL_ERROR_MEMORY;
     goto err;
   }
-    
+
   mime_type = mailmime_type_new(MAILMIME_TYPE_DISCRETE_TYPE,
 				discrete_type, NULL);
   if (mime_type == NULL) {
@@ -1265,7 +1265,7 @@ imap_body_type_msg_to_body(struct mailimap_body_type_msg *
   int r;
   int res;
   uint32_t mime_size;
-  
+
   if (body_ext_1part != NULL) {
   	r = imap_body_fields_to_mime_fields(imap_type_msg->bd_fields,
       	body_ext_1part->bd_disposition, body_ext_1part->bd_language, body_ext_1part->bd_loc,
@@ -1280,7 +1280,7 @@ imap_body_type_msg_to_body(struct mailimap_body_type_msg *
     res = r;
     goto err;
   }
-  
+
   r = imap_env_to_fields(imap_type_msg->bd_envelope, NULL, 0, &fields);
   if (r != MAIL_NO_ERROR) {
     res = r;
@@ -1292,7 +1292,7 @@ imap_body_type_msg_to_body(struct mailimap_body_type_msg *
     res = r;
     goto free_fields;
   }
-  
+
   composite_type =
     mailmime_composite_type_new(MAILMIME_COMPOSITE_TYPE_MESSAGE,
 				NULL);
@@ -1300,7 +1300,7 @@ imap_body_type_msg_to_body(struct mailimap_body_type_msg *
     res = MAIL_ERROR_MEMORY;
     goto free_fields;
   }
-  
+
   mime_type = mailmime_type_new(MAILMIME_TYPE_COMPOSITE_TYPE,
 				NULL, composite_type);
   if (mime_type == NULL) {
@@ -1349,7 +1349,7 @@ imap_body_type_1part_to_body(struct mailimap_body_type_1part *
   struct mailmime * body;
   int r;
   int res;
-  
+
   body = NULL;
   switch (type_1part->bd_type) {
   case MAILIMAP_BODY_TYPE_1PART_BASIC:
@@ -1432,7 +1432,7 @@ imap_body_type_mpart_to_body(struct mailimap_body_type_mpart *
     res = MAIL_ERROR_MEMORY;
     goto free_fields;
   }
-  
+
   mime_type = mailmime_type_new(MAILMIME_TYPE_COMPOSITE_TYPE,
 				NULL, composite_type);
   if (mime_type == NULL) {
@@ -1535,7 +1535,7 @@ int imap_body_to_body(struct mailimap_body * imap_body,
   default:
     return MAIL_ERROR_INVAL;
   }
-  
+
   * result = body;
 
   return MAIL_NO_ERROR;
@@ -1576,7 +1576,7 @@ int imap_address_to_mailbox(struct mailimap_address * imap_addr,
   }
   else if (imap_addr->ad_mailbox_name == NULL) {
     // fix by Gabor Cselle, (http://gaborcselle.com/), reported 8/16/2009
-    addr = strdup(imap_addr->ad_host_name); 
+    addr = strdup(imap_addr->ad_host_name);
     if (addr == NULL) {
       res = MAIL_ERROR_MEMORY;
       goto free_name;
@@ -1673,7 +1673,7 @@ imap_mailbox_list_to_mailbox_list(clist * imap_mailbox_list,
       res = r;
       goto free_list;
     }
-    
+
     r = clist_append(list, mb);
     if (r != 0) {
       mailimf_mailbox_free(mb);
@@ -1719,6 +1719,7 @@ static int imap_mailbox_list_to_group(clist * imap_mb_list, clistiter ** iter,
   struct mailimf_mailbox_list * mb_list;
   int r;
   int res;
+  UNUSED(imap_mb_list);
 
   imap_mailbox_listiter = * iter;
 
@@ -1842,7 +1843,7 @@ imap_mailbox_list_to_address_list(clist * imap_mailbox_list,
 	goto free_list;
       }
     }
-    
+
     r = clist_append(list, addr);
     if (r != 0) {
       mailimf_address_free(addr);
@@ -1898,7 +1899,7 @@ int imap_add_envelope_fetch_att(struct mailimap_fetch_type * fetch_type)
     res = MAIL_ERROR_MEMORY;
     goto err;
   }
-  
+
   hdrlist = clist_new();
   if (hdrlist == NULL) {
     free(header);
@@ -1906,7 +1907,7 @@ int imap_add_envelope_fetch_att(struct mailimap_fetch_type * fetch_type)
     res = MAIL_ERROR_MEMORY;
     goto err;
   }
-  
+
   r = clist_append(hdrlist, header);
   if (r < 0) {
     free(header);
@@ -1916,7 +1917,7 @@ int imap_add_envelope_fetch_att(struct mailimap_fetch_type * fetch_type)
     res = MAIL_ERROR_MEMORY;
     goto err;
   }
-  
+
   imap_hdrlist = mailimap_header_list_new(hdrlist);
   if (imap_hdrlist == NULL) {
     clist_foreach(hdrlist, (clist_func) free, NULL);
@@ -1925,7 +1926,7 @@ int imap_add_envelope_fetch_att(struct mailimap_fetch_type * fetch_type)
     res = MAIL_ERROR_MEMORY;
     goto err;
   }
-  
+
   section = mailimap_section_new_header_fields(imap_hdrlist);
   if (section == NULL) {
     mailimap_header_list_free(imap_hdrlist);
@@ -1981,7 +1982,7 @@ int imap_env_to_fields(struct mailimap_envelope * env,
 
     if (r == MAILIMF_NO_ERROR) {
       struct mailimf_orig_date * orig;
-      
+
       orig = mailimf_orig_date_new(date_time);
       if (orig == NULL) {
 	mailimf_date_time_free(date_time);
@@ -2050,21 +2051,21 @@ int imap_env_to_fields(struct mailimap_envelope * env,
     if (env->env_from->frm_list != NULL) {
       struct mailimf_mailbox_list * mb_list;
       struct mailimf_from * from;
-      
+
       r = imap_mailbox_list_to_mailbox_list(env->env_from->frm_list, &mb_list);
-      
+
       if (r != MAIL_NO_ERROR) {
 	res = r;
 	goto free_list;
       }
-      
+
       from = mailimf_from_new(mb_list);
       if (from == NULL) {
 	mailimf_mailbox_list_free(mb_list);
 	res = MAIL_ERROR_MEMORY;
 	goto free_list;
       }
-      
+
       field = mailimf_field_new(MAILIMF_FIELD_FROM,
           NULL, NULL, NULL, NULL, NULL, NULL, NULL,
           NULL, NULL, from,
@@ -2089,14 +2090,14 @@ int imap_env_to_fields(struct mailimap_envelope * env,
     if (env->env_sender->snd_list != NULL) {
       struct mailimf_sender * sender;
       struct mailimf_mailbox * mb;
-      
+
       r = imap_address_to_mailbox(clist_begin(env->env_sender->snd_list)->data, &mb);
-      
+
       if (r != MAIL_NO_ERROR) {
 	res = r;
 	goto free_list;
       }
-      
+
       sender = mailimf_sender_new(mb);
       if (sender == NULL) {
 	mailimf_mailbox_free(mb);
@@ -2128,7 +2129,7 @@ int imap_env_to_fields(struct mailimap_envelope * env,
     if (env->env_reply_to->rt_list != NULL) {
       struct mailimf_address_list * addr_list;
       struct mailimf_reply_to * reply_to;
-      
+
       r = imap_mailbox_list_to_address_list(env->env_reply_to->rt_list,
           &addr_list);
 
@@ -2246,7 +2247,7 @@ int imap_env_to_fields(struct mailimap_envelope * env,
     if (env->env_bcc->bcc_list != NULL) {
       struct mailimf_address_list * addr_list;
       struct mailimf_bcc * bcc;
-      
+
       r = imap_mailbox_list_to_address_list(env->env_bcc->bcc_list,
           &addr_list);
 
@@ -2286,7 +2287,7 @@ int imap_env_to_fields(struct mailimap_envelope * env,
     struct mailimf_in_reply_to * in_reply_to;
     size_t cur_token;
     clist * msg_id_list;
-      
+
     cur_token = 0;
     r = mailimf_msg_id_list_parse(env->env_in_reply_to,
         strlen(env->env_in_reply_to), &cur_token, &msg_id_list);
@@ -2300,7 +2301,7 @@ int imap_env_to_fields(struct mailimap_envelope * env,
 	res = MAIL_ERROR_MEMORY;
 	goto free_list;
       }
-	
+
       field = mailimf_field_new(MAILIMF_FIELD_IN_REPLY_TO,
           NULL, NULL, NULL, NULL, NULL, NULL, NULL,
           NULL, NULL, NULL,
@@ -2312,7 +2313,7 @@ int imap_env_to_fields(struct mailimap_envelope * env,
 	res = MAIL_ERROR_MEMORY;
 	goto free_list;
       }
-	
+
       r = clist_append(list, field);
       if (r != 0) {
 	mailimf_field_free(field);
@@ -2358,7 +2359,7 @@ int imap_env_to_fields(struct mailimap_envelope * env,
 	res = MAIL_ERROR_MEMORY;
 	goto free_list;
       }
-      
+
       r = clist_append(list, field);
       if (r != 0) {
 	mailimf_field_free(field);
@@ -2396,7 +2397,7 @@ int imap_env_to_fields(struct mailimap_envelope * env,
 	res = MAIL_ERROR_MEMORY;
 	goto free_list;
       }
-	
+
       r = clist_append(list, field);
       if (r < 0) {
 	mailimf_field_free(field);
@@ -2459,7 +2460,7 @@ int imap_get_msg_att_info(struct mailimap_msg_att * msg_att,
     struct mailimap_msg_att_item * item;
 
     item = clist_content(item_cur);
-      
+
     switch (item->att_type) {
     case MAILIMAP_MSG_ATT_ITEM_STATIC:
       switch (item->att_data.att_static->att_type) {
@@ -2473,7 +2474,7 @@ int imap_get_msg_att_info(struct mailimap_msg_att * msg_att,
 	  imap_envelope = item->att_data.att_static->att_data.att_env;
 	}
 	break;
-	  
+
       case MAILIMAP_MSG_ATT_UID:
 	uid = item->att_data.att_static->att_data.att_uid;
 	break;
@@ -2520,18 +2521,18 @@ imap_fetch_result_to_envelop_list(clist * fetch_result,
   unsigned int i;
   chash * msg_hash;
   int res;
-  
+
   msg_hash = chash_new(CHASH_DEFAULTSIZE, CHASH_COPYKEY);
   if (msg_hash == NULL) {
     res = MAIL_ERROR_MEMORY;
     goto err;
   }
-  
+
   for(i = 0 ; i < carray_count(env_list->msg_tab) ; i ++) {
     chashdatum key;
     chashdatum value;
     mailmessage * msg;
-    
+
     msg = carray_get(env_list->msg_tab, i);
     key.data = &msg->msg_index;
     key.len = sizeof(msg->msg_index);
@@ -2543,7 +2544,7 @@ imap_fetch_result_to_envelop_list(clist * fetch_result,
       goto free_hash;
     }
   }
-  
+
   for(cur = clist_begin(fetch_result) ; cur != NULL ;
       cur = clist_next(cur)) {
     struct mailimap_msg_att * msg_att;
@@ -2564,17 +2565,17 @@ imap_fetch_result_to_envelop_list(clist * fetch_result,
       if (uid != 0) {
         chashdatum key;
         chashdatum value;
-        
+
         key.data = &uid;
         key.len = sizeof(uid);
         r = chash_get(msg_hash, &key, &value);
         if (r == 0) {
 	  mailmessage * msg;
-          
+
           msg = value.data;
           if (imap_envelope != NULL) {
 	    struct mailimf_fields * fields;
-            
+
             r = imap_env_to_fields(imap_envelope,
                 references, ref_size, &fields);
             if (r == MAIL_NO_ERROR) {
@@ -2583,7 +2584,7 @@ imap_fetch_result_to_envelop_list(clist * fetch_result,
           }
           if (att_dyn != NULL) {
 	    struct mail_flags * flags;
-            
+
             r = imap_flags_to_flags(att_dyn, &flags);
             if (r == MAIL_NO_ERROR) {
               msg->msg_flags = flags;
@@ -2593,11 +2594,11 @@ imap_fetch_result_to_envelop_list(clist * fetch_result,
       }
     }
   }
-  
+
   chash_free(msg_hash);
-  
+
   return MAIL_NO_ERROR;
-  
+
  free_hash:
   chash_free(msg_hash);
  err:
@@ -2609,13 +2610,13 @@ int mailimf_date_time_to_imap_date(struct mailimf_date_time * date,
 				   struct mailimap_date ** result)
 {
   struct mailimap_date * imap_date;
-  
+
   imap_date = mailimap_date_new(date->dt_day, date->dt_month, date->dt_year);
   if (imap_date == NULL)
     return MAIL_ERROR_MEMORY;
-  
+
   * result = imap_date;
-  
+
   return MAIL_NO_ERROR;
 }
 
@@ -2667,7 +2668,7 @@ int mail_search_to_imap_search(struct mail_search_key * key,
   multiple = NULL;
   larger = 0;
   smaller = 0;
-  
+
   switch (key->sk_type) {
   case MAIL_SEARCH_KEY_ALL:
     type = MAILIMAP_SEARCH_KEY_ALL;
@@ -2884,7 +2885,7 @@ int mail_search_to_imap_search(struct mail_search_key * key,
       }
     }
     break;
-    
+
   free_list:
     clist_foreach(multiple, (clist_func) mailimap_search_key_free, NULL);
     clist_free(multiple);
@@ -3076,7 +3077,7 @@ imap_uid_list_to_env_list(mailsession * session, mailmessage_driver * driver,
 	case MAILIMAP_MSG_ATT_UID:
 	  uid = item->att_data.att_static->att_data.att_uid;
 	  break;
-	  
+
 	case MAILIMAP_MSG_ATT_RFC822_SIZE:
 	  size = item->att_data.att_static->att_data.att_rfc822_size;
 	  break;
@@ -3113,7 +3114,7 @@ imap_uid_list_to_env_list(mailsession * session, mailmessage_driver * driver,
   * result = env_list;
 
   return MAIL_NO_ERROR;
-  
+
  free_msg:
   mailmessage_free(msg);
  free_list:
@@ -3217,7 +3218,7 @@ int imap_flags_to_flags(struct mailimap_msg_att_dynamic * att_dyn,
   }
 
   * result = flags;
-  
+
   return MAIL_NO_ERROR;
 
  free:
@@ -3298,7 +3299,7 @@ int imap_flags_to_imap_flags(struct mail_flags * flags,
 
   if ((flags->fl_flags & MAIL_FLAG_FORWARDED) != 0) {
     char * flag_str;
-    
+
     flag_str = strdup("$Forwarded");
     if (flag_str == NULL) {
       res = MAIL_ERROR_MEMORY;
@@ -3357,12 +3358,12 @@ int imap_flags_to_imap_flags(struct mail_flags * flags,
       }
     }
   }
-  
+
   * result = flag_list;
-  
+
   return MAIL_NO_ERROR;
-  
- free_flag_list: 
+
+ free_flag_list:
   mailimap_flag_list_free(flag_list);
  err:
   return res;
@@ -3375,25 +3376,25 @@ static int flags_to_imap_flags(struct mail_flags * flags,
   struct mailimap_store_att_flags * att_flags;
   int res;
   int r;
-  
+
   r = imap_flags_to_imap_flags(flags,
       &flag_list);
   if (r != MAIL_NO_ERROR) {
     res = r;
     goto err;
   }
-  
+
   att_flags = mailimap_store_att_flags_new_set_flags_silent(flag_list);
   if (att_flags == NULL) {
     res = MAIL_ERROR_MEMORY;
     goto free_flag_list;
   }
-  
+
   * result = att_flags;
-  
+
   return MAIL_NO_ERROR;
-  
- free_flag_list: 
+
+ free_flag_list:
   mailimap_flag_list_free(flag_list);
  err:
   return res;
@@ -3424,7 +3425,7 @@ imap_fetch_result_to_flags(clist * fetch_result, uint32_t indx,
       struct mailimap_msg_att_item * item;
 
       item = clist_content(item_cur);
-      
+
       if (item->att_type == MAILIMAP_MSG_ATT_ITEM_STATIC) {
 	switch (item->att_data.att_static->att_type) {
 	case MAILIMAP_MSG_ATT_UID:
@@ -3442,7 +3443,7 @@ imap_fetch_result_to_flags(clist * fetch_result, uint32_t indx,
     if (uid != 0) {
       if (uid == indx) {
 	struct mail_flags * flags;
-	
+
 	if (att_dyn != NULL) {
 	  r = imap_flags_to_flags(att_dyn, &flags);
 
@@ -3519,7 +3520,7 @@ int imap_fetch_flags(mailimap * imap,
   default:
     return imap_error_to_mail_error(r);
   }
-  
+
   flags = NULL;
   r = imap_fetch_result_to_flags(fetch_result, indx, &flags);
   mailimap_fetch_list_free(fetch_result);
@@ -3528,7 +3529,7 @@ int imap_fetch_flags(mailimap * imap,
     res = r;
     goto err;
   }
-  
+
   * result = flags;
 
   return MAIL_NO_ERROR;
@@ -3693,7 +3694,7 @@ imapdriver_get_cached_envelope(struct mail_cache_db * cache_db,
   struct mailimf_fields * fields;
   int res;
   char keyname[PATH_MAX];
-  
+
 #if 0
   imap_session = cached_session_get_ancestor(session);
   imap = ((struct imap_session_state_data *) (imap_session->data))->session;
@@ -3726,6 +3727,7 @@ imapdriver_write_cached_envelope(struct mail_cache_db * cache_db,
   char keyname[PATH_MAX];
   int r;
   int res;
+  UNUSED(session);
 
   generate_key_from_message(keyname, PATH_MAX,
 			    msg, MAILIMAP_MSG_ATT_ENVELOPE);

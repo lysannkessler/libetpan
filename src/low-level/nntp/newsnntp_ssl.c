@@ -54,7 +54,9 @@
 #define SERVICE_NAME_NNTPS "nntps"
 #define SERVICE_TYPE_TCP "tcp"
 
+#ifdef HAVE_CFNETWORK
 static int newsnntp_cfssl_connect(newsnntp * f, const char * server, uint16_t port);
+#endif
 
 int newsnntp_ssl_connect(newsnntp * f, const char * server, uint16_t port)
 {
@@ -75,7 +77,7 @@ int newsnntp_ssl_connect_with_callback(newsnntp * f, const char * server, uint16
     }
   }
 #endif
-  
+
   if (port == 0) {
     port = mail_get_service_port(SERVICE_NAME_NNTPS, SERVICE_TYPE_TCP);
     if (port == 0)
@@ -101,11 +103,12 @@ int newsnntp_ssl_connect_with_callback(newsnntp * f, const char * server, uint16
   return newsnntp_connect(f, stream);
 }
 
+#ifdef HAVE_CFNETWORK
 static int newsnntp_cfssl_connect_ssl_level(newsnntp * f, const char * server, uint16_t port, int ssl_level)
 {
   mailstream * stream;
   int r;
-  
+
   stream = mailstream_cfstream_open(server, port);
   if (stream == NULL) {
     return NEWSNNTP_ERROR_CONNECTION_REFUSED;
@@ -117,7 +120,7 @@ static int newsnntp_cfssl_connect_ssl_level(newsnntp * f, const char * server, u
     mailstream_close(stream);
     return NEWSNNTP_ERROR_SSL;
   }
-  
+
   return newsnntp_connect(f, stream);
 }
 
@@ -125,4 +128,5 @@ static int newsnntp_cfssl_connect(newsnntp * f, const char * server, uint16_t po
 {
     return newsnntp_cfssl_connect_ssl_level(f, server, port, MAILSTREAM_CFSTREAM_SSL_LEVEL_SSLv3);
 }
+#endif
 

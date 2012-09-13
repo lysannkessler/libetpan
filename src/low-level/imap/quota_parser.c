@@ -38,6 +38,7 @@
 #include "mailimap_extension.h"
 #include "quota.h"
 #include "quota_parser.h"
+#include "mail.h"
 
 #include <stdlib.h>
 
@@ -158,6 +159,7 @@ mailimap_quota_quota_list_empty_parse(mailstream * fd, MMAPString *buffer,
   size_t cur_token;
   int r;
   clist * quota_resource_list;
+  UNUSED(progr_rate); UNUSED(progr_fun);
 
   cur_token = * indx;
 
@@ -178,7 +180,7 @@ mailimap_quota_quota_list_empty_parse(mailstream * fd, MMAPString *buffer,
 
   * result = quota_resource_list;
   * indx = cur_token;
-  
+
   return MAILIMAP_NO_ERROR;
 }
 

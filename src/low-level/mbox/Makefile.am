@@ -34,7 +34,8 @@ EXTRA_DIST = TODO
 etpaninclude_HEADERS = \
 	mailmbox.h mailmbox_types.h
 
-AM_CPPFLAGS = -I$(top_builddir)/include \
+AM_CPPFLAGS = $(WERROR) \
+	-I$(top_builddir)/include \
 	-I$(top_srcdir)/src/data-types \
 	-I$(top_srcdir)/src/low-level/imf
 

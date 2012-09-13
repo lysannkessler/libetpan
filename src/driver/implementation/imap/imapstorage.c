@@ -74,6 +74,7 @@ int imap_mailstorage_init(struct mailstorage * storage,
     const char * imap_login, const char * imap_password,
     int imap_cached, const char * imap_cache_directory)
 {
+  UNUSED(imap_auth_type);
   return imap_mailstorage_init_sasl(storage,
       imap_servername, imap_port,
       imap_command,
@@ -150,11 +151,11 @@ int imap_mailstorage_init_sasl_with_local_address(struct mailstorage * storage,
   else {
     imap_storage->imap_local_address = NULL;
   }
-  
+
   imap_storage->imap_local_port = imap_local_port;
 
   imap_storage->imap_connection_type = imap_connection_type;
-  
+
   if (imap_port == 0) {
     switch (imap_connection_type) {
     case CONNECTION_TYPE_PLAIN:
@@ -186,11 +187,11 @@ int imap_mailstorage_init_sasl_with_local_address(struct mailstorage * storage,
   }
   else
     imap_storage->imap_command = NULL;
-  
+
   imap_storage->imap_auth_type = IMAP_AUTH_TYPE_PLAIN;
-  
+
   imap_storage->imap_sasl.sasl_enabled = (auth_type != NULL);
-  
+
   if (auth_type != NULL) {
     imap_storage->imap_sasl.sasl_auth_type = strdup(auth_type);
     if (imap_storage->imap_sasl.sasl_auth_type == NULL)
@@ -198,7 +199,7 @@ int imap_mailstorage_init_sasl_with_local_address(struct mailstorage * storage,
   }
   else
     imap_storage->imap_sasl.sasl_auth_type = NULL;
-  
+
   if (server_fqdn != NULL) {
     imap_storage->imap_sasl.sasl_server_fqdn = strdup(server_fqdn);
     if (imap_storage->imap_sasl.sasl_server_fqdn == NULL)
@@ -206,7 +207,7 @@ int imap_mailstorage_init_sasl_with_local_address(struct mailstorage * storage,
   }
   else
     imap_storage->imap_sasl.sasl_server_fqdn = NULL;
-  
+
   if (local_ip_port != NULL) {
     imap_storage->imap_sasl.sasl_local_ip_port = strdup(local_ip_port);
     if (imap_storage->imap_sasl.sasl_local_ip_port == NULL)
@@ -214,7 +215,7 @@ int imap_mailstorage_init_sasl_with_local_address(struct mailstorage * storage,
   }
   else
     imap_storage->imap_sasl.sasl_local_ip_port = NULL;
-  
+
   if (remote_ip_port != NULL) {
     imap_storage->imap_sasl.sasl_remote_ip_port = strdup(remote_ip_port);
     if (imap_storage->imap_sasl.sasl_remote_ip_port == NULL)
@@ -222,7 +223,7 @@ int imap_mailstorage_init_sasl_with_local_address(struct mailstorage * storage,
   }
   else
     imap_storage->imap_sasl.sasl_remote_ip_port = NULL;
-  
+
   if (login != NULL) {
     imap_storage->imap_sasl.sasl_login = strdup(login);
     if (imap_storage->imap_sasl.sasl_login == NULL)
@@ -266,7 +267,7 @@ int imap_mailstorage_init_sasl_with_local_address(struct mailstorage * storage,
     imap_storage->imap_cached = FALSE;
     imap_storage->imap_cache_directory = NULL;
   }
-  
+
   imap_storage->imap_auth_type = imap_storage->imap_auth_type;
   if (imap_storage->imap_sasl.sasl_login != NULL) {
     imap_storage->imap_login = strdup(imap_storage->imap_sasl.sasl_login);
@@ -281,7 +282,7 @@ int imap_mailstorage_init_sasl_with_local_address(struct mailstorage * storage,
     if (imap_storage->imap_password == NULL)
       goto free_copy_login;
   }
-  
+
   storage->sto_data = imap_storage;
   storage->sto_driver = &imap_mailstorage_driver;
 
@@ -322,14 +323,14 @@ int imap_mailstorage_init_sasl_with_local_address(struct mailstorage * storage,
 static void imap_mailstorage_uninitialize(struct mailstorage * storage)
 {
   struct imap_mailstorage * imap_storage;
-  
+
   imap_storage = storage->sto_data;
-  
+
   free(imap_storage->imap_password);
   free(imap_storage->imap_login);
-  
+
   free(imap_storage->imap_cache_directory);
-  
+
   free(imap_storage->imap_sasl.sasl_realm);
   free(imap_storage->imap_sasl.sasl_password);
   free(imap_storage->imap_sasl.sasl_auth_name);
@@ -338,12 +339,12 @@ static void imap_mailstorage_uninitialize(struct mailstorage * storage)
   free(imap_storage->imap_sasl.sasl_local_ip_port);
   free(imap_storage->imap_sasl.sasl_server_fqdn);
   free(imap_storage->imap_sasl.sasl_auth_type);
-  
+
   free(imap_storage->imap_command);
   free(imap_storage->imap_local_address);
   free(imap_storage->imap_servername);
   free(imap_storage);
-  
+
   storage->sto_data = NULL;
 }
 
@@ -362,7 +363,7 @@ static int imap_connect(struct mailstorage * storage,
     driver = imap_cached_session_driver;
   else
     driver = imap_session_driver;
-  
+
   r = mailstorage_generic_connect_with_local_address(driver,
       imap_storage->imap_servername,
       imap_storage->imap_port,
@@ -463,7 +464,7 @@ imap_mailstorage_get_folder_session(struct mailstorage * storage,
   }
 
   * result = session;
-  
+
   return MAIL_NO_ERROR;
 
  free:

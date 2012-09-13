@@ -99,7 +99,7 @@ int maildir_mailstorage_init(struct mailstorage * storage,
 
   storage->sto_data = maildir_storage;
   storage->sto_driver = &maildir_mailstorage_driver;
-  
+
   return MAIL_NO_ERROR;
 
  free_cache_directory:
@@ -123,7 +123,7 @@ static void maildir_mailstorage_uninitialize(struct mailstorage * storage)
     free(maildir_storage->md_cache_directory);
   free(maildir_storage->md_pathname);
   free(maildir_storage);
-  
+
   storage->sto_data = NULL;
 }
 
@@ -165,7 +165,7 @@ static int maildir_mailstorage_connect(struct mailstorage * storage)
       goto free;
     }
   }
-  
+
   r = mailsession_connect_path(session, maildir_storage->md_pathname);
   switch (r) {
   case MAIL_NO_ERROR_NON_AUTHENTICATED:
@@ -176,9 +176,9 @@ static int maildir_mailstorage_connect(struct mailstorage * storage)
     res = r;
     goto free;
   }
-  
+
   storage->sto_session = session;
-  
+
   return MAIL_NO_ERROR;
 
  free:
@@ -191,6 +191,7 @@ static int
 maildir_mailstorage_get_folder_session(struct mailstorage * storage,
     char * pathname, mailsession ** result)
 {
+  UNUSED(pathname);
   * result = storage->sto_session;
 
   return MAIL_NO_ERROR;

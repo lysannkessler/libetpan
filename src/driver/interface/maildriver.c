@@ -38,6 +38,7 @@
 #endif
 
 #include "maildriver.h"
+#include "mail.h"
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
@@ -50,19 +51,19 @@ mailsession * mailsession_new(mailsession_driver * sess_driver)
 {
   mailsession * session;
   int r;
-  
+
   session = malloc(sizeof(* session));
-  
+
   session->sess_data = NULL;
-  
+
   if (sess_driver->sess_initialize != NULL) {
     r = sess_driver->sess_initialize(session);
     if (r != MAIL_NO_ERROR)
       goto free;
   }
-  
+
   session->sess_driver = sess_driver;
-  
+
   return session;
 
  free:
@@ -139,7 +140,7 @@ int mailsession_noop(mailsession * session)
 {
   if (session->sess_driver->sess_noop == NULL)
     return MAIL_ERROR_NOT_IMPLEMENTED;
-  
+
   return session->sess_driver->sess_noop(session);
 }
 
@@ -266,6 +267,7 @@ LIBETPAN_EXPORT
 int mailsession_list_folders(mailsession * session, const char * mb,
 			     struct mail_list ** result)
 {
+  UNUSED(mb);
   if (session->sess_driver->sess_list_folders == NULL)
     return MAIL_ERROR_NOT_IMPLEMENTED;
 
@@ -417,7 +419,7 @@ int mailsession_get_message_by_uid(mailsession * session,
 {
   if (session->sess_driver->sess_get_message_by_uid == NULL)
     return MAIL_ERROR_NOT_IMPLEMENTED;
-  
+
   return session->sess_driver->sess_get_message_by_uid(session, uid, result);
 }
 

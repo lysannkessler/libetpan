@@ -71,7 +71,7 @@ int feed_mailstorage_init(struct mailstorage * storage,
 {
   struct feed_mailstorage * feed_storage;
   int res;
-  
+
   feed_storage = malloc(sizeof(* feed_storage));
   if (feed_storage == NULL) {
     res = MAIL_ERROR_MEMORY;
@@ -132,7 +132,7 @@ static void feed_mailstorage_uninitialize(struct mailstorage * storage)
     free(feed_storage->feed_cache_directory);
   free(feed_storage->feed_url);
   free(feed_storage);
-  
+
   storage->sto_data = NULL;
 }
 
@@ -146,13 +146,13 @@ static int feed_mailstorage_connect(struct mailstorage * storage)
 
   feed_storage = storage->sto_data;
   driver = feed_session_driver;
-  
+
   session = mailsession_new(driver);
   if (session == NULL) {
     res = MAIL_ERROR_MEMORY;
     goto err;
   }
-  
+
   r = mailsession_connect_path(session, feed_storage->feed_url);
   switch (r) {
   case MAIL_NO_ERROR_NON_AUTHENTICATED:
@@ -163,7 +163,7 @@ static int feed_mailstorage_connect(struct mailstorage * storage)
     res = r;
     goto free;
   }
-  
+
   storage->sto_session = session;
 
   return MAIL_NO_ERROR;
@@ -177,7 +177,8 @@ static int feed_mailstorage_connect(struct mailstorage * storage)
 static int feed_mailstorage_get_folder_session(struct mailstorage * storage,
     char * pathname, mailsession ** result)
 {
+  UNUSED(pathname);
   * result = storage->sto_session;
-  
+
   return MAIL_NO_ERROR;
 }

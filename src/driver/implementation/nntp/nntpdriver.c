@@ -186,7 +186,7 @@ static int nntpdriver_initialize(mailsession * session)
 
   data->nntp_group_info = NULL;
   data->nntp_group_name = NULL;
-  
+
   data->nntp_subscribed_list = clist_new();
   if (data->nntp_subscribed_list == NULL)
     goto free_data;
@@ -305,7 +305,7 @@ static int remove_from_list(mailsession * session, const char * mb)
 static int nntpdriver_connect_stream(mailsession * session, mailstream * s)
 {
   int r;
-  
+
   r = newsnntp_connect(get_nntp_session(session), s);
 
   switch (r) {
@@ -323,7 +323,7 @@ static int nntpdriver_login(mailsession * session,
   struct nntp_session_state_data * data;
   char * new_userid;
   char * new_password;
-  
+
   data = get_data(session);
 
   if (userid != NULL) {
@@ -375,15 +375,15 @@ static int nntpdriver_status_folder(mailsession * session, const char * mb,
   r = nntpdriver_select_folder(session, mb);
   if (r != MAIL_NO_ERROR)
     return r;
-  
+
   r = nntpdriver_messages_number(session, mb, &count);
   if (r != MAIL_NO_ERROR)
     return r;
-          
+
   * result_messages = count;
   * result_recent = count;
   * result_unseen = count;
-  
+
   return MAIL_NO_ERROR;
 }
 
@@ -400,7 +400,7 @@ static int nntpdriver_messages_number(mailsession * session, const char * mb,
   }
 
   data = get_data(session);
-  
+
   if (data->nntp_group_info == NULL)
     return MAIL_ERROR_FOLDER_NOT_FOUND;
 
@@ -453,7 +453,7 @@ static int nntpdriver_list_folders(mailsession * session, const char * mb,
 	goto err;
       }
       break;
-      
+
     case NEWSNNTP_WARNING_REQUEST_AUTHORIZATION_PASSWORD:
       r = nntpdriver_authenticate_password(session);
       if (r != MAIL_NO_ERROR) {
@@ -551,7 +551,7 @@ static int nntpdriver_lsub_folders(mailsession * session, const char * mb,
       cur = clist_next(cur)) {
     char * cur_mb;
     char * new_mb;
-    
+
     cur_mb = clist_content(cur);
 
     if (strncmp(mb, cur_mb, length) == 0) {
@@ -560,7 +560,7 @@ static int nntpdriver_lsub_folders(mailsession * session, const char * mb,
 	res = MAIL_ERROR_MEMORY;
 	goto free_list;
       }
-      
+
       r = clist_append(lsub_result, new_mb);
       if (r < 0) {
 	free(new_mb);
@@ -568,8 +568,8 @@ static int nntpdriver_lsub_folders(mailsession * session, const char * mb,
 	goto free_list;
       }
     }
-  }    
-  
+  }
+
   lsub = mail_list_new(lsub_result);
   if (lsub == NULL) {
     res = MAIL_ERROR_MEMORY;
@@ -629,7 +629,7 @@ static int nntpdriver_append_message(mailsession * session,
       if (r != MAIL_NO_ERROR)
 	return r;
       break;
-      
+
     case NEWSNNTP_WARNING_REQUEST_AUTHORIZATION_PASSWORD:
       r = nntpdriver_authenticate_password(session);
       if (r != MAIL_NO_ERROR)
@@ -646,6 +646,7 @@ static int nntpdriver_append_message(mailsession * session,
 static int nntpdriver_append_message_flags(mailsession * session,
     const char * message, size_t size, struct mail_flags * flags)
 {
+  UNUSED(flags);
   return nntpdriver_append_message(session, message, size);
 }
 
@@ -688,17 +689,17 @@ nntpdriver_get_envelopes_list(mailsession * session,
     i = carray_count(env_list->msg_tab) - 1;
     while (1) {
       mailmessage * msg;
-      
+
       msg = carray_get(env_list->msg_tab, i);
-      
+
       if (msg->msg_fields != NULL) {
         first_seq = msg->msg_index + 1;
         break;
       }
-      
+
       if (i == 0)
         break;
-      
+
       i --;
     }
   }
@@ -711,24 +712,24 @@ nntpdriver_get_envelopes_list(mailsession * session,
     do {
       r = newsnntp_xover_range(nntp, first_seq,
           data->nntp_group_info->grp_last, &list);
-      
+
       switch (r) {
       case NEWSNNTP_ERROR_REQUEST_AUTHORIZATION_USERNAME:
 	r = nntpdriver_authenticate_user(session);
 	if (r != MAIL_NO_ERROR)
 	  return r;
 	break;
-	
+
       case NEWSNNTP_WARNING_REQUEST_AUTHORIZATION_PASSWORD:
 	r = nntpdriver_authenticate_password(session);
 	if (r != MAIL_NO_ERROR)
 	  return r;
 	break;
-	
+
       case NEWSNNTP_NO_ERROR:
 	done = TRUE;
 	break;
-	
+
       default:
 	return nntpdriver_nntp_error_to_mail_error(r);
       }
@@ -759,7 +760,7 @@ nntpdriver_get_envelopes_list(mailsession * session,
 	    if (r == MAIL_NO_ERROR) {
 	      info->fields = fields;
 	    }
-            
+
 	    info->size = item->ovr_size;
 
 	    carray_set(env_list->msg_tab, j, info);
@@ -795,7 +796,7 @@ nntpdriver_get_envelopes_list(mailsession * session,
 
   while (i < carray_count(env_list->msg_tab)) {
     mailmessage * info;
-    
+
     info = carray_get(env_list->msg_tab, i);
     if (info->fields != NULL) {
       carray_set(env_list->msg_tab, j, info);
@@ -810,7 +811,7 @@ nntpdriver_get_envelopes_list(mailsession * session,
       mailmessage_free(info);
       carray_set(env_list->msg_tab, i, NULL);
     }
-    
+
     i ++;
   }
 
@@ -843,7 +844,7 @@ nntpdriver_get_envelopes_list(mailsession * session,
 	    if (r == MAIL_NO_ERROR) {
 	      info->msg_fields = fields;
 	    }
-            
+
 	    info->msg_size = item->ovr_size;
 
 	    i ++;
@@ -857,7 +858,7 @@ nntpdriver_get_envelopes_list(mailsession * session,
           mailmessage_check(info);
 	}
 #endif
-        
+
 	i ++;
       }
     }
@@ -866,14 +867,14 @@ nntpdriver_get_envelopes_list(mailsession * session,
 #if 0
   while (i < env_list->msg_tab->len) {
     mailmessage * info;
-    
+
     info = carray_get(env_list->msg_tab, i);
     if ((info->fields == NULL) && (info->flags != NULL)) {
       info->flags->flags &= ~MAIL_FLAG_NEW;
       info->flags->flags |= MAIL_FLAG_CANCELLED;
       mailmessage_check(info);
     }
-    
+
     i ++;
   }
 #endif
@@ -910,7 +911,7 @@ static int xover_resp_to_fields(struct newsnntp_xover_resp_item * item,
       res = MAIL_ERROR_MEMORY;
       goto free_list;
     }
-    
+
     subject = mailimf_subject_new(subject_str);
     if (subject == NULL) {
       free(subject_str);
@@ -1035,7 +1036,7 @@ static int xover_resp_to_fields(struct newsnntp_xover_resp_item * item,
     cur_token = 0;
     r = mailimf_msg_id_parse(item->ovr_message_id, strlen(item->ovr_message_id),
 			     &cur_token, &msgid_str);
-    
+
     switch (r) {
     case MAILIMF_NO_ERROR:
       msgid = mailimf_message_id_new(msgid_str);
@@ -1072,7 +1073,7 @@ static int xover_resp_to_fields(struct newsnntp_xover_resp_item * item,
     clist * msgid_list;
     struct mailimf_references * references;
     struct mailimf_field * field;
-    
+
     cur_token = 0;
 
     r = mailimf_msg_id_list_parse(item->ovr_references, strlen(item->ovr_references),
@@ -1168,7 +1169,7 @@ static int nntpdriver_noop(mailsession * session)
   nntp = get_nntp_session(session);
 
   r = newsnntp_date(nntp, &tm);
-  
+
   return nntpdriver_nntp_error_to_mail_error(r);
 }
 
@@ -1181,10 +1182,10 @@ static int nntpdriver_get_message_by_uid(mailsession * session,
 
   if (uid == NULL)
     return MAIL_ERROR_INVAL;
-  
+
   num = strtoul(uid, &p, 10);
   if ((p == uid) || (* p != '\0'))
     return MAIL_ERROR_INVAL;
-  
+
   return nntpdriver_get_message(session, num, result);
  }

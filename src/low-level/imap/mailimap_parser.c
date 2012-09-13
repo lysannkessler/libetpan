@@ -463,11 +463,14 @@ mailimap_header_list_parse(mailstream * fd, MMAPString * buffer,
 			   size_t progr_rate,
 			   progress_function * progr_fun);
 
+#if 0
+/* TODO unused function ? */
 static int mailimap_literal_parse(mailstream * fd, MMAPString * buffer,
 				  size_t * indx, char ** result,
 				  size_t * result_len,
 				  size_t progr_rate,
 				  progress_function * progr_fun);
+#endif
 
 static int mailimap_literal_parse_progress(mailstream * fd, MMAPString * buffer,
                                            size_t * indx, char ** result,
@@ -543,22 +546,28 @@ static int mailimap_media_text_parse(mailstream * fd, MMAPString * buffer,
 
 
 
+#if 0
+/* TODO unused function? */
 static int
 mailimap_message_data_parse(mailstream * fd, MMAPString * buffer,
 			    size_t * indx,
 			    struct mailimap_message_data ** result,
 			    size_t progr_rate,
 			    progress_function * progr_fun);
+#endif
 
 
 
 
 
+#if 0
+/* TODO unused function? */
 static int
 mailimap_msg_att_parse(mailstream * fd, MMAPString * buffer,
 		       size_t * indx, struct mailimap_msg_att ** result,
 		       size_t progr_rate,
 		       progress_function * progr_fun);
+#endif
 
 static int
 mailimap_msg_att_parse_progress(mailstream * fd, MMAPString * buffer,
@@ -580,12 +589,15 @@ mailimap_msg_att_dynamic_parse(mailstream * fd, MMAPString * buffer,
 			       progress_function * progr_fun);
 
 
+#if 0
+/* TODO unused function? */
 static int
 mailimap_msg_att_static_parse(mailstream * fd, MMAPString * buffer,
 			      size_t * indx,
 			      struct mailimap_msg_att_static ** result,
 			      size_t progr_rate,
 			      progress_function * progr_fun);
+#endif
 
 static int
 mailimap_msg_att_static_parse_progress(mailstream * fd, MMAPString * buffer,
@@ -798,7 +810,7 @@ static int mailimap_unstrict_char_parse(mailstream * fd, MMAPString * buffer,
   int r;
 
   cur_token = * indx;
-  
+
 #ifdef UNSTRICT_SYNTAX
   /* can accept unstrict syntax */
 
@@ -812,7 +824,7 @@ static int mailimap_unstrict_char_parse(mailstream * fd, MMAPString * buffer,
   r = mailimap_char_parse(fd, buffer, &cur_token, token);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   * indx = cur_token;
 
   return MAILIMAP_NO_ERROR;
@@ -907,7 +919,7 @@ static int mailimap_crlf_parse(mailstream * fd, MMAPString * buffer,
 {
   size_t cur_token = * indx;
   int r;
-  
+
 #ifdef UNSTRICT_SYNTAX
   mailimap_space_parse(fd, buffer, &cur_token);
 #endif
@@ -925,7 +937,7 @@ static int mailimap_crlf_parse(mailstream * fd, MMAPString * buffer,
     return MAILIMAP_NO_ERROR;
   }
 #endif
-  
+
   return MAILIMAP_ERROR_PARSE;
 }
 
@@ -947,23 +959,23 @@ mailimap_struct_multiple_parse_progress(mailstream * fd, MMAPString * buffer,
   void * value;
   int r;
   int res;
-  
+
   cur_token = * indx;
-  
+
   r = parser(fd, buffer, &cur_token, &value, progr_rate, progr_fun,
              body_progr_fun, items_progr_fun, context, msg_att_handler, msg_att_context);
   if (r != MAILIMAP_NO_ERROR) {
     res = r;
     goto err;
   }
-  
+
   struct_list = clist_new();
   if (struct_list == NULL) {
     destructor(value);
     res = MAILIMAP_ERROR_MEMORY;
     goto err;
   }
-  
+
   if (value != NULL) {
     r = clist_append(struct_list, value);
     if (r < 0) {
@@ -972,7 +984,7 @@ mailimap_struct_multiple_parse_progress(mailstream * fd, MMAPString * buffer,
       goto free_list;
     }
   }
-  
+
   while (1) {
     r = parser(fd, buffer, &cur_token, &value, progr_rate, progr_fun,
                body_progr_fun, items_progr_fun, context, msg_att_handler, msg_att_context);
@@ -982,7 +994,7 @@ mailimap_struct_multiple_parse_progress(mailstream * fd, MMAPString * buffer,
       res = r;
       goto free_list;
     }
-    
+
     if (value != NULL) {
       r = clist_append(struct_list, value);
       if (r < 0) {
@@ -992,12 +1004,12 @@ mailimap_struct_multiple_parse_progress(mailstream * fd, MMAPString * buffer,
       }
     }
   }
-  
+
   * result = struct_list;
   * indx = cur_token;
-  
+
   return MAILIMAP_NO_ERROR;
-  
+
 free_list:
   clist_foreach(struct_list, (clist_func) destructor, NULL);
   clist_free(struct_list);
@@ -1049,7 +1061,7 @@ mailimap_struct_multiple_parse(mailstream * fd, MMAPString * buffer,
       res = r;
       goto free_list;
     }
-    
+
     r = clist_append(struct_list, value);
     if (r < 0) {
       destructor(value);
@@ -1060,7 +1072,7 @@ mailimap_struct_multiple_parse(mailstream * fd, MMAPString * buffer,
 
   * result = struct_list;
   * indx = cur_token;
-  
+
   return MAILIMAP_NO_ERROR;
 
  free_list:
@@ -1090,33 +1102,33 @@ mailimap_struct_list_parse_progress(mailstream * fd, MMAPString * buffer,
   size_t final_token;
   int r;
   int res;
-  
+
   cur_token = * indx;
   struct_list = NULL;
-  
+
   r = parser(fd, buffer, &cur_token, &value, progr_rate, progr_fun,
              body_progr_fun, items_progr_fun, context, msg_att_handler, msg_att_context);
   if (r != MAILIMAP_NO_ERROR) {
     res = r;
     goto err;
   }
-  
+
   struct_list = clist_new();
   if (struct_list == NULL) {
     destructor(value);
     res = MAILIMAP_ERROR_MEMORY;
     goto err;
   }
-  
+
   r = clist_append(struct_list, value);
   if (r < 0) {
     destructor(value);
     res = MAILIMAP_ERROR_MEMORY;
     goto free_list;
   }
-  
+
   final_token = cur_token;
-  
+
   while (1) {
     r = mailimap_unstrict_char_parse(fd, buffer, &cur_token, symbol);
     if (r == MAILIMAP_ERROR_PARSE)
@@ -1125,32 +1137,32 @@ mailimap_struct_list_parse_progress(mailstream * fd, MMAPString * buffer,
       res = r;
       goto free_list;
     }
-    
+
     r = parser(fd, buffer, &cur_token, &value, progr_rate, progr_fun,
                body_progr_fun, items_progr_fun, context, msg_att_handler, msg_att_context);
     if (r == MAILIMAP_ERROR_PARSE)
       break;
-    
+
     if (r != MAILIMAP_NO_ERROR) {
       res = r;
       goto free_list;
     }
-    
+
     r = clist_append(struct_list, value);
     if (r < 0) {
       destructor(value);
       res = MAILIMAP_ERROR_MEMORY;
       goto free_list;
     }
-    
+
     final_token = cur_token;
   }
-  
+
   * result = struct_list;
   * indx = final_token;
-  
+
   return MAILIMAP_NO_ERROR;
-  
+
 free_list:
   clist_foreach(struct_list, (clist_func) destructor, NULL);
   clist_free(struct_list);
@@ -1173,7 +1185,7 @@ mailimap_struct_list_parse(mailstream * fd, MMAPString * buffer,
   size_t final_token;
   int r;
   int res;
-  
+
   cur_token = * indx;
   struct_list = NULL;
 
@@ -1223,7 +1235,7 @@ mailimap_struct_list_parse(mailstream * fd, MMAPString * buffer,
       res = MAILIMAP_ERROR_MEMORY;
       goto free_list;
     }
-      
+
     final_token = cur_token;
   }
 
@@ -1300,7 +1312,7 @@ mailimap_custom_string_parse(mailstream * fd, MMAPString * buffer,
 
     strncpy(gstr, buffer->str + begin, end - begin);
     gstr[end - begin] = '\0';
-    
+
     * indx = end;
     * result = gstr;
     return MAILIMAP_NO_ERROR;
@@ -1322,6 +1334,7 @@ mailimap_nz_number_alloc_parse(mailstream * fd, MMAPString * buffer,
   uint32_t * number_alloc;
   size_t cur_token;
   int r;
+  UNUSED(progr_rate); UNUSED(progr_fun);
 
   cur_token = * indx;
 
@@ -1372,6 +1385,7 @@ static int mailimap_digit_parse(mailstream * fd, MMAPString * buffer,
 				size_t * indx, int * result)
 {
   size_t cur_token;
+  UNUSED(fd);
 
   cur_token = * indx;
 
@@ -1407,7 +1421,7 @@ static int mailimap_address_parse(mailstream * fd, MMAPString * buffer,
   struct mailimap_address * addr;
   int r;
   int res;
-  
+
   cur_token = * indx;
 
   addr_name = NULL;
@@ -1482,7 +1496,7 @@ static int mailimap_address_parse(mailstream * fd, MMAPString * buffer,
 
   * result = addr;
   * indx = cur_token;
-  
+
   return MAILIMAP_NO_ERROR;
 
  addr_host_free:
@@ -1580,6 +1594,7 @@ mailimap_atom_astring_parse(mailstream * fd, MMAPString * buffer,
 			    size_t progr_rate,
 			    progress_function * progr_fun)
 {
+	UNUSED(progr_rate); UNUSED(progr_fun);
   return mailimap_custom_string_parse(fd, buffer, indx, result,
 				      is_astring_char);
 }
@@ -1645,6 +1660,7 @@ int mailimap_atom_parse(mailstream * fd, MMAPString * buffer,
 			size_t progr_rate,
 			progress_function * progr_fun)
 {
+	UNUSED(progr_rate); UNUSED(progr_fun);
   return mailimap_custom_string_parse(fd, buffer, indx, result,
 				      is_atom_char);
 }
@@ -1726,6 +1742,8 @@ static int mailimap_base64_parse(mailstream * fd, MMAPString * buffer,
   size_t begin;
   size_t end;
   char * gstr;
+  UNUSED(fd);
+  UNUSED(progr_rate); UNUSED(progr_fun);
 
   begin = * indx;
   end = begin;
@@ -1737,7 +1755,7 @@ static int mailimap_base64_parse(mailstream * fd, MMAPString * buffer,
 
   if (begin == end)
     return MAILIMAP_ERROR_PARSE;
-  
+
   gstr = malloc(end - begin + 1);
   if (gstr == NULL)
     return MAILIMAP_ERROR_MEMORY;
@@ -1835,7 +1853,7 @@ static int mailimap_body_parse(mailstream * fd, MMAPString * buffer,
    r = mailimap_body_type_mpart_parse(fd, buffer, &cur_token,
 				      &body_type_mpart,
 				      progr_rate, progr_fun);
-   
+
    if (r == MAILIMAP_NO_ERROR)
      type = MAILIMAP_BODY_MPART;
   }
@@ -1859,7 +1877,7 @@ static int mailimap_body_parse(mailstream * fd, MMAPString * buffer,
 
   * result = body;
   * indx = cur_token;
-  
+
   return MAILIMAP_NO_ERROR;
 
  free:
@@ -1917,7 +1935,7 @@ mailimap_body_ext_list_parse(mailstream * fd, MMAPString * buffer,
     res = r;
     goto err;
   }
-  
+
   r = mailimap_cparenth_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR) {
     res = r;
@@ -1998,7 +2016,7 @@ mailimap_body_extension_parse(mailstream * fd, MMAPString * buffer,
 
   body_extension = mailimap_body_extension_new(type, nstring, number,
 					       body_extension_list);
-  
+
   if (body_extension == NULL) {
     res = MAILIMAP_ERROR_MEMORY;
     goto free;
@@ -2042,7 +2060,7 @@ mailimap_body_ext_1part_4_parse(mailstream * fd, MMAPString * buffer,
 {
   size_t cur_token;
   int r;
-  
+
   cur_token = * indx;
   * body_ext_list = NULL;
 
@@ -2079,27 +2097,27 @@ mailimap_body_ext_1part_3_parse(mailstream * fd, MMAPString * buffer,
 {
   size_t cur_token;
   int r;
-  
+
   cur_token = * indx;
   * fld_loc = NULL;
   * body_ext_list = NULL;
-  
+
   r = mailimap_space_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_body_fld_loc_parse(fd, buffer, &cur_token, fld_loc,
                                   progr_rate, progr_fun);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_body_ext_1part_4_parse(fd, buffer, &cur_token,
                                       body_ext_list, progr_rate, progr_fun);
   if ((r != MAILIMAP_NO_ERROR) && (r != MAILIMAP_ERROR_PARSE))
     return r;
-  
+
   * indx = cur_token;
-  
+
   return MAILIMAP_NO_ERROR;
 }
 
@@ -2119,7 +2137,7 @@ mailimap_body_ext_1part_2_parse(mailstream * fd, MMAPString * buffer,
 {
   size_t cur_token;
   int r;
-  
+
   cur_token = * indx;
   * fld_lang = NULL;
   * fld_loc = NULL;
@@ -2140,7 +2158,7 @@ mailimap_body_ext_1part_2_parse(mailstream * fd, MMAPString * buffer,
     return r;
 
   * indx = cur_token;
-  
+
   return MAILIMAP_NO_ERROR;
 }
 
@@ -2162,7 +2180,7 @@ mailimap_body_ext_1part_1_parse(mailstream * fd, MMAPString * buffer,
 {
   size_t cur_token;
   int r;
-  
+
   cur_token = * indx;
   * fld_dsp = NULL;
   * fld_lang = NULL;
@@ -2243,17 +2261,17 @@ mailimap_body_ext_1part_parse(mailstream * fd, MMAPString * buffer,
 
   ext_1part = mailimap_body_ext_1part_new(fld_md5, fld_dsp, fld_lang, fld_loc,
 					  body_ext_list);
-  
+
   if (ext_1part == NULL) {
     res = MAILIMAP_ERROR_MEMORY;
     goto free;
   }
-  
+
   * result = ext_1part;
   * indx = cur_token;
 
   return MAILIMAP_NO_ERROR;
-  
+
  free:
   if (body_ext_list) {
     clist_foreach(body_ext_list, (clist_func) mailimap_body_extension_free,
@@ -2269,7 +2287,7 @@ mailimap_body_ext_1part_parse(mailstream * fd, MMAPString * buffer,
  err:
   return res;
 }
-					      
+
 
 /*
    body-ext-mpart  = body-fld-param [SP body-fld-dsp [SP body-fld-lang
@@ -2329,10 +2347,10 @@ mailimap_body_ext_mpart_parse(mailstream * fd, MMAPString * buffer,
     res = MAILIMAP_ERROR_MEMORY;
     goto free;
   }
-  
+
   * result = ext_mpart;
   * indx = cur_token;
-  
+
   return MAILIMAP_NO_ERROR;
 
  free:
@@ -2373,7 +2391,7 @@ mailimap_body_fields_parse(mailstream * fd, MMAPString * buffer,
   uint32_t body_fld_octets;
   int r;
   int res;
-  
+
   body_fld_param = NULL;
   body_fld_id = NULL;
   body_fld_desc = NULL;
@@ -2407,7 +2425,7 @@ mailimap_body_fields_parse(mailstream * fd, MMAPString * buffer,
     res = r;
     goto fld_id_free;
   }
-  
+
   r = mailimap_body_fld_desc_parse(fd, buffer, &cur_token, &body_fld_desc,
 				   progr_rate, progr_fun);
   if (r != MAILIMAP_NO_ERROR) {
@@ -2420,7 +2438,7 @@ mailimap_body_fields_parse(mailstream * fd, MMAPString * buffer,
     res = r;
     goto fld_desc_free;
   }
-  
+
   r = mailimap_body_fld_enc_parse(fd, buffer, &cur_token, &body_fld_enc,
 				  progr_rate, progr_fun);
   if (r != MAILIMAP_NO_ERROR) {
@@ -2465,10 +2483,10 @@ mailimap_body_fields_parse(mailstream * fd, MMAPString * buffer,
  fld_param_free:
   if (body_fld_param != NULL)
     mailimap_body_fld_param_free(body_fld_param);
- err:  
+ err:
   return res;
 }
-  
+
 /*
    body-fld-desc   = nstring
 */
@@ -2525,13 +2543,13 @@ mailimap_body_fld_dsp_parse(mailstream * fd, MMAPString * buffer,
       res = r;
       goto err;
     }
-    
+
     r = mailimap_space_parse(fd, buffer, &cur_token);
     if (r != MAILIMAP_NO_ERROR) {
       res = r;
       goto string_free;
     }
-    
+
     r = mailimap_body_fld_param_parse(fd, buffer, &cur_token,
                                       &body_fld_param,
                                       progr_rate, progr_fun);
@@ -2539,7 +2557,7 @@ mailimap_body_fld_dsp_parse(mailstream * fd, MMAPString * buffer,
       res = r;
       goto string_free;
     }
-    
+
     goto create_body_fld_dsp;
   }
 
@@ -2558,12 +2576,12 @@ mailimap_body_fld_dsp_parse(mailstream * fd, MMAPString * buffer,
       res = r;
       goto string_free;
     }
-    
+
     body_fld_param = NULL;
-    
+
     goto create_body_fld_dsp;
   }
-  
+
   if (r != MAILIMAP_NO_ERROR) {
     res = r;
     goto string_free;
@@ -2609,7 +2627,7 @@ create_body_fld_dsp:
                      "QUOTED-PRINTABLE") DQUOTE) / string
 */
 
-static inline int 
+static inline int
 mailimap_body_fld_known_enc_parse(mailstream * fd, MMAPString * buffer,
     size_t * indx,
     int * result,
@@ -2620,6 +2638,7 @@ mailimap_body_fld_known_enc_parse(mailstream * fd, MMAPString * buffer,
   int type;
   int r;
   int res;
+  UNUSED(progr_rate); UNUSED(progr_fun);
 
   cur_token = * indx;
 
@@ -2627,15 +2646,15 @@ mailimap_body_fld_known_enc_parse(mailstream * fd, MMAPString * buffer,
   if (r == MAILIMAP_ERROR_PARSE) {
     /* workaround for exchange */
     type = mailimap_encoding_get_token_value(fd, buffer, &cur_token);
-    
+
     if (type == -1) {
       res = MAILIMAP_ERROR_PARSE;
       goto err;
     }
-    
+
     * result = type;
     * indx = cur_token;
-    
+
     return MAILIMAP_NO_ERROR;
   }
   else if (r != MAILIMAP_NO_ERROR) {
@@ -2649,7 +2668,7 @@ mailimap_body_fld_known_enc_parse(mailstream * fd, MMAPString * buffer,
     res = MAILIMAP_ERROR_PARSE;
     goto err;
   }
-  
+
   r = mailimap_dquote_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR) {
     res = r;
@@ -2660,10 +2679,10 @@ mailimap_body_fld_known_enc_parse(mailstream * fd, MMAPString * buffer,
   * indx = cur_token;
 
   return MAILIMAP_NO_ERROR;
-  
+
  err:
   return res;
-}     
+}
 
 static int
 mailimap_body_fld_enc_parse(mailstream * fd, MMAPString * buffer,
@@ -2696,7 +2715,7 @@ mailimap_body_fld_enc_parse(mailstream * fd, MMAPString * buffer,
       r = mailimap_astring_parse(fd, buffer, &cur_token, &value,
                                  progr_rate, progr_fun);
     }
-    
+
     if (r != MAILIMAP_NO_ERROR) {
       res = r;
       goto err;
@@ -2710,13 +2729,13 @@ mailimap_body_fld_enc_parse(mailstream * fd, MMAPString * buffer,
     res = r;
     goto err;
   }
-  
+
   body_fld_enc = mailimap_body_fld_enc_new(type, value);
   if (body_fld_enc == NULL) {
     res = MAILIMAP_ERROR_MEMORY;
     goto value_free;
   }
-  
+
   * result = body_fld_enc;
   * indx = cur_token;
 
@@ -2739,17 +2758,17 @@ static int mailimap_body_fld_id_parse(mailstream * fd, MMAPString * buffer,
 				      progress_function * progr_fun)
 {
   int r;
-  
+
   r = mailimap_nstring_parse(fd, buffer, indx, result, NULL,
                              progr_rate, progr_fun);
   if (r == MAILIMAP_NO_ERROR)
     return MAILIMAP_NO_ERROR;
-  
+
   r = mailimap_atom_parse(fd, buffer, indx, result,
                           progr_rate, progr_fun);
   if (r == MAILIMAP_NO_ERROR)
     return MAILIMAP_NO_ERROR;
-  
+
   return r;
 }
 
@@ -2780,18 +2799,18 @@ mailimap_body_fld_lang_list_parse(mailstream * fd, MMAPString * buffer,
     res = r;
     goto err;
   }
-  
+
   list = clist_new();
   if (list == NULL) {
     res = MAILIMAP_ERROR_MEMORY;
     goto err;
   }
-  
+
   while (1) {
     char * elt;
 
     mailimap_space_parse(fd, buffer, &cur_token);
-    
+
     r = mailimap_string_parse(fd, buffer, &cur_token, &elt, NULL,
 			      progr_rate, progr_fun);
     if (r == MAILIMAP_ERROR_PARSE)
@@ -2809,7 +2828,7 @@ mailimap_body_fld_lang_list_parse(mailstream * fd, MMAPString * buffer,
       goto list_free;
     }
   }
-  
+
   r = mailimap_cparenth_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR) {
     res = r;
@@ -2853,12 +2872,12 @@ mailimap_body_fld_lang_parse(mailstream * fd, MMAPString * buffer,
   value = NULL;
   list = NULL;
   type = MAILIMAP_BODY_FLD_LANG_ERROR; /* XXX - removes a gcc warning */
-  
+
   r = mailimap_nstring_parse(fd, buffer, &cur_token, &value, NULL,
 			     progr_rate, progr_fun);
   if (r == MAILIMAP_NO_ERROR)
     type = MAILIMAP_BODY_FLD_LANG_SINGLE;
-  
+
   if (r == MAILIMAP_ERROR_PARSE) {
     r = mailimap_body_fld_lang_list_parse(fd, buffer, &cur_token, &list,
 					  progr_rate, progr_fun);
@@ -2879,7 +2898,7 @@ mailimap_body_fld_lang_parse(mailstream * fd, MMAPString * buffer,
 
   * indx = cur_token;
   * result = fld_lang;
-  
+
   return MAILIMAP_NO_ERROR;
 
  free:
@@ -2917,19 +2936,19 @@ static int mailimap_body_fld_md5_parse(mailstream * fd, MMAPString * buffer,
   uint32_t value;
   size_t cur_token;
   char * md5_value;
-  
+
   r = mailimap_nstring_parse(fd, buffer, indx, result, NULL,
       progr_rate, progr_fun);
   if (r == MAILIMAP_NO_ERROR)
     return r;
-  
+
   cur_token = * indx;
   /* workaround for google IMAP */
   r = mailimap_number_parse(fd, buffer, &cur_token, &value);
   if (r != MAILIMAP_NO_ERROR) {
     return r;
   }
-  
+
   r = mailimap_space_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR) {
     return r;
@@ -2940,10 +2959,10 @@ static int mailimap_body_fld_md5_parse(mailstream * fd, MMAPString * buffer,
   if (r != MAILIMAP_NO_ERROR) {
     return r;
   }
-  
+
   * indx = cur_token;
   * result = md5_value;
-  
+
   return MAILIMAP_NO_ERROR;
 }
 
@@ -2965,25 +2984,25 @@ static int mailimap_body_fld_octets_parse(mailstream * fd,
 					  uint32_t * result)
 {
   int r;
-  
+
   r = mailimap_number_parse(fd, buffer, indx, result);
   if (r == MAILIMAP_NO_ERROR)
     return r;
-  
+
   // workaround for Microsoft Exchange: it can provides -1 as octets
   r = mailimap_token_case_insensitive_parse(fd, buffer, indx, "-1");
   if (r == MAILIMAP_NO_ERROR) {
     * result = 0;
     return MAILIMAP_NO_ERROR;
   }
-  
+
   // workaround for mbox mail for mac
   r = mailimap_nil_parse(fd, buffer, indx);
   if (r == MAILIMAP_NO_ERROR) {
     * result = 0;
     return MAILIMAP_NO_ERROR;
   }
-  
+
   return MAILIMAP_ERROR_PARSE;
 }
 
@@ -3012,7 +3031,7 @@ mailimap_single_body_fld_param_parse(mailstream * fd, MMAPString * buffer,
   int workaround_used;
 
   cur_token = * indx;
-  
+
   name = NULL;
   value = NULL;
 
@@ -3026,7 +3045,7 @@ mailimap_single_body_fld_param_parse(mailstream * fd, MMAPString * buffer,
     res = r;
     goto err;
   }
-  
+
   r = mailimap_space_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR) {
     res = r;
@@ -3043,7 +3062,7 @@ mailimap_single_body_fld_param_parse(mailstream * fd, MMAPString * buffer,
       goto free_name;
     }
   }
-  
+
   if (!workaround_used) {
 	  // also parse NIL to workaround Exchange issue
     r = mailimap_nstring_parse(fd, buffer, &cur_token, &value, NULL,
@@ -3052,7 +3071,7 @@ mailimap_single_body_fld_param_parse(mailstream * fd, MMAPString * buffer,
       res = r;
       goto free_name;
     }
-    
+
     if (value == NULL) {
       value = strdup("");
       if (value == NULL) {
@@ -3061,7 +3080,7 @@ mailimap_single_body_fld_param_parse(mailstream * fd, MMAPString * buffer,
       }
     }
   }
-  
+
   param = mailimap_single_body_fld_param_new(name, value);
   if (param == NULL) {
     res = MAILIMAP_ERROR_MEMORY;
@@ -3083,6 +3102,7 @@ mailimap_single_body_fld_param_parse(mailstream * fd, MMAPString * buffer,
 
 static void mailimap_broken_single_body_fld_param_string_free(char * value)
 {
+  UNUSED(value);
   // do nothing
 }
 
@@ -3096,9 +3116,9 @@ mailimap_broken_single_body_fld_param_string_parse(mailstream * fd, MMAPString *
   char * value;
   int r;
   size_t cur_token;
-  
+
   cur_token = * indx;
-  
+
   r = mailimap_string_parse(fd, buffer, &cur_token, &value, NULL,
                             progr_rate, progr_fun);
   if (r == MAILIMAP_NO_ERROR) {
@@ -3107,7 +3127,7 @@ mailimap_broken_single_body_fld_param_string_parse(mailstream * fd, MMAPString *
     * indx = cur_token;
     return r;
   }
-  
+
   r = mailimap_astring_parse(fd, buffer, &cur_token, &value,
                              progr_rate, progr_fun);
   if (r == MAILIMAP_NO_ERROR) {
@@ -3116,14 +3136,14 @@ mailimap_broken_single_body_fld_param_string_parse(mailstream * fd, MMAPString *
     * indx = cur_token;
     return r;
   }
-  
+
   r = mailimap_token_case_insensitive_parse(fd, buffer, &cur_token, "\"3D\"Windows-1252\"\"");
   if (r == MAILIMAP_NO_ERROR) {
     * result = "";
     * indx = cur_token;
     return r;
   }
-  
+
   r = mailimap_nstring_parse(fd, buffer, &cur_token, &value, NULL,
                              progr_rate, progr_fun);
   if (r == MAILIMAP_NO_ERROR) {
@@ -3132,7 +3152,7 @@ mailimap_broken_single_body_fld_param_string_parse(mailstream * fd, MMAPString *
     * indx = cur_token;
     return r;
   }
-  
+
   return MAILIMAP_ERROR_PARSE;
 }
 
@@ -3213,7 +3233,7 @@ mailimap_body_fld_param_parse(mailstream * fd,
       res = r;
       goto free;
     }
-    
+
     r = mailimap_cparenth_parse(fd, buffer, &cur_token);
     if (r != MAILIMAP_NO_ERROR) {
       res = r;
@@ -3224,14 +3244,14 @@ mailimap_body_fld_param_parse(mailstream * fd,
     res = r;
     goto free;
   }
-  
+
   if (param_list == NULL) {
     * result = NULL;
     * indx = cur_token;
-    
+
     return MAILIMAP_NO_ERROR;
   }
-  
+
   fld_param = mailimap_body_fld_param_new(param_list);
   if (fld_param == NULL) {
     res = MAILIMAP_ERROR_MEMORY;
@@ -3276,16 +3296,16 @@ mailimap_body_type_1part_parse(mailstream * fd, MMAPString * buffer,
   size_t final_token;
   int r;
   int res;
-  
+
   cur_token = * indx;
 
   body_type_basic = NULL;
   body_type_msg = NULL;
   body_type_text = NULL;
   body_ext_1part = NULL;
-  
+
   type = MAILIMAP_BODY_TYPE_1PART_ERROR; /* XXX - removes a gcc warning */
-  
+
   r = mailimap_body_type_msg_parse(fd, buffer, &cur_token,
 				   &body_type_msg,
 				   progr_rate, progr_fun);
@@ -3312,7 +3332,7 @@ mailimap_body_type_1part_parse(mailstream * fd, MMAPString * buffer,
     res = r;
     goto err;
   }
-  
+
   final_token = cur_token;
   body_ext_1part = NULL;
 
@@ -3410,10 +3430,10 @@ mailimap_body_type_basic_parse(mailstream * fd, MMAPString * buffer,
     res = r;
     goto free_media_basic;
   }
-  
+
   /* workaround for a bug on lavabit.com IMAP server - begin */
   saved_token = cur_token;
-  
+
   r = mailimap_space_parse(fd, buffer, &cur_token);
   if (r == MAILIMAP_NO_ERROR) {
     r = mailimap_body_fld_lines_parse(fd, buffer, &cur_token, &body_fld_lines);
@@ -3425,7 +3445,7 @@ mailimap_body_type_basic_parse(mailstream * fd, MMAPString * buffer,
     cur_token = saved_token;
   }
   /* workaround for a bug on lavabit.com IMAP server - end */
-  
+
   body_type_basic = mailimap_body_type_basic_new(media_basic, body_fields);
   if (body_type_basic == NULL) {
     res = MAILIMAP_ERROR_MEMORY;
@@ -3466,7 +3486,7 @@ mailimap_body_type_mpart_parse(mailstream * fd,
   struct mailimap_body_ext_mpart * body_ext_mpart;
   int r;
   int res;
-  
+
   cur_token = * indx;
 
   body_list = NULL;
@@ -3538,12 +3558,12 @@ mailimap_body_type_mpart_parse(mailstream * fd,
     res = MAILIMAP_ERROR_MEMORY;
     goto free_body_ext_mpart;
   }
-  
+
   * result = body_type_mpart;
   * indx = final_token;
 
   return MAILIMAP_NO_ERROR;
-  
+
  free_body_ext_mpart:
   if (body_ext_mpart)
     mailimap_body_ext_mpart_free(body_ext_mpart);
@@ -3568,31 +3588,31 @@ static struct mailimap_body * body_text_new_empty(void)
   struct mailimap_body_fld_enc * enc;
   struct mailimap_body * body;
   char * media;
-  
+
   enc = mailimap_body_fld_enc_new(MAILIMAP_BODY_FLD_ENC_7BIT, NULL);
   if (enc == NULL) {
     return NULL;
   }
-  
+
   body_fields = mailimap_body_fields_new(NULL, NULL, NULL, enc, 0);
   if (body_fields == NULL) {
     mailimap_body_fld_enc_free(enc);
     return NULL;
   }
-  
+
   media = strdup("plain");
   if (media == NULL) {
     mailimap_body_fields_free(body_fields);
     return NULL;
   }
-  
+
   body_type_text = mailimap_body_type_text_new(media, body_fields, 0);
   if (body_type_text == NULL) {
     free(media);
     mailimap_body_fields_free(body_fields);
     return NULL;
   }
-  
+
   body_1part =  mailimap_body_type_1part_new(MAILIMAP_BODY_TYPE_1PART_TEXT,
                                              NULL, NULL, body_type_text,
                                              NULL);
@@ -3600,13 +3620,13 @@ static struct mailimap_body * body_text_new_empty(void)
     mailimap_body_type_text_free(body_type_text);
     return NULL;
   }
-  
+
   body = mailimap_body_new(MAILIMAP_BODY_1PART, body_1part, NULL);
   if (body == NULL) {
     mailimap_body_type_1part_free(body_1part);
     return NULL;
   }
-  
+
   return body;
 }
 
@@ -3638,7 +3658,7 @@ mailimap_body_type_msg_parse(mailstream * fd, MMAPString * buffer,
     res = r;
     goto err;
   }
-  
+
   r = mailimap_space_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR) {
     res = r;
@@ -3688,7 +3708,7 @@ mailimap_body_type_msg_parse(mailstream * fd, MMAPString * buffer,
       res = MAILIMAP_ERROR_PARSE;
       goto envelope;
     }
-    
+
     body = body_text_new_empty();
     if (body == NULL) {
       res = MAILIMAP_ERROR_MEMORY;
@@ -3758,7 +3778,7 @@ mailimap_body_type_text_parse(mailstream * fd, MMAPString * buffer,
   media_text = NULL;
   body_fields = NULL;
   body_fld_lines = 0;
-  
+
   cur_token = * indx;
 
   r = mailimap_media_text_parse(fd, buffer, &cur_token, &media_text,
@@ -3912,13 +3932,13 @@ static int mailimap_capability_list_parse(mailstream * fd,
   size_t cur_token;
   clist * list;
   int r;
-  
+
   cur_token = * indx;
 
   r = mailimap_space_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_struct_spaced_list_parse(fd, buffer, &cur_token, &list,
 					(mailimap_struct_parser *)
 					mailimap_capability_parse,
@@ -4008,7 +4028,7 @@ mailimap_capability_data_parse(mailstream * fd, MMAPString * buffer,
   }
  err:
   return res;
-}     
+}
 
 /*
   UNIMPLEMENTED BECAUSE UNUSED (only in literal)
@@ -4078,7 +4098,7 @@ mailimap_continue_req_parse(mailstream * fd, MMAPString * buffer,
   size_t saved_token;
 
   cur_token = * indx;
-  
+
   r = mailimap_plus_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -4090,19 +4110,19 @@ mailimap_continue_req_parse(mailstream * fd, MMAPString * buffer,
   else if (r != MAILIMAP_NO_ERROR) {
     return r;
   }
-  
+
   resp_text = NULL;
   base64 = NULL;
 
   type = MAILIMAP_CONTINUE_REQ_ERROR; /* XXX - removes a gcc warning */
-  
+
   saved_token = cur_token;
   r = mailimap_base64_parse(fd, buffer, &cur_token, &base64,
       progr_rate, progr_fun);
 
   if (r == MAILIMAP_NO_ERROR) {
     type = MAILIMAP_CONTINUE_REQ_BASE64;
-    
+
     r = mailimap_crlf_parse(fd, buffer, &cur_token);
     if (r == MAILIMAP_NO_ERROR) {
       /* do nothing */
@@ -4117,14 +4137,14 @@ mailimap_continue_req_parse(mailstream * fd, MMAPString * buffer,
       goto err;
     }
   }
-  
+
   if (r == MAILIMAP_ERROR_PARSE) {
     r = mailimap_resp_text_parse(fd, buffer, &cur_token, &resp_text,
         progr_rate, progr_fun);
-    
+
     if (r == MAILIMAP_NO_ERROR) {
       type = MAILIMAP_CONTINUE_REQ_TEXT;
-      
+
       r = mailimap_crlf_parse(fd, buffer, &cur_token);
       if (r == MAILIMAP_NO_ERROR) {
         /* do nothing */
@@ -4140,7 +4160,7 @@ mailimap_continue_req_parse(mailstream * fd, MMAPString * buffer,
       }
     }
   }
-  
+
   if (r != MAILIMAP_NO_ERROR) {
     res = r;
     goto err;
@@ -4151,7 +4171,7 @@ mailimap_continue_req_parse(mailstream * fd, MMAPString * buffer,
     res = MAILIMAP_ERROR_MEMORY;
     goto free;
   }
-  
+
   * result = cont_req;
   * indx = cur_token;
 
@@ -4199,7 +4219,7 @@ static gboolean mailimap_date_day_parse(mailstream * fd,
   gint number;
 
   cur_token = * indx;
-  
+
   if (!mailimap_digit_parse(fd, buffer, &cur_token, &digit))
     return FALSE;
 
@@ -4207,7 +4227,7 @@ static gboolean mailimap_date_day_parse(mailstream * fd,
 
   if (mailimap_digit_parse(fd, buffer, &cur_token, &digit))
     number = number * 10 + digit;
-  
+
   * result = number;
   * indx = cur_token;
 
@@ -4313,7 +4333,7 @@ static struct mailimap_date_text *
 mailimap_date_text_new(gint day, gint month, gint year)
 {
   struct mailimap_date_text * date_text;
-  
+
   date_text = g_new(struct mailimap_date_text, 1);
   if (date_text == NULL)
     return NULL;
@@ -4379,9 +4399,9 @@ static int mailimap_date_year_parse(mailstream * fd, MMAPString * buffer,
   uint32_t year;
   int r;
   size_t cur_token;
-  
+
   cur_token = * indx;
-  
+
   r = mailimap_number_parse(fd, buffer, &cur_token, &year);
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -4425,17 +4445,17 @@ static int get_current_timezone_offset(void)
   struct tm lt;
   int off;
   time_t t;
-  
+
   t = time(NULL);
-  
+
   if (gmtime_r(&t, &gmt) == NULL)
     return 0;
-  
+
   if (localtime_r(&t, &lt) == NULL)
     return 0;
-  
+
   off = (mail_mkgmtime(&lt) - mail_mkgmtime(&gmt)) * 100 / (60 * 60);
-  
+
   return off;
 }
 
@@ -4445,20 +4465,20 @@ static int mailimap_date_time_no_quote_space_timezone_parse(mailstream * fd, MMA
   int r;
   size_t cur_token;
   int zone;
-  
+
   cur_token = * indx;
-  
+
   r = mailimap_space_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_zone_parse(fd, buffer, &cur_token, &zone);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   * indx = cur_token;
   * p_timezone = zone;
-  
+
   return MAILIMAP_NO_ERROR;
 }
 
@@ -4478,37 +4498,39 @@ static int mailimap_date_time_no_quote_parse(mailstream * fd, MMAPString * buffe
   struct mailimap_date_time * date_time;
   size_t cur_token;
   int r;
-  
+  UNUSED(progr_rate); UNUSED(progr_fun);
+
   cur_token = * indx;
-  
+
   r = mailimap_date_day_fixed_parse(fd, buffer, &cur_token, &day);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_minus_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_date_month_parse(fd, buffer, &cur_token, &month);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_minus_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_date_year_parse(fd, buffer, &cur_token, &year);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_space_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_time_parse(fd, buffer, &cur_token, &hour, &min, &sec);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
+  zone = 0;
   r = mailimap_date_time_no_quote_space_timezone_parse(fd, buffer, &cur_token, &zone);
   if (r == MAILIMAP_ERROR_PARSE) {
     zone = get_current_timezone_offset();
@@ -4516,14 +4538,14 @@ static int mailimap_date_time_no_quote_parse(mailstream * fd, MMAPString * buffe
   else if (r != MAILIMAP_NO_ERROR) {
     return r;
   }
-  
+
   date_time = mailimap_date_time_new(day, month, year, hour, min, sec, zone);
   if (date_time == NULL)
     return MAILIMAP_ERROR_MEMORY;
-  
+
   * result = date_time;
   * indx = cur_token;
-  
+
   return MAILIMAP_NO_ERROR;
 }
 
@@ -4537,23 +4559,23 @@ int mailimap_hack_date_time_parse(char * str,
   struct mailimap_date_time * date_time;
   size_t cur_token;
   int r;
-  
+
   fd = NULL;
   buffer = mmap_string_new(str);
   if (buffer == NULL) {
     return MAILIMAP_ERROR_MEMORY;
   }
-  
+
   cur_token = 0;
-  
+
   r = mailimap_date_time_no_quote_parse(fd, buffer, &cur_token, &date_time,
                                         progr_rate, progr_fun);
   if (r != MAILIMAP_NO_ERROR) {
     return r;
   }
-  
+
   * result = date_time;
-  
+
   return MAILIMAP_NO_ERROR;
 }
 
@@ -4575,57 +4597,57 @@ int mailimap_hack_date_time_parse(char * str,
   int r;
   mailstream * fd;
   MMAPString * buffer;
-  
+
   fd = NULL;
   buffer = mmap_string_new(str);
   if (buffer == NULL) {
     return MAILIMAP_ERROR_MEMORY;
   }
-  
+
   cur_token = 0;
-  
+
   r = mailimap_date_day_fixed_parse(fd, buffer, &cur_token, &day);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_minus_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_date_month_parse(fd, buffer, &cur_token, &month);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_minus_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_date_year_parse(fd, buffer, &cur_token, &year);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_space_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_time_parse(fd, buffer, &cur_token, &hour, &min, &sec);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_space_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_zone_parse(fd, buffer, &cur_token, &zone);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   date_time = mailimap_date_time_new(day, month, year, hour, min, sec, zone);
   if (date_time == NULL)
     return MAILIMAP_ERROR_MEMORY;
-  
+
   * result = date_time;
-  
+
   return MAILIMAP_NO_ERROR;
 }
 #endif
@@ -4714,33 +4736,33 @@ static int mailimap_date_time_parse(mailstream * fd, MMAPString * buffer,
   size_t cur_token;
   int r;
   int res;
-  
+
   cur_token = * indx;
-  
+
   r = mailimap_dquote_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR) {
     res = r;
     goto err;
   }
-  
+
   r = mailimap_date_time_no_quote_parse(fd, buffer, &cur_token,
                                         &date_time, progr_rate, progr_fun);
   if (r != MAILIMAP_NO_ERROR) {
     res = r;
     goto err;
   }
-  
+
   r = mailimap_dquote_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR) {
     res = r;
     goto free_date_time;
   }
-  
+
   * result = date_time;
   * indx = cur_token;
-  
+
   return MAILIMAP_NO_ERROR;
-  
+
 free_date_time:
   mailimap_date_time_free(date_time);
 err:
@@ -4809,7 +4831,7 @@ static int mailimap_envelope_parse(mailstream * fd, MMAPString * buffer,
   struct mailimap_envelope * envelope;
   int r;
   int res;
-  
+
   date = NULL;
   subject = NULL;
   from = NULL;
@@ -5009,7 +5031,7 @@ static int mailimap_address_list_parse(mailstream * fd, MMAPString * buffer,
   clist * address_list;
   int r;
   int res;
-  
+
   cur_token = * indx;
 
   address_list = NULL;
@@ -5019,14 +5041,14 @@ static int mailimap_address_list_parse(mailstream * fd, MMAPString * buffer,
   case MAILIMAP_NO_ERROR:
     address_list = NULL;
     break;
- 
+
   case MAILIMAP_ERROR_PARSE:
     r = mailimap_oparenth_parse(fd, buffer, &cur_token);
     if (r != MAILIMAP_NO_ERROR) {
       res = r;
       goto err;
     }
-				   
+
     r = mailimap_struct_multiple_parse(fd, buffer, &cur_token, &address_list,
 				       (mailimap_struct_parser *)
 				       mailimap_address_parse,
@@ -5040,7 +5062,7 @@ static int mailimap_address_list_parse(mailstream * fd, MMAPString * buffer,
       res = r;
       goto err;
     }
-    
+
     r = mailimap_cparenth_parse(fd, buffer, &cur_token);
     if (r != MAILIMAP_NO_ERROR) {
       res = r;
@@ -5048,7 +5070,7 @@ static int mailimap_address_list_parse(mailstream * fd, MMAPString * buffer,
     }
 
     break;
-    
+
   default:
     res = r;
     goto err;
@@ -5093,7 +5115,7 @@ mailimap_env_bcc_parse(mailstream * fd, MMAPString * buffer,
     res = r;
     goto err;
   }
-  
+
   env_bcc = mailimap_env_bcc_new(list);
   if (env_bcc == NULL) {
     res = MAILIMAP_ERROR_MEMORY;
@@ -5137,7 +5159,7 @@ mailimap_env_cc_parse(mailstream * fd, MMAPString * buffer,
     res = r;
     goto err;
   }
-  
+
   env_cc = mailimap_env_cc_new(list);
   if (env_cc == NULL) {
     res = MAILIMAP_ERROR_MEMORY;
@@ -5187,14 +5209,14 @@ mailimap_env_from_parse(mailstream * fd, MMAPString * buffer,
 
   cur_token = * indx;
   list = NULL;
-  
+
   r = mailimap_address_list_parse(fd, buffer, &cur_token, &list,
 				  progr_rate, progr_fun);
   if (r != MAILIMAP_NO_ERROR) {
     res = r;
     goto err;
   }
-  
+
   env_from = mailimap_env_from_new(list);
   if (env_from == NULL) {
     res = MAILIMAP_ERROR_MEMORY;
@@ -5260,14 +5282,14 @@ mailimap_env_reply_to_parse(mailstream * fd, MMAPString * buffer,
 
   cur_token = * indx;
   list = NULL;
-  
+
   r = mailimap_address_list_parse(fd, buffer, &cur_token, &list,
 				  progr_rate, progr_fun);
   if (r != MAILIMAP_NO_ERROR) {
     res = r;
     goto err;
   }
-  
+
   env_reply_to = mailimap_env_reply_to_new(list);
   if (env_reply_to == NULL) {
     res = MAILIMAP_ERROR_MEMORY;
@@ -5305,14 +5327,14 @@ mailimap_env_sender_parse(mailstream * fd, MMAPString * buffer,
 
   cur_token = * indx;
   list = NULL;
-  
+
   r = mailimap_address_list_parse(fd, buffer, &cur_token, &list,
 				  progr_rate, progr_fun);
   if (r != MAILIMAP_NO_ERROR) {
     res = r;
     goto err;
   }
-  
+
   env_sender = mailimap_env_sender_new(list);
   if (env_sender == NULL) {
     res = MAILIMAP_ERROR_MEMORY;
@@ -5364,14 +5386,14 @@ static int mailimap_env_to_parse(mailstream * fd, MMAPString * buffer,
 
   cur_token = * indx;
   list = NULL;
-  
+
   r = mailimap_address_list_parse(fd, buffer, &cur_token, &list,
 				  progr_rate, progr_fun);
   if (r != MAILIMAP_NO_ERROR) {
     res = r;
     goto err;
   }
-  
+
   env_to = mailimap_env_to_new(list);
   if (env_to == NULL) {
     res = MAILIMAP_ERROR_MEMORY;
@@ -5429,7 +5451,7 @@ static int mailimap_flag_parse(mailstream * fd, MMAPString * buffer,
   int type;
   int r;
   int res;
-  
+
   cur_token = * indx;
 
   flag_keyword = NULL;
@@ -5443,7 +5465,7 @@ static int mailimap_flag_parse(mailstream * fd, MMAPString * buffer,
       type = MAILIMAP_FLAG_KEYWORD;
 
     if (r == MAILIMAP_ERROR_PARSE) {
-      r = mailimap_flag_extension_parse(fd, buffer, &cur_token, 
+      r = mailimap_flag_extension_parse(fd, buffer, &cur_token,
 					&flag_extension,
 					progr_rate, progr_fun);
       type = MAILIMAP_FLAG_EXTENSION;
@@ -5495,7 +5517,7 @@ static int mailimap_flag_extension_parse(mailstream * fd,
   size_t cur_token;
   char * atom;
   int r;
-  
+
   cur_token = * indx;
 
   r = mailimap_char_parse(fd, buffer, &cur_token, '\\');
@@ -5515,7 +5537,7 @@ static int mailimap_flag_extension_parse(mailstream * fd,
       atom = malloc(2);
       if (atom == NULL)
         return MAILIMAP_ERROR_MEMORY;
-      
+
       atom[0] = '*';
       atom[1] = '\0';
     }
@@ -5524,7 +5546,7 @@ static int mailimap_flag_extension_parse(mailstream * fd,
 	free(atom);
     return r;
   }
-  
+
   * result = atom;
   * indx = cur_token;
 
@@ -5554,7 +5576,7 @@ mailimap_flag_fetch_parse(mailstream * fd, MMAPString * buffer,
   flag = NULL;
 
   type = MAILIMAP_FLAG_FETCH_ERROR; /* XXX - removes a gcc warning */
-  
+
   r = mailimap_token_case_insensitive_parse(fd, buffer, &cur_token,
 					    "\\Recent");
   if (r == MAILIMAP_NO_ERROR)
@@ -5694,7 +5716,7 @@ mailimap_flag_perm_parse(mailstream * fd, MMAPString * buffer,
   flag = NULL;
   cur_token = * indx;
   type = MAILIMAP_FLAG_PERM_ERROR; /* XXX - removes a gcc warning */
-  
+
   r = mailimap_flag_parse(fd, buffer, &cur_token, &flag,
 			  progr_rate, progr_fun);
   if (r == MAILIMAP_NO_ERROR)
@@ -5765,7 +5787,7 @@ int mailimap_greeting_parse(mailstream * fd, MMAPString * buffer,
   }
 
   type = MAILIMAP_GREETING_RESP_COND_ERROR; /* XXX - removes a gcc warning */
-  
+
   r = mailimap_resp_cond_auth_parse(fd, buffer, &cur_token, &resp_cond_auth,
 				    progr_rate, progr_fun);
   if (r == MAILIMAP_NO_ERROR)
@@ -5940,17 +5962,19 @@ static int mailimap_literal_parse_progress(mailstream * fd, MMAPString * buffer,
   int r;
   int res;
   size_t number_token;
-  
+  UNUSED(items_progr_fun);
+  UNUSED(msg_att_handler); UNUSED(msg_att_context);
+
   cur_token = * indx;
-  
+
   r = mailimap_oaccolade_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR) {
     res = r;
     goto err;
   }
-  
+
   number_token = cur_token;
-  
+
   r = mailimap_number_parse(fd, buffer, &cur_token, &number);
   if (r == MAILIMAP_ERROR_PARSE) {
     // workaround issue with Free servers
@@ -5970,13 +5994,13 @@ static int mailimap_literal_parse_progress(mailstream * fd, MMAPString * buffer,
     res = r;
     goto err;
   }
-  
+
   r = mailimap_caccolade_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR) {
     res = r;
     goto err;
   }
-  
+
   r = mailimap_crlf_parse(fd, buffer, &cur_token);
 	if (r == MAILIMAP_ERROR_PARSE) {
 		/* workaround for Lotus Domino IMAP server */
@@ -5987,15 +6011,15 @@ static int mailimap_literal_parse_progress(mailstream * fd, MMAPString * buffer,
     res = r;
     goto err;
   }
-  
+
   literal = mmap_string_sized_new(number);
   if (literal == NULL) {
     res = MAILIMAP_ERROR_MEMORY;
     goto err;
   }
-  
+
   left = buffer->len - cur_token;
-  
+
   if (left >= number) {
     if (number > 0)
       if (mmap_string_append_len(literal, buffer->str + cur_token,
@@ -6017,16 +6041,16 @@ static int mailimap_literal_parse_progress(mailstream * fd, MMAPString * buffer,
     uint32_t needed;
     uint32_t current_prog = 0;
     uint32_t last_prog = 0;
-    
+
     needed = number - left;
     memcpy(literal->str, buffer->str + cur_token, left);
     literal->len += left;
     literal_p = literal->str + left;
     current_prog = left;
-    
+
     while (needed > 0) {
       ssize_t read_bytes;
-      
+
       if (needed > MAX_READ_PROGRESS) {
         read_bytes = mailstream_read(fd, literal_p, MAX_READ_PROGRESS);
       }
@@ -6040,7 +6064,7 @@ static int mailimap_literal_parse_progress(mailstream * fd, MMAPString * buffer,
       literal->len += read_bytes;
       needed -= read_bytes;
       literal_p += read_bytes;
-      
+
       current_prog += read_bytes;
       if (current_prog - last_prog > progr_rate) {
         if (progr_fun != NULL) {
@@ -6052,19 +6076,19 @@ static int mailimap_literal_parse_progress(mailstream * fd, MMAPString * buffer,
         last_prog = current_prog;
       }
     }
-    
+
     literal->str[number] = 0;
-    
+
     if (mmap_string_truncate(buffer, number_token) == NULL) {
       res = MAILIMAP_ERROR_MEMORY;
       goto free_literal;
     }
-    
+
     if (mmap_string_append(buffer, "0}\r\n") == NULL) {
       res = MAILIMAP_ERROR_MEMORY;
       goto free_literal;
     }
-    
+
     cur_token = number_token + 4;
   }
   if (progr_rate != 0) {
@@ -6075,30 +6099,32 @@ static int mailimap_literal_parse_progress(mailstream * fd, MMAPString * buffer,
       body_progr_fun(number, number, context);
     }
   }
-  
+
   if (mailstream_read_line_append(fd, buffer) == NULL) {
     res = MAILIMAP_ERROR_STREAM;
     goto free_literal;
   }
-  
+
   if (mmap_string_ref(literal) < 0) {
     res = MAILIMAP_ERROR_MEMORY;
     goto free_literal;
   }
-  
+
   * result = literal->str;
   if (result_len != NULL)
     * result_len = literal->len;
   * indx = cur_token;
-  
+
   return MAILIMAP_NO_ERROR;
-  
+
 free_literal:
   mmap_string_free(literal);
 err:
   return res;
 }
 
+#if 0
+/* TODO unused function ? */
 static int mailimap_literal_parse(mailstream * fd, MMAPString * buffer,
 				  size_t * indx, char ** result,
 				  size_t * result_len,
@@ -6109,6 +6135,7 @@ static int mailimap_literal_parse(mailstream * fd, MMAPString * buffer,
                                          progr_rate, progr_fun,
                                          NULL, NULL, NULL, NULL, NULL);
 }
+#endif
 
 /*
   UNIMPLEMENTED
@@ -6164,7 +6191,7 @@ mailimap_mailbox_gmail_parse(mailstream * fd, MMAPString * buffer,
   clist * astring_list;
   size_t parsed_length;
   clistiter * cur;
-  
+
   cur_token = * indx;
 
   r = mailimap_struct_spaced_list_parse(fd, buffer, &cur_token, &astring_list,
@@ -6175,15 +6202,15 @@ mailimap_mailbox_gmail_parse(mailstream * fd, MMAPString * buffer,
 					progr_rate, progr_fun);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   for(cur = clist_begin(astring_list) ; cur != NULL ; cur = clist_next(cur)) {
     char * str;
-    
+
     str = clist_content(cur);
     mailimap_astring_free(str);
   }
   clist_free(astring_list);
-  
+
   parsed_length = cur_token - * indx;
   name = malloc(parsed_length + 1);
   if (name == NULL) {
@@ -6191,7 +6218,7 @@ mailimap_mailbox_gmail_parse(mailstream * fd, MMAPString * buffer,
   }
   memcpy(name, buffer->str + * indx, parsed_length);
   name[parsed_length] = 0;
-  
+
   * result = name;
   * indx = cur_token;
 
@@ -6340,7 +6367,7 @@ mailimap_mailbox_data_search_parse(mailstream * fd, MMAPString * buffer,
   size_t final_token;
   clist * number_list;
   int r;
-  
+
   cur_token = * indx;
 
   r = mailimap_token_case_insensitive_parse(fd, buffer,
@@ -6362,7 +6389,7 @@ mailimap_mailbox_data_search_parse(mailstream * fd, MMAPString * buffer,
     if (r == MAILIMAP_NO_ERROR)
       final_token = cur_token;
   }
-  
+
   * result = number_list;
   * indx = final_token;
 
@@ -6391,7 +6418,8 @@ mailimap_status_info_parse(mailstream * fd, MMAPString * buffer,
   uint32_t value;
   struct mailimap_status_info * info;
   int r;
-  
+  UNUSED(progr_rate); UNUSED(progr_fun);
+
   cur_token = * indx;
   value = 0;
 
@@ -6470,7 +6498,7 @@ mailimap_mailbox_data_status_parse(mailstream * fd, MMAPString * buffer,
     res = r;
     goto mailbox;
   }
-  
+
   r = mailimap_struct_spaced_list_parse(fd, buffer, &cur_token,
 					&status_info_list,
 					(mailimap_struct_parser *)
@@ -6524,13 +6552,13 @@ mailimap_mailbox_data_exists_parse(mailstream * fd, MMAPString * buffer,
   size_t cur_token;
   uint32_t number;
   int r;
-  
+
   cur_token = * indx;
 
   r = mailimap_number_parse(fd, buffer, &cur_token, &number);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_space_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -6557,13 +6585,13 @@ mailimap_mailbox_data_recent_parse(mailstream * fd, MMAPString * buffer,
   size_t cur_token;
   uint32_t number;
   int r;
-  
+
   cur_token = * indx;
 
   r = mailimap_number_parse(fd, buffer, &cur_token, &number);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_space_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -6598,7 +6626,7 @@ mailimap_mailbox_data_parse(mailstream * fd, MMAPString * buffer,
   struct mailimap_flag_list * data_flags;
   struct mailimap_mailbox_list * data_list;
   struct mailimap_mailbox_list * data_lsub;
-  clist * data_search; 
+  clist * data_search;
   struct mailimap_mailbox_data_status * data_status;
   uint32_t data_exists;
   uint32_t data_recent;
@@ -6621,7 +6649,7 @@ mailimap_mailbox_data_parse(mailstream * fd, MMAPString * buffer,
   data_extension = NULL;
 
   type = MAILIMAP_MAILBOX_DATA_ERROR; /* XXX - removes a gcc warning */
-  
+
   r = mailimap_mailbox_data_flags_parse(fd, buffer, &cur_token,
 					&data_flags,
 					progr_rate, progr_fun);
@@ -6659,14 +6687,14 @@ mailimap_mailbox_data_parse(mailstream * fd, MMAPString * buffer,
     if (r == MAILIMAP_NO_ERROR)
       type = MAILIMAP_MAILBOX_DATA_STATUS;
   }
-  
+
   if (r == MAILIMAP_ERROR_PARSE) {
     r = mailimap_mailbox_data_exists_parse(fd, buffer, &cur_token,
 					   &data_exists);
     if (r == MAILIMAP_NO_ERROR)
       type = MAILIMAP_MAILBOX_DATA_EXISTS;
   }
-  
+
   if (r == MAILIMAP_ERROR_PARSE) {
     r = mailimap_mailbox_data_recent_parse(fd, buffer, &cur_token,
 					   &data_recent);
@@ -6692,7 +6720,7 @@ mailimap_mailbox_data_parse(mailstream * fd, MMAPString * buffer,
       data_status,
       data_exists, data_recent,
       data_extension);
-  
+
   if (mailbox_data == NULL) {
     res = MAILIMAP_ERROR_MEMORY;
     goto free;
@@ -6747,7 +6775,7 @@ mailimap_mailbox_list_quoted_char_parse(mailstream * fd, MMAPString * buffer,
   r = mailimap_quoted_char_parse(fd, buffer, &cur_token, &ch);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_dquote_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -6767,7 +6795,7 @@ mailimap_mailbox_list_parse(mailstream * fd, MMAPString * buffer,
 {
   struct mailimap_mailbox_list * mb_list;
   struct mailimap_mbx_list_flags * mb_flag_list;
-  char ch; 
+  char ch;
   char * mb;
   size_t cur_token;
   int r;
@@ -6780,7 +6808,7 @@ mailimap_mailbox_list_parse(mailstream * fd, MMAPString * buffer,
     res = r;
     goto err;
   }
-  
+
   mb_flag_list = NULL;
   ch = 0;
   mb = NULL;
@@ -6831,7 +6859,7 @@ mailimap_mailbox_list_parse(mailstream * fd, MMAPString * buffer,
     res = MAILIMAP_ERROR_MEMORY;
     goto free_mailbox;
   }
-  
+
   * result = mb_list;
   * indx = cur_token;
 
@@ -6869,10 +6897,10 @@ mailimap_mbx_list_flags_parse(mailstream * fd, MMAPString * buffer,
   int res;
   size_t final_token;
   int try_sflag;
-  
+
   cur_token = * indx;
   final_token = cur_token;
-  
+
   oflags = clist_new();
   if (oflags == NULL) {
     res = MAILIMAP_ERROR_MEMORY;
@@ -6893,19 +6921,19 @@ mailimap_mbx_list_flags_parse(mailstream * fd, MMAPString * buffer,
     res = r;
     goto free;
   }
-  
+
   try_sflag = 1;
   if (r == MAILIMAP_NO_ERROR) {
     clist_concat(oflags, oflags_2);
     clist_free(oflags_2);
-    
+
     final_token = cur_token;
     try_sflag = 0;
     r = mailimap_space_parse(fd, buffer, &cur_token);
     if (r == MAILIMAP_NO_ERROR)
       try_sflag = 1;
   }
-  
+
   type = MAILIMAP_MBX_LIST_FLAGS_NO_SFLAG;
   if (try_sflag) {
     r = mailimap_mbx_list_sflag_parse(fd, buffer, &cur_token, &sflag);
@@ -6913,10 +6941,10 @@ mailimap_mbx_list_flags_parse(mailstream * fd, MMAPString * buffer,
     case MAILIMAP_ERROR_PARSE:
       type = MAILIMAP_MBX_LIST_FLAGS_NO_SFLAG;
       break;
-    
+
     case MAILIMAP_NO_ERROR:
       type = MAILIMAP_MBX_LIST_FLAGS_SFLAG;
-    
+
       final_token = cur_token;
       r = mailimap_space_parse(fd, buffer, &cur_token);
       if (r == MAILIMAP_NO_ERROR) {
@@ -6929,15 +6957,15 @@ mailimap_mbx_list_flags_parse(mailstream * fd, MMAPString * buffer,
           res = r;
           goto err;
         }
-      
+
         if (r == MAILIMAP_NO_ERROR) {
           clist_concat(oflags, oflags_2);
           clist_free(oflags_2);
-          
+
           final_token = cur_token;
         }
       }
-      
+
       break;
 
     default:
@@ -6945,12 +6973,12 @@ mailimap_mbx_list_flags_parse(mailstream * fd, MMAPString * buffer,
       goto free;
     }
   }
-  
+
   if ((clist_count(oflags) == 0) && (type == MAILIMAP_MBX_LIST_FLAGS_NO_SFLAG)) {
     res = MAILIMAP_ERROR_PARSE;
     goto free;
   }
-  
+
   cur_token = final_token;
   mbx_list_flag = mailimap_mbx_list_flags_new(type, oflags, sflag);
   if (mbx_list_flag == NULL) {
@@ -6988,7 +7016,7 @@ mailimap_mbx_list_oflag_parse(mailstream * fd, MMAPString * buffer,
   char * flag_ext;
   int r;
   int res;
-  
+
   cur_token = * indx;
   flag_ext = NULL;
   type = MAILIMAP_MBX_LIST_OFLAG_ERROR; /* XXX - removes a gcc warning */
@@ -6997,14 +7025,14 @@ mailimap_mbx_list_oflag_parse(mailstream * fd, MMAPString * buffer,
 					    "\\Noinferiors");
   if (r == MAILIMAP_NO_ERROR)
     type = MAILIMAP_MBX_LIST_OFLAG_NOINFERIORS;
-  
+
   if (r == MAILIMAP_ERROR_PARSE) {
     r = mailimap_token_case_insensitive_parse(fd, buffer, &cur_token,
                                               "/Noinferiors");
     if (r == MAILIMAP_NO_ERROR)
       type = MAILIMAP_MBX_LIST_OFLAG_NOINFERIORS;
   }
-  
+
   if (r == MAILIMAP_ERROR_PARSE) {
     r = mailimap_flag_extension_parse(fd, buffer, &cur_token,
 				      &flag_ext, progr_rate, progr_fun);
@@ -7047,11 +7075,11 @@ mailimap_mbx_list_oflag_no_sflag_parse(mailstream * fd, MMAPString * buffer,
   int r;
 
   cur_token = * indx;
-  
+
   r = mailimap_mbx_list_sflag_parse(fd, buffer, &cur_token, &sflag_type);
   if (r == MAILIMAP_NO_ERROR)
     return MAILIMAP_ERROR_PARSE;
-  
+
   return mailimap_mbx_list_oflag_parse(fd, buffer, indx, result,
       progr_rate, progr_fun);
 }
@@ -7078,7 +7106,7 @@ mailimap_mbx_list_sflag_parse(mailstream * fd, MMAPString * buffer,
 
   * result = type;
   * indx = cur_token;
-  
+
   return MAILIMAP_NO_ERROR;
 }
 
@@ -7102,7 +7130,7 @@ mailimap_media_basic_standard_parse(mailstream * fd, MMAPString * buffer,
   size_t cur_token;
   int type;
   int r;
-  
+
   cur_token = * indx;
 
   r = mailimap_dquote_parse(fd, buffer, &cur_token);
@@ -7112,14 +7140,14 @@ mailimap_media_basic_standard_parse(mailstream * fd, MMAPString * buffer,
   type = mailimap_media_basic_get_token_value(fd, buffer, &cur_token);
   if (type == -1)
     return MAILIMAP_ERROR_PARSE;
-    
+
   r = mailimap_dquote_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR)
     return r;
 
   * indx = cur_token;
   * result = type;
-  
+
   return MAILIMAP_NO_ERROR;
 }
 
@@ -7159,7 +7187,7 @@ mailimap_media_basic_parse(mailstream * fd, MMAPString * buffer,
     if (r == MAILIMAP_NO_ERROR)
       type = MAILIMAP_MEDIA_BASIC_OTHER;
   }
-  
+
   // workaround for mbox mail for mac
   if (r == MAILIMAP_ERROR_PARSE) {
     r = mailimap_nil_parse(fd, buffer, &cur_token);
@@ -7188,7 +7216,7 @@ mailimap_media_basic_parse(mailstream * fd, MMAPString * buffer,
     res = r;
     goto free_basic_type;
   }
-  
+
   if (r == MAILIMAP_ERROR_PARSE) {
     // workaround for mbox mail for mac
     r = mailimap_nil_parse(fd, buffer, &cur_token);
@@ -7200,7 +7228,7 @@ mailimap_media_basic_parse(mailstream * fd, MMAPString * buffer,
       }
     }
   }
-  
+
   media_basic = mailimap_media_basic_new(type, basic_type, subtype);
   if (media_basic == NULL) {
     res = MAILIMAP_ERROR_MEMORY;
@@ -7244,7 +7272,7 @@ mailimap_media_message_parse(mailstream * fd, MMAPString * buffer,
 					    "MESSAGE");
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_dquote_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -7321,7 +7349,7 @@ static int mailimap_media_text_parse(mailstream * fd, MMAPString * buffer,
 					    "TEXT");
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_dquote_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -7384,14 +7412,14 @@ mailimap_message_data_parse_progress(mailstream * fd, MMAPString * buffer,
       res = r;
       goto err;
     }
-		
+
 		number = 0;
 	}
 	else if (r != MAILIMAP_NO_ERROR) {
 		res = r;
 		goto err;
 	}
-  
+
   r = mailimap_space_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR) {
     res = r;
@@ -7412,7 +7440,7 @@ mailimap_message_data_parse_progress(mailstream * fd, MMAPString * buffer,
       res = r;
       goto err;
     }
-    
+
     r = mailimap_space_parse(fd, buffer, &cur_token);
     if (r != MAILIMAP_NO_ERROR) {
       res = r;
@@ -7429,7 +7457,7 @@ mailimap_message_data_parse_progress(mailstream * fd, MMAPString * buffer,
     if (items_progr_fun != NULL) {
       (* items_progr_fun)(0, 0, context);
     }
-    
+
     type = MAILIMAP_MESSAGE_DATA_FETCH;
   }
 
@@ -7456,6 +7484,8 @@ mailimap_message_data_parse_progress(mailstream * fd, MMAPString * buffer,
   return res;
 }
 
+#if 0
+/* TODO unused function? */
 static int
 mailimap_message_data_parse(mailstream * fd, MMAPString * buffer,
                             size_t * indx,
@@ -7467,6 +7497,7 @@ mailimap_message_data_parse(mailstream * fd, MMAPString * buffer,
                                               progr_rate, progr_fun,
                                               NULL, NULL, NULL, NULL, NULL);
 }
+#endif
 
 /*
    msg-att         = "(" (msg-att-dynamic / msg-att-static)
@@ -7527,12 +7558,12 @@ mailimap_msg_att_item_parse_progress(mailstream * fd, MMAPString * buffer,
     if (r == MAILIMAP_NO_ERROR)
       type = MAILIMAP_MSG_ATT_ITEM_EXTENSION;
   }
-  
+
   if (r != MAILIMAP_NO_ERROR) {
     res = r;
     goto err;
   }
-  
+
   item = mailimap_msg_att_item_new(type, msg_att_dynamic, msg_att_static, msg_att_extension);
   if (item == NULL) {
     res = MAILIMAP_ERROR_MEMORY;
@@ -7555,6 +7586,8 @@ mailimap_msg_att_item_parse_progress(mailstream * fd, MMAPString * buffer,
   return res;
 }
 
+#if 0
+/* TODO unused function? */
 static int
 mailimap_msg_att_item_parse(mailstream * fd, MMAPString * buffer,
                             size_t * indx,
@@ -7565,8 +7598,9 @@ mailimap_msg_att_item_parse(mailstream * fd, MMAPString * buffer,
   return mailimap_msg_att_item_parse_progress(fd, buffer, indx, result,
                                               progr_rate, progr_fun,
                                               NULL, NULL, NULL, NULL, NULL);
-  
+
 }
+#endif
 
 /*
    msg-att         = "(" (msg-att-dynamic / msg-att-static)
@@ -7617,7 +7651,7 @@ mailimap_msg_att_parse_progress(mailstream * fd, MMAPString * buffer,
     res = r;
     goto free;
   }
-  
+
   msg_att = mailimap_msg_att_new(list);
   if (msg_att == NULL) {
     res = MAILIMAP_ERROR_MEMORY;
@@ -7628,7 +7662,7 @@ mailimap_msg_att_parse_progress(mailstream * fd, MMAPString * buffer,
   * result = msg_att;
 
   return MAILIMAP_NO_ERROR;
-  
+
  free:
   clist_foreach(list, (clist_func) mailimap_msg_att_item_free, NULL);
   clist_free(list);
@@ -7636,6 +7670,8 @@ mailimap_msg_att_parse_progress(mailstream * fd, MMAPString * buffer,
   return res;
 }
 
+#if 0
+/* TODO unused function? */
 static int
 mailimap_msg_att_parse(mailstream * fd, MMAPString * buffer,
                        size_t * indx, struct mailimap_msg_att ** result,
@@ -7646,6 +7682,7 @@ mailimap_msg_att_parse(mailstream * fd, MMAPString * buffer,
                                          progr_rate, progr_fun,
                                          NULL, NULL, NULL, NULL, NULL);
 }
+#endif
 
 /*
    msg-att-dynamic = "FLAGS" SP "(" [flag-fetch *(SP flag-fetch)] ")"
@@ -7665,7 +7702,7 @@ mailimap_msg_att_dynamic_parse(mailstream * fd, MMAPString * buffer,
   size_t cur_token;
   int r;
   int res;
-  
+
   cur_token = * indx;
 
   list = NULL;
@@ -7705,7 +7742,7 @@ mailimap_msg_att_dynamic_parse(mailstream * fd, MMAPString * buffer,
     res = r;
     goto free;
   }
-  
+
   msg_att_dyn = mailimap_msg_att_dynamic_new(list);
   if (msg_att_dyn == NULL) {
     res = MAILIMAP_ERROR_MEMORY;
@@ -7751,7 +7788,7 @@ mailimap_msg_att_envelope_parse(mailstream * fd,
   size_t cur_token;
   struct mailimap_envelope * env;
   int r;
-  
+
   cur_token = * indx;
 
   r = mailimap_token_case_insensitive_parse(fd, buffer,
@@ -7790,7 +7827,7 @@ mailimap_msg_att_internaldate_parse(mailstream * fd, MMAPString * buffer,
   size_t cur_token;
   struct mailimap_date_time * date_time;
   int r;
-  
+
   cur_token = * indx;
 
   r = mailimap_token_case_insensitive_parse(fd, buffer, &cur_token,
@@ -7833,7 +7870,7 @@ mailimap_msg_att_rfc822_parse_progress(mailstream * fd, MMAPString * buffer,
   char * rfc822_message;
   int r;
   size_t length;
-  
+
   cur_token = * indx;
 
   r = mailimap_token_case_insensitive_parse(fd, buffer, &cur_token,
@@ -7844,7 +7881,7 @@ mailimap_msg_att_rfc822_parse_progress(mailstream * fd, MMAPString * buffer,
   r = mailimap_space_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_nstring_parse_progress(fd, buffer, &cur_token, &rfc822_message, &length,
          progr_rate, progr_fun, body_progr_fun, items_progr_fun, context, msg_att_handler, msg_att_context);
   if (r != MAILIMAP_NO_ERROR)
@@ -7858,6 +7895,8 @@ mailimap_msg_att_rfc822_parse_progress(mailstream * fd, MMAPString * buffer,
   return MAILIMAP_NO_ERROR;
 }
 
+#if 0
+/* TODO unused function? */
 static int
 mailimap_msg_att_rfc822_parse(mailstream * fd, MMAPString * buffer,
                               size_t * indx, char ** result,
@@ -7869,6 +7908,7 @@ mailimap_msg_att_rfc822_parse(mailstream * fd, MMAPString * buffer,
                                                 progr_rate, progr_fun,
                                                 NULL, NULL, NULL, NULL, NULL);
 }
+#endif
 
 /*
   "RFC822" ".HEADER" SP nstring
@@ -7885,7 +7925,7 @@ mailimap_msg_att_rfc822_header_parse(mailstream * fd, MMAPString * buffer,
   char * rfc822_header;
   int r;
   size_t length;
-  
+
   cur_token = * indx;
 
   r = mailimap_token_case_insensitive_parse(fd, buffer, &cur_token,
@@ -7935,7 +7975,7 @@ mailimap_msg_att_rfc822_text_parse_progress(mailstream * fd, MMAPString * buffer
   char * rfc822_text;
   int r;
   size_t length;
-  
+
   cur_token = * indx;
 
   r = mailimap_token_case_insensitive_parse(fd, buffer, &cur_token,
@@ -7965,6 +8005,8 @@ mailimap_msg_att_rfc822_text_parse_progress(mailstream * fd, MMAPString * buffer
   return MAILIMAP_NO_ERROR;
 }
 
+#if 0
+/* TODO unused function? */
 static int
 mailimap_msg_att_rfc822_text_parse(mailstream * fd, MMAPString * buffer,
                                    size_t * indx, char ** result,
@@ -7976,6 +8018,7 @@ mailimap_msg_att_rfc822_text_parse(mailstream * fd, MMAPString * buffer,
                                                      progr_rate, progr_fun,
                                                      NULL, NULL, NULL, NULL, NULL);
 }
+#endif
 
 /*
   "RFC822.SIZE" SP number
@@ -7988,7 +8031,7 @@ mailimap_msg_att_rfc822_size_parse(mailstream * fd, MMAPString * buffer,
   size_t cur_token;
   uint32_t number;
   int r;
-  
+
   cur_token = * indx;
 
   r = mailimap_token_case_insensitive_parse(fd, buffer, &cur_token,
@@ -8024,7 +8067,7 @@ mailimap_msg_att_body_parse(mailstream * fd, MMAPString * buffer,
   struct mailimap_body * body;
   size_t cur_token;
   int r;
-  
+
   cur_token = * indx;
 
   r = mailimap_token_case_insensitive_parse(fd, buffer, &cur_token,
@@ -8062,7 +8105,7 @@ mailimap_msg_att_bodystructure_parse(mailstream * fd, MMAPString * buffer,
   struct mailimap_body * body;
   size_t cur_token;
   int r;
-  
+
   cur_token = * indx;
 
   r = mailimap_token_case_insensitive_parse(fd, buffer, &cur_token,
@@ -8144,7 +8187,7 @@ mailimap_msg_att_body_section_parse_progress(mailstream * fd, MMAPString * buffe
       res = r;
       goto free_section;
     }
-    
+
     r = mailimap_greater_parse(fd, buffer, &cur_token);
     if (r != MAILIMAP_NO_ERROR) {
       res = r;
@@ -8154,7 +8197,7 @@ mailimap_msg_att_body_section_parse_progress(mailstream * fd, MMAPString * buffe
 
   case MAILIMAP_ERROR_PARSE:
     break;
-    
+
   default:
     return r;
   }
@@ -8193,6 +8236,8 @@ mailimap_msg_att_body_section_parse_progress(mailstream * fd, MMAPString * buffe
   return res;
 }
 
+#if 0
+/* TODO unused function? */
 static int
 mailimap_msg_att_body_section_parse(mailstream * fd, MMAPString * buffer,
                                              size_t * indx,
@@ -8205,6 +8250,7 @@ mailimap_msg_att_body_section_parse(mailstream * fd, MMAPString * buffer,
                                                       progr_rate, progr_fun,
                                                       NULL, NULL, NULL, NULL, NULL);
 }
+#endif
 
 /*
   "UID" SP uniqueid
@@ -8232,7 +8278,7 @@ mailimap_msg_att_uid_parse(mailstream * fd, MMAPString * buffer,
   r = mailimap_uniqueid_parse(fd, buffer, &cur_token, &uid);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   * indx = cur_token;
   * result = uid;
 
@@ -8305,7 +8351,7 @@ mailimap_msg_att_static_parse_progress(mailstream * fd, MMAPString * buffer,
     if (r == MAILIMAP_NO_ERROR)
       type = MAILIMAP_MSG_ATT_INTERNALDATE;
   }
-  
+
   if (r == MAILIMAP_ERROR_PARSE) {
     r = mailimap_msg_att_rfc822_parse_progress(fd, buffer, &cur_token,
                                                &rfc822, &length,
@@ -8321,7 +8367,7 @@ mailimap_msg_att_static_parse_progress(mailstream * fd, MMAPString * buffer,
 					     progr_rate, progr_fun);
     type = MAILIMAP_MSG_ATT_RFC822_HEADER;
   }
-  
+
   if (r == MAILIMAP_ERROR_PARSE) {
     r = mailimap_msg_att_rfc822_text_parse_progress(fd, buffer, &cur_token,
                                                     &rfc822_text, &length,
@@ -8410,6 +8456,8 @@ mailimap_msg_att_static_parse_progress(mailstream * fd, MMAPString * buffer,
   return res;
 }
 
+#if 0
+/* TODO unused function? */
 static int
 mailimap_msg_att_static_parse(mailstream * fd, MMAPString * buffer,
                               size_t * indx,
@@ -8421,6 +8469,7 @@ mailimap_msg_att_static_parse(mailstream * fd, MMAPString * buffer,
                                                 progr_rate, progr_fun,
                                                 NULL, NULL, NULL, NULL, NULL);
 }
+#endif
 
 /*
    nil             = "NIL"
@@ -8448,25 +8497,25 @@ static int mailimap_nstring_parse_progress(mailstream * fd, MMAPString * buffer,
                                            void * msg_att_context)
 {
   int r;
-  
+
   r = mailimap_string_parse_progress(fd, buffer, indx, result, result_len,
                                      progr_rate, progr_fun,
                                      body_progr_fun, items_progr_fun, context, msg_att_handler, msg_att_context);
   switch (r) {
     case MAILIMAP_NO_ERROR:
       return MAILIMAP_NO_ERROR;
-      
+
     case MAILIMAP_ERROR_PARSE:
       r = mailimap_nil_parse(fd, buffer, indx);
       if (r != MAILIMAP_NO_ERROR) {
         return r;
       }
-      
+
       * result = NULL;
       if (result_len != NULL)
         * result_len = 0;
       return MAILIMAP_NO_ERROR;
-      
+
     default:
       return r;
   }
@@ -8498,7 +8547,7 @@ mailimap_number_parse(mailstream * fd, MMAPString * buffer,
   int parsed;
   int r;
 	int negative;
-  
+
   cur_token = * indx;
   parsed = FALSE;
 
@@ -8511,7 +8560,7 @@ mailimap_number_parse(mailstream * fd, MMAPString * buffer,
 	if (r == MAILIMAP_NO_ERROR) {
 	  negative = 1;
 	}
-	
+
   number = 0;
   while (1) {
     r = mailimap_digit_parse(fd, buffer, &cur_token, &digit);
@@ -8529,7 +8578,7 @@ mailimap_number_parse(mailstream * fd, MMAPString * buffer,
 	if (negative) {
 	  number = 0;
 	}
-	
+
   if (!parsed)
     return MAILIMAP_ERROR_PARSE;
 
@@ -8553,7 +8602,7 @@ mailimap_nz_number_parse(mailstream * fd, MMAPString * buffer,
   size_t cur_token;
   uint32_t number;
   int r;
-  
+
   cur_token = * indx;
 
   r = mailimap_number_parse(fd, buffer, &cur_token, &number);
@@ -8570,7 +8619,7 @@ mailimap_nz_number_parse(mailstream * fd, MMAPString * buffer,
   int digit;
   uint32_t number;
   int r;
-  
+
   cur_token = * indx;
 
   r = mailimap_digit_nz_parse(fd, buffer, &cur_token, &digit);
@@ -8617,7 +8666,8 @@ mailimap_quoted_parse(mailstream * fd, MMAPString * buffer,
   MMAPString * gstr_quoted;
   int r;
   int res;
-  
+  UNUSED(progr_rate); UNUSED(progr_fun);
+
   cur_token = * indx;
 
 #ifdef UNSTRICT_SYNTAX
@@ -8645,7 +8695,7 @@ mailimap_quoted_parse(mailstream * fd, MMAPString * buffer,
         goto free;
       }
     }
-    
+
     r = mailimap_quoted_char_parse(fd, buffer, &cur_token, &ch);
     if (r == MAILIMAP_ERROR_PARSE)
       break;
@@ -8696,12 +8746,12 @@ mailimap_quoted_char_parse(mailstream * fd, MMAPString * buffer,
 {
   size_t cur_token;
   int r;
-  
+
   cur_token = * indx;
 
   if (cur_token >= buffer->len)
     return MAILIMAP_ERROR_PARSE;
-  
+
   if (!is_quoted_specials(buffer->str[cur_token])) {
     * result = buffer->str[cur_token];
     cur_token ++;
@@ -8748,7 +8798,8 @@ mailimap_quoted_specials_parse(mailstream * fd, MMAPString * buffer,
 			       size_t * indx, char * result)
 {
   size_t cur_token;
-  
+  UNUSED(fd);
+
   cur_token = * indx;
 
   if (cur_token >= buffer->len)
@@ -8817,7 +8868,7 @@ mailimap_cont_req_or_resp_data_parse_progress(mailstream * fd, MMAPString * buff
     }
     break;
   }
-  
+
   r = mailimap_continue_req_parse(fd, buffer, &cur_token, &cont_req,
 				  progr_rate, progr_fun);
   if (r == MAILIMAP_NO_ERROR)
@@ -8847,7 +8898,7 @@ mailimap_cont_req_or_resp_data_parse_progress(mailstream * fd, MMAPString * buff
     res = MAILIMAP_ERROR_STREAM;
     goto free;
   }
-  
+
   if ((cont_req == NULL) && (resp_data == NULL)) {
     cont_req_or_resp_data = NULL;
   }
@@ -8909,11 +8960,11 @@ mailimap_response_parse_progress(mailstream * fd, MMAPString * buffer,
   struct mailimap_response_done * resp_done;
   int r;
   int res;
-  
+
   cur_token = * indx;
   cont_req_or_resp_data_list = NULL;
   resp_done = NULL;
-  
+
   r = mailimap_struct_multiple_parse_progress(fd, buffer,
                                               &cur_token, &cont_req_or_resp_data_list,
                                               (mailimap_struct_parser_progress *)
@@ -8926,28 +8977,28 @@ mailimap_response_parse_progress(mailstream * fd, MMAPString * buffer,
                                               context,
                                               msg_att_handler,
                                               msg_att_context);
-  
+
   if ((r != MAILIMAP_NO_ERROR) && (r != MAILIMAP_ERROR_PARSE))
     return r;
-  
+
   r = mailimap_response_done_parse(fd, buffer, &cur_token, &resp_done,
                                    progr_rate, progr_fun);
   if (r != MAILIMAP_NO_ERROR) {
     res = r;
     goto free_list;
   }
-  
+
   resp = mailimap_response_new(cont_req_or_resp_data_list, resp_done);
   if (resp == NULL) {
     res = MAILIMAP_ERROR_MEMORY;
     goto free_resp_done;
   }
-  
+
   * result = resp;
   * indx = cur_token;
-  
+
   return MAILIMAP_NO_ERROR;
-  
+
 free_resp_done:
   mailimap_response_done_free(resp_done);
 free_list:
@@ -9102,7 +9153,7 @@ mailimap_response_data_parse_progress(mailstream * fd, MMAPString * buffer,
       }
     }
   }
-  
+
   if (msg_att_handled) {
     resp_data = NULL;
   }
@@ -9203,7 +9254,7 @@ mailimap_response_done_parse(mailstream * fd, MMAPString * buffer,
   * indx = cur_token;
 
   return MAILIMAP_NO_ERROR;
-  
+
  free:
   if (tagged == NULL)
     mailimap_response_tagged_free(tagged);
@@ -9263,7 +9314,7 @@ mailimap_response_fatal_parse(mailstream * fd, MMAPString * buffer,
     res = MAILIMAP_ERROR_MEMORY;
     goto free;
   }
-  
+
   * result = fatal;
   * indx = cur_token;
 
@@ -9353,7 +9404,7 @@ mailimap_resp_cond_auth_parse(mailstream * fd, MMAPString * buffer,
   int type;
   int r;
   int res;
-  
+
   cur_token = * indx;
   text = NULL;
 
@@ -9430,7 +9481,7 @@ mailimap_resp_cond_bye_parse(mailstream * fd, MMAPString * buffer,
     res = r;
     goto err;
   }
-  
+
   r = mailimap_space_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR) {
     res = r;
@@ -9449,7 +9500,7 @@ mailimap_resp_cond_bye_parse(mailstream * fd, MMAPString * buffer,
     res = MAILIMAP_ERROR_MEMORY;
     goto free;
   }
-    
+
   * indx = cur_token;
   * result = cond_bye;
 
@@ -9479,7 +9530,7 @@ mailimap_resp_cond_state_parse(mailstream * fd, MMAPString * buffer,
   int type;
   int r;
   int res;
-  
+
   cur_token = * indx;
   text = NULL;
 
@@ -9551,7 +9602,7 @@ mailimap_resp_text_resp_text_code_parse(mailstream * fd, MMAPString * buffer,
   size_t cur_token;
   int r;
   int res;
-  
+
   cur_token = * indx;
 
   r = mailimap_obracket_parse(fd, buffer, &cur_token);
@@ -9625,7 +9676,7 @@ mailimap_resp_text_parse(mailstream * fd, MMAPString * buffer,
     res = r;
     goto free_resp_text_code;
   }
-  
+
   resp_text = mailimap_resp_text_new(text_code, text);
   if (resp_text == NULL) {
     res = MAILIMAP_ERROR_MEMORY;
@@ -9671,7 +9722,7 @@ mailimap_resp_text_code_1_parse(mailstream * fd, MMAPString * buffer,
   cur_token = * indx;
 
   id = mailimap_resp_text_code_1_get_token_value(fd, buffer, &cur_token);
-  
+
   if (id == -1)
     return MAILIMAP_ERROR_PARSE;
 
@@ -9775,7 +9826,7 @@ mailimap_resp_text_code_badcharset_parse(mailstream * fd, MMAPString * buffer,
 						 progr_rate, progr_fun);
   if ((r != MAILIMAP_NO_ERROR) && (r != MAILIMAP_ERROR_PARSE))
     return r;
-  
+
   * result = charset;
   * indx = cur_token;
 
@@ -9821,7 +9872,7 @@ mailimap_resp_text_code_permanentflags_parse(mailstream * fd,
     res = r;
     goto err;
   }
-  
+
   r = mailimap_struct_spaced_list_parse(fd, buffer, &cur_token, &flaglist,
 					(mailimap_struct_parser *)
 					mailimap_flag_perm_parse,
@@ -9832,7 +9883,7 @@ mailimap_resp_text_code_permanentflags_parse(mailstream * fd,
     res = r;
     goto err;
   }
-  
+
   r = mailimap_cparenth_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR) {
     res = r;
@@ -9855,7 +9906,7 @@ mailimap_resp_text_code_permanentflags_parse(mailstream * fd,
 /*
   "UIDNEXT" SP nz-number /
   "UIDVALIDITY" SP nz-number /
-  "UNSEEN" SP nz-number 
+  "UNSEEN" SP nz-number
 */
 
 static int
@@ -9870,6 +9921,7 @@ mailimap_resp_text_code_number_parse(mailstream * fd, MMAPString * buffer,
   uint32_t number;
   struct mailimap_resp_text_code * resp_text_code;
   int r;
+  UNUSED(progr_rate); UNUSED(progr_fun);
 
   cur_token = * indx;
 
@@ -9882,7 +9934,7 @@ mailimap_resp_text_code_number_parse(mailstream * fd, MMAPString * buffer,
   r = mailimap_space_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_nz_number_parse(fd, buffer, &cur_token, &number);
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -9938,6 +9990,7 @@ mailimap_resp_text_code_other_2_parse(mailstream * fd, MMAPString * buffer,
 				      size_t progr_rate,
 				      progress_function * progr_fun)
 {
+  UNUSED(progr_rate); UNUSED(progr_fun);
   return mailimap_custom_string_parse(fd, buffer, indx, result,
 				      is_text_char_1);
 }
@@ -9962,7 +10015,7 @@ mailimap_resp_text_code_other_1_parse(mailstream * fd, MMAPString * buffer,
   r = mailimap_space_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_resp_text_code_other_2_parse(fd, buffer, &cur_token,
 					    &value,
 					    progr_rate, progr_fun);
@@ -10010,7 +10063,7 @@ mailimap_resp_text_code_other_parse(mailstream * fd, MMAPString * buffer,
     res = r;
     goto err;
   }
-  
+
   resp_text_code = mailimap_resp_text_code_new(MAILIMAP_RESP_TEXT_CODE_OTHER,
 					       NULL, NULL, NULL,
 					       0, 0, 0, atom, value, NULL);
@@ -10084,7 +10137,7 @@ mailimap_resp_text_code_parse(mailstream * fd, MMAPString * buffer,
     if (r == MAILIMAP_NO_ERROR)
       type = MAILIMAP_RESP_TEXT_CODE_BADCHARSET;
   }
-  
+
   if (r == MAILIMAP_ERROR_PARSE) {
 
     r = mailimap_capability_data_parse(fd, buffer, &cur_token,
@@ -10305,7 +10358,7 @@ mailimap_section_msgtext_parse(mailstream * fd, MMAPString * buffer,
 
   * result = msgtext;
   * indx = cur_token;
-  
+
   return MAILIMAP_NO_ERROR;
 
  free_header_list:
@@ -10332,7 +10385,7 @@ mailimap_section_part_parse(mailstream * fd, MMAPString * buffer,
   clist * section_id;
   int r;
   int res;
-  
+
   cur_token = * indx;
   section_id = NULL;
 
@@ -10357,7 +10410,7 @@ mailimap_section_part_parse(mailstream * fd, MMAPString * buffer,
   * indx = cur_token;
 
   return MAILIMAP_NO_ERROR;
-  
+
  free_section_id:
   clist_foreach(section_id, (clist_func) mailimap_number_alloc_free, NULL);
   clist_free(section_id);
@@ -10399,9 +10452,9 @@ mailimap_section_spec_parse(mailstream * fd, MMAPString * buffer,
   case MAILIMAP_NO_ERROR:
     type = MAILIMAP_SECTION_SPEC_SECTION_MSGTEXT;
     break;
-    
+
   case MAILIMAP_ERROR_PARSE:
-    
+
     r = mailimap_section_part_parse(fd, buffer, &cur_token,
 				    &section_part,
 				    progr_rate, progr_fun);
@@ -10409,11 +10462,11 @@ mailimap_section_spec_parse(mailstream * fd, MMAPString * buffer,
       res = r;
       goto err;
     }
-    
+
     final_token = cur_token;
-    
+
     type = MAILIMAP_SECTION_SPEC_SECTION_PART;
-    
+
     r = mailimap_dot_parse(fd, buffer, &cur_token);
     if (r == MAILIMAP_NO_ERROR) {
       r = mailimap_section_text_parse(fd, buffer, &cur_token, &section_text,
@@ -10430,7 +10483,7 @@ mailimap_section_spec_parse(mailstream * fd, MMAPString * buffer,
       res = r;
       goto err;
     }
-    
+
     cur_token = final_token;
     break;
 
@@ -10438,7 +10491,7 @@ mailimap_section_spec_parse(mailstream * fd, MMAPString * buffer,
     res = r;
     goto err;
   }
-  
+
   section_spec = mailimap_section_spec_new(type, section_msgtext,
 					   section_part, section_text);
   if (section_spec == NULL) {
@@ -10480,7 +10533,7 @@ mailimap_section_text_parse(mailstream * fd, MMAPString * buffer,
   int type;
   int r;
   int res;
-  
+
   cur_token = * indx;
 
   section_msgtext = NULL;
@@ -10617,7 +10670,7 @@ mailimap_string_parse_progress(mailstream * fd, MMAPString * buffer,
 
   string = NULL;
   len = 0;
-  
+
   r = mailimap_quoted_parse(fd, buffer, &cur_token, &string,
 			    progr_rate, progr_fun);
   if (r == MAILIMAP_NO_ERROR)
@@ -10682,6 +10735,7 @@ static int mailimap_tag_parse(mailstream * fd, MMAPString * buffer,
   size_t cur_token;
   char * tag;
   int r;
+  UNUSED(progr_rate); UNUSED(progr_fun);
 
   cur_token = * indx;
 
@@ -10705,6 +10759,7 @@ static int mailimap_text_parse(mailstream * fd, MMAPString * buffer,
 			       size_t progr_rate,
 			       progress_function * progr_fun)
 {
+  UNUSED(progr_rate); UNUSED(progr_fun);
   return mailimap_custom_string_parse(fd, buffer, indx, result,
 				      is_text_char);
 }
@@ -10747,7 +10802,7 @@ static int mailimap_2digit_parse(mailstream * fd, MMAPString * buffer,
     return r;
 
   two_digit = digit;
-  
+
   r = mailimap_digit_parse(fd, buffer, &cur_token, &digit);
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -10762,13 +10817,13 @@ static int mailimap_2digit_parse(mailstream * fd, MMAPString * buffer,
   uint32_t number;
   size_t cur_token;
   int r;
-  
+
   cur_token = * indx;
-  
+
   r = mailimap_number_parse(fd, buffer, &cur_token, &number);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   * indx = cur_token;
   * result = number;
 
@@ -10790,13 +10845,13 @@ static int mailimap_time_parse(mailstream * fd, MMAPString * buffer,
   int min;
   int sec;
   int r;
-  
+
   cur_token = * indx;
 
   r = mailimap_2digit_parse(fd, buffer, &cur_token, &hour);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_colon_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR)
     return r;
@@ -10804,7 +10859,7 @@ static int mailimap_time_parse(mailstream * fd, MMAPString * buffer,
   r = mailimap_2digit_parse(fd, buffer, &cur_token, &min);
   if (r != MAILIMAP_NO_ERROR)
     return r;
-  
+
   r = mailimap_colon_parse(fd, buffer, &cur_token);
   if (r != MAILIMAP_NO_ERROR)
     return r;

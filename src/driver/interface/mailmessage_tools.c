@@ -44,6 +44,7 @@
 
 #include "maildriver.h"
 #include "maildriver_tools.h"
+#include "mail.h"
 
 int
 mailmessage_generic_initialize(mailmessage * msg_info)
@@ -55,7 +56,7 @@ mailmessage_generic_initialize(mailmessage * msg_info)
   if (msg == NULL) {
     return MAIL_ERROR_MEMORY;
   }
-  
+
   msg->msg_fetched = 0;
   msg->msg_message = NULL;
   msg->msg_length = 0;
@@ -101,23 +102,23 @@ mailmessage_generic_prefetch(mailmessage * msg_info)
 {
   struct generic_message_t * msg;
   int r;
-  
+
   msg = msg_info->msg_data;
-  
+
   if (msg->msg_fetched)
     return MAIL_NO_ERROR;
-  
+
 #if 0
   if (msg->message != NULL)
     return MAIL_NO_ERROR;
 #endif
-  
+
   r = msg->msg_prefetch(msg_info);
   if (r != MAIL_NO_ERROR)
     return r;
-  
+
   msg->msg_fetched = 1;
-  
+
   return MAIL_NO_ERROR;
 }
 
@@ -152,7 +153,7 @@ mailmessage_generic_prefetch_bodystructure(mailmessage * msg_info)
     res = r;
     goto err;
   }
-  
+
   msg = msg_info->msg_data;
   message = msg->msg_message;
   length = msg->msg_length;
@@ -175,7 +176,8 @@ void
 mailmessage_generic_fetch_result_free(mailmessage * msg_info, char * msg)
 {
   int r;
-  
+  UNUSED(msg_info);
+
   r = mmap_string_unref(msg);
 }
 
@@ -201,19 +203,19 @@ int mailmessage_generic_fetch(mailmessage * msg_info,
   message = msg->msg_message;
   length = msg->msg_length;
   cur_token = 0;
-  
+
   mmapstr = mmap_string_new_len(message, length);
   if (mmapstr == NULL) {
     res = MAIL_ERROR_MEMORY;
     goto err;
   }
-  
+
   r = mmap_string_ref(mmapstr);
   if (r < 0) {
     res = MAIL_ERROR_MEMORY;
     goto free_mmap;
   }
-  
+
   * result = mmapstr->str;
   * result_len = length;
 
@@ -248,7 +250,7 @@ int mailmessage_generic_fetch_header(mailmessage * msg_info,
   message = msg->msg_message;
   length = msg->msg_length;
   cur_token = 0;
-  
+
   while (1) {
     r = mailimf_ignore_field_parse(message, length, &cur_token);
     if (r == MAILIMF_NO_ERROR) {
@@ -258,19 +260,19 @@ int mailmessage_generic_fetch_header(mailmessage * msg_info,
       break;
   }
   mailimf_crlf_parse(message, length, &cur_token);
-  
+
   mmapstr = mmap_string_new_len(message, cur_token);
   if (mmapstr == NULL) {
     res = MAIL_ERROR_MEMORY;
     goto err;
   }
-  
+
   r = mmap_string_ref(mmapstr);
   if (r < 0) {
     res = MAIL_ERROR_MEMORY;
     goto free_mmap;
   }
-  
+
   headers = mmapstr->str;
 
   * result = headers;
@@ -368,6 +370,7 @@ mailmessage_generic_fetch_section(mailmessage * msg_info,
   MMAPString * mmapstr;
   int r;
   int res;
+  UNUSED(msg_info);
 
   mmapstr = mmap_string_new_len(mime->mm_body->dt_data.dt_text.dt_data,
 				mime->mm_body->dt_data.dt_text.dt_length);
@@ -403,6 +406,7 @@ mailmessage_generic_fetch_section_header(mailmessage * msg_info,
   int r;
   int res;
   size_t cur_token;
+  UNUSED(msg_info);
 
   /* skip mime */
 
@@ -419,7 +423,7 @@ mailmessage_generic_fetch_section_header(mailmessage * msg_info,
       else
 	break;
     }
-    
+
     r = mailimf_crlf_parse(mime->mm_body->dt_data.dt_text.dt_data,
         mime->mm_body->dt_data.dt_text.dt_length, &cur_token);
     if ((r != MAILIMF_NO_ERROR) && (r != MAILIMF_ERROR_PARSE)) {
@@ -462,11 +466,12 @@ mailmessage_generic_fetch_section_mime(mailmessage * msg_info,
   int r;
   int res;
   size_t cur_token;
+  UNUSED(msg_info);
 
   cur_token = 0;
 
   /* skip header */
-  
+
   while (1) {
     r = mailimf_ignore_field_parse(mime->mm_mime_start,
 				   mime->mm_length, &cur_token);
@@ -516,6 +521,7 @@ mailmessage_generic_fetch_section_body(mailmessage * msg_info,
   int r;
   int res;
   size_t cur_token;
+  UNUSED(msg_info);
 
   cur_token = 0;
 
@@ -532,7 +538,7 @@ mailmessage_generic_fetch_section_body(mailmessage * msg_info,
       else
 	break;
     }
-    
+
     r = mailimf_crlf_parse(mime->mm_body->dt_data.dt_text.dt_data,
         mime->mm_body->dt_data.dt_text.dt_length, &cur_token);
     if ((r != MAILIMF_NO_ERROR) && (r != MAILIMF_ERROR_PARSE)) {
@@ -580,9 +586,9 @@ int mailmessage_generic_fetch_envelope(mailmessage * msg_info,
     res = r;
     goto err;
   }
-  
+
   cur_token = 0;
-  
+
   r = mailimf_envelope_fields_parse(header, length, &cur_token,
 				    &fields);
   if (r != MAILIMF_NO_ERROR) {
@@ -592,7 +598,7 @@ int mailmessage_generic_fetch_envelope(mailmessage * msg_info,
   }
 
   mailmessage_fetch_result_free(msg_info, header);
-  
+
   * result = fields;
 
   return MAIL_NO_ERROR;
