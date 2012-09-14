@@ -80,6 +80,7 @@ int main(int argc, char** argv) {
   OXWS_TEST_ADD_SUITE(autodiscover);
 
   /* run tests */
+  CU_basic_set_mode(CU_BRM_VERBOSE);
   CU_basic_run_tests();
 
   /* clean up */
