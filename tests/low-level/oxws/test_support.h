@@ -48,12 +48,9 @@ extern "C" {
     return CU_get_error(); \
   }
 
-#define OXWS_TEST_DECLARE_SUITE(suite) \
-  CU_pSuite oxws_suite_##suite = NULL;
-
 #define OXWS_TEST_ADD_SUITE(suite) \
   { \
-    oxws_suite_##suite = CU_add_suite(#suite, NULL, NULL); \
+    CU_pSuite oxws_suite_##suite = CU_add_suite(#suite, NULL, NULL); \
     OXWS_TEST_CHECK_RESULT(oxws_suite_##suite == NULL); \
     oxws_suite_##suite##_add_tests(); \
   }

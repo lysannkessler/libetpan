@@ -62,9 +62,6 @@ void print_usage() {
 
 
 int main(int argc, char** argv) {
-  OXWS_TEST_DECLARE_SUITE(oxws);
-  OXWS_TEST_DECLARE_SUITE(autodiscover);
-
   int r = parse_options(argc, argv, &oxws_test_support_ca_file);
   if(r < 0) {
     fprintf(stderr, "parse_options: internal error\n");
