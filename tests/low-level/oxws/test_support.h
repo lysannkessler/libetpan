@@ -65,7 +65,13 @@ extern "C" {
   OXWS_TEST_CHECK_RESULT(CU_add_test(oxws_suite_##suite, #suite "." #test, oxws_suite_##suite##_test_##test) == NULL);
 
 
-#define OXWS_TEST_HOST "localhost:3000"
+#define OXWS_TEST_PARAM_HOST    "localhost:3000"
+#define OXWS_TEST_PARAM_EWS_URL "https://" OXWS_TEST_PARAM_HOST "/EWS/Exchange.asmx"
+
+#define OXWS_TEST_PARAM_USER     "" /* unused because the test server does not support authentication, but is required */
+#define OXWS_TEST_PARAM_PASSWORD "" /* unused because the test server does not support authentication, but is required */
+#define OXWS_TEST_PARAM_DOMAIN   NULL /* unused because the test server does not support authentication */
+#define OXWS_TEST_CONNECT_PARAMS OXWS_TEST_PARAM_USER, OXWS_TEST_PARAM_PASSWORD, OXWS_TEST_PARAM_DOMAIN
 
 
 extern char* oxws_test_support_ca_file;

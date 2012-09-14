@@ -66,18 +66,8 @@ OXWS_TEST_DECLARE_TEST(oxws, connect_invalid_ews_url_path);
   settings.as_url = ews_url; \
   CU_ASSERT_OXWS_NO_ERROR(oxws_set_connection_settings(oxws, &settings));
 
-
-#define OXWS_SUITE_OXWS_PARAM_EWS_URL "https://" OXWS_TEST_HOST "/EWS/Exchange.asmx"
 #define OXWS_SUITE_OXWS_PARAM_EWS_URL_INVALID_HOST "https://" "localhorst" "/EWS/Exchange.asmx"
-#define OXWS_SUITE_OXWS_PARAM_EWS_URL_INVALID_PATH "https://" OXWS_TEST_HOST "/EWS/invalid.asmx"
-
-#define OXWS_SUITE_OXWS_PARAM_USER     "" /* unused because the test server does not support authentication, but is required */
-#define OXWS_SUITE_OXWS_PARAM_PASSWORD "" /* unused because the test server does not support authentication, but is required */
-#define OXWS_SUITE_OXWS_PARAM_DOMAIN   NULL /* unused because the test server does not support authentication */
-#define OXWS_SUITE_OXWS_CONNECT_PARAMS \
-  OXWS_SUITE_OXWS_PARAM_USER, \
-  OXWS_SUITE_OXWS_PARAM_PASSWORD, \
-  OXWS_SUITE_OXWS_PARAM_DOMAIN
+#define OXWS_SUITE_OXWS_PARAM_EWS_URL_INVALID_PATH "https://" OXWS_TEST_PARAM_HOST "/EWS/invalid.asmx"
 
 
 #ifdef __cplusplus

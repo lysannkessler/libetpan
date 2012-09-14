@@ -56,11 +56,11 @@ OXWS_TEST_DECLARE_TEST(autodiscover, state);
 OXWS_TEST_DECLARE_TEST(autodiscover, invalid_params);
 
 
-#define OXWS_SUITE_AUTODISCOVER_PARAM_HOST     OXWS_TEST_HOST
+#define OXWS_SUITE_AUTODISCOVER_PARAM_HOST     OXWS_TEST_PARAM_HOST
 #define OXWS_SUITE_AUTODISCOVER_PARAM_EMAIL    "test.user@example.com"
-#define OXWS_SUITE_AUTODISCOVER_PARAM_USER     "" /* unused because the test server does not support authentication, but is required */
-#define OXWS_SUITE_AUTODISCOVER_PARAM_PASSWORD "" /* unused because the test server does not support authentication, but is required */
-#define OXWS_SUITE_AUTODISCOVER_PARAM_DOMAIN   NULL /* unused because the test server does not support authentication */
+#define OXWS_SUITE_AUTODISCOVER_PARAM_USER     OXWS_TEST_PARAM_USER
+#define OXWS_SUITE_AUTODISCOVER_PARAM_PASSWORD OXWS_TEST_PARAM_PASSWORD
+#define OXWS_SUITE_AUTODISCOVER_PARAM_DOMAIN   OXWS_TEST_PARAM_DOMAIN
 #define OXWS_SUITE_AUTODISCOVER_PARAMS_LIST \
   OXWS_SUITE_AUTODISCOVER_PARAM_HOST, \
   OXWS_SUITE_AUTODISCOVER_PARAM_EMAIL, \
