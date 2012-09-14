@@ -1,0 +1,39 @@
+xml.Envelope 'xmlns:soap' => 'http://schemas.xmlsoap.org/soap/envelope/',
+             'xmlns:xsi' => 'http://www.w3.org/2001/XMLSchema-instance',
+             'xmlns:xsd' => 'http://www.w3.org/2001/XMLSchema',
+             'xmlns:m' => 'http://schemas.microsoft.com/exchange/services/2006/messages',
+             'xmlns:t' => 'http://schemas.microsoft.com/exchange/services/2006/types' do
+  xml.parent.namespace = xml.parent.namespace_definitions.find{ |ns| ns.prefix == 'soap' }
+  xml['soap'].Header do
+    xml['t'].ServerVersionInfo :MajorVersion => 8, :MinorVersion => 3, :MajorBuildNumber => 279, :MinorBuildNumber => 1
+  end
+  xml['soap'].Body do
+    xml['m'].FindItemResponse do
+      xml['m'].ResponseMessages do
+        xml['m'].FindItemResponseMessage :ResponseClass => 'Success' do
+          xml['m'].ResponseCode 'NoError'
+          xml['m'].RootFolder :IndexedPagingOffset => 1, :TotalItemsInView => 5192, :IncludesLastItemInRange => 'false' do
+            xml['t'].Items do
+              xml['t'].Message do
+                xml['t'].ItemId :Id => 'AAAhAEx5c2Fubi5LZXNzbGVyQGhwaS51bmktcG90c2RhbS5kZQBGAAAAAAAOQP8UchHYRYW2kLdtztl9BwDi0v2At9wNQ4mCHb9pSDgCAAAAfDbSAACac5yph9kYRpDIsFsCUOP+ACTMQcdcAAA=',
+                                :ChangeKey => 'CQAAABYAAACac5yph9kYRpDIsFsCUOP+ACTMRWKT'
+                xml['t'].Subject 'Minecraft Server nun auf 1.3.2 [EOM]'
+                xml['t'].Sensitivity 'Normal'
+                xml['t'].Size 2226
+                xml['t'].DateTimeSent '2012-09-14T15:10:06Z'
+                xml['t'].DateTimeCreated '2012-09-14T15:10:13Z'
+                xml['t'].HasAttachments 'false'
+                xml['t'].From do
+                  xml['t'].Mailbox do
+                    xml['t'].Name 'Tobias Pape'
+                  end
+                end
+                xml['t'].IsRead 'true'
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+end

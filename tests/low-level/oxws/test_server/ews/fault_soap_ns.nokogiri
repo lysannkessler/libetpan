@@ -1,0 +1,14 @@
+xml.Envelope 'xmlns:soap' => 'http://www.w3.org/2003/05/soap-envelope' do
+  xml.parent.namespace = xml.parent.namespace_definitions.find{ |ns| ns.prefix == 'soap' }
+  xml['soap'].Body do
+    xml['soap'].Fault do
+      xml['soap'].Code do
+        xml['soap'].Value code
+      end
+      xml['soap'].Reason do
+        xml['soap'].Text({'xml:lang' => 'en'}, reason)
+      end
+      xml['soap'].Detail detail
+    end
+  end
+end

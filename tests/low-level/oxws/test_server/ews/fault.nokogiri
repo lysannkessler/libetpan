@@ -1,0 +1,10 @@
+xml.Envelope 'xmlns:soap' => 'http://schemas.xmlsoap.org/soap/envelope/' do
+  xml.parent.namespace = xml.parent.namespace_definitions.find{ |ns| ns.prefix == 'soap' }
+  xml['soap'].Body do
+    xml['soap'].Fault do
+      xml.faultcode code
+      xml.faultstring string
+      xml.detail detail
+    end
+  end
+end
