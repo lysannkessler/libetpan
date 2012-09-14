@@ -62,7 +62,7 @@ extern "C" {
   void oxws_suite_##suite##_test_##test()
 
 #define OXWS_TEST_ADD_TEST(suite, test) \
-  OXWS_TEST_CHECK_RESULT(CU_add_test(oxws_suite_##suite, #suite "." #test, oxws_suite_##suite##_test_##test) == NULL);
+  OXWS_TEST_CHECK_RESULT(CU_add_test(oxws_suite_##suite, #test, oxws_suite_##suite##_test_##test) == NULL);
 
 
 #define OXWS_TEST_PARAM_HOST    "localhost:3000"
