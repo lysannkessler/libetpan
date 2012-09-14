@@ -17,8 +17,10 @@
 #include <CUnit/Basic.h>
 
 #include "test_support.h"
-#include "autodiscover.h"
+
 #include "oxws.h"
+#include "autodiscover.h"
+#include "find_item.h"
 
 
 int parse_options(int argc, char** argv,
@@ -78,6 +80,7 @@ int main(int argc, char** argv) {
   /* add suites to the registry */
   OXWS_TEST_ADD_SUITE(oxws);
   OXWS_TEST_ADD_SUITE(autodiscover);
+  OXWS_TEST_ADD_SUITE(find_item);
 
   /* run tests */
   CU_basic_set_mode(CU_BRM_VERBOSE);

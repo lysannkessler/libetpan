@@ -34,62 +34,17 @@
 # include <config.h>
 #endif
 
-
-#include <CUnit/Basic.h>
-#include "test_support.h"
-
 #include <libetpan/libetpan.h>
-#include "../../../src/low-level/oxws/types_internal.h"
-
-#include <curl/curl.h>
+#include "find_item.h"
 
 
-#define OXWS_TEST_SUPPORT_CA_FILE_DEFAULT "test_server/cert/server.crt"
-char* oxws_test_support_ca_file = NULL;
+OXWS_TEST_DEFINE_TEST(find_item, basic) {
+  oxws* oxws = oxws_new_connected_for_testing();
 
+  /* test if find_item on inbox returns successfully */
+  carray* items = NULL;
+  CU_ASSERT_OXWS_NO_ERROR(oxws_find_item(oxws, OXWS_DISTFOLDER_INBOX, NULL, 1, &items));
+  oxws_item_array_free(items);
 
-void oxws_test_support_curl_init_callback(CURL* curl) {
-  if(curl == NULL) return; /* TODO warn */
-  curl_easy_setopt(curl, CURLOPT_CAINFO,
-    oxws_test_support_ca_file != NULL ? oxws_test_support_ca_file : OXWS_TEST_SUPPORT_CA_FILE_DEFAULT);
-}
-
-oxws_result oxws_test_support_set_curl_init_callback(oxws* oxws) {
-  if(oxws == NULL) return OXWS_ERROR_INVALID_PARAMETER;
-  if(oxws->state != OXWS_STATE_NEW) return OXWS_ERROR_BAD_STATE;
-
-  oxws_internal* internal = OXWS_INTERNAL(oxws);
-  if(internal == NULL) return OXWS_ERROR_INTERNAL;
-
-  internal->curl_init_callback = oxws_test_support_curl_init_callback;
-  return OXWS_NO_ERROR;
-}
-
-/* this function must use the original oxws_new, not the macro */
-#ifdef oxws_new
-#undef oxws_new
-oxws* oxws_new();
-#endif
-oxws* oxws_new_for_testing() {
-  oxws* oxws = oxws_new();
-  CU_ASSERT_PTR_NOT_NULL_FATAL(oxws);
-  CU_ASSERT_OXWS_NO_ERROR(oxws_test_support_set_curl_init_callback(oxws));
-  return oxws;
-}
-
-oxws* oxws_new_connected_for_testing() {
-  /* create instance */
-  oxws* result = oxws_new_for_testing();
-
-  if(result) {
-    /* set connection settings */
-    oxws_connection_settings settings; \
-    memset(&settings, 0, sizeof(settings)); \
-    settings.as_url = OXWS_TEST_PARAM_EWS_URL; \
-    CU_ASSERT_OXWS_NO_ERROR(oxws_set_connection_settings(result, &settings));
-
-    /* connect */
-    CU_ASSERT_OXWS_NO_ERROR(oxws_connect(result, OXWS_TEST_CONNECT_PARAMS));
-  }
-  return result;
+  oxws_free(oxws);
 }
