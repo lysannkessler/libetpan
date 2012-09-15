@@ -12,7 +12,7 @@ xml.Envelope 'xmlns:soap' => 'http://schemas.xmlsoap.org/soap/envelope/',
       xml['m'].ResponseMessages do
         xml['m'].FindItemResponseMessage :ResponseClass => 'Success' do
           xml['m'].ResponseCode 'NoError'
-          xml['m'].RootFolder :IndexedPagingOffset => 1, :TotalItemsInView => 5192, :IncludesLastItemInRange => 'false' do
+          xml['m'].RootFolder :IndexedPagingOffset => 1, :TotalItemsInView => 5, :IncludesLastItemInRange => true do
             xml['t'].Items do
               partial :item, :collection => items, :locals => { :xml => xml }
             end
