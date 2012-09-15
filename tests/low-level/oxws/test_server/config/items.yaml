@@ -1,0 +1,91 @@
+inbox:
+
+  - item_class: message
+    ItemId:
+      Id: 'AAAhAEx5c2Fubi5LZXNzbGVyQGhwaS51bmktcG90c2RhbS5kZQBGAAAAAAAOQP8UchHYRYW2kLdtztl9BwDi0v2At9wNQ4mCHb9pSDgCAAAAfDbSAACac5yph9kYRpDIsFsCUOP+ACTMQcdcAAA='
+      ChangeKey: 'CQAAABYAAACac5yph9kYRpDIsFsCUOP+ACTMRWKT'
+    Subject: 'Message 5'
+    Sensitivity: 'Normal'
+    Size: 2226
+    DateTimeSent: '2012-09-14T15:10:06Z'
+    DateTimeCreated: '2012-09-14T15:10:13Z'
+    HasAttachments: No
+    Sender:
+      Mailbox:
+        Name: 'Test User'
+    From:
+      Mailbox:
+        Name: 'Test User'
+    IsRead: No
+
+  - item_class: message
+    ItemId:
+      Id: 'AAAhAEx5c2Fubi5LZXNzbGVyQGhwaS51bmktcG90c2RhbS5kZQBGAAAAAAAOQP8UchHYRYW2kLdtztl9BwDi0v2At9wNQ4mCHb9pSDgCAAAAfDbSAACac5yph9kYRpDIsFsCUOP+ACTMQcdYAAA='
+      ChangeKey: 'CQAAABYAAACac5yph9kYRpDIsFsCUOP+ACTMQc9f'
+    Subject: 'Message 4'
+    Sensitivity: 'Normal'
+    Size: 2176
+    DateTimeSent: '2012-09-14T06:04:14Z'
+    DateTimeCreated: '2012-09-14T06:37:42Z'
+    HasAttachments: No
+    Sender:
+      Mailbox:
+        Name: 'Admin'
+    From:
+      Mailbox:
+        Name: 'Admin'
+    IsRead: Yes
+
+  - item_class: message
+    ItemId:
+      Id: 'AAAhAEx5c2Fubi5LZXNzbGVyQGhwaS51bmktcG90c2RhbS5kZQBGAAAAAAAOQP8UchHYRYW2kLdtztl9BwDi0v2At9wNQ4mCHb9pSDgCAAAAfDbSAACac5yph9kYRpDIsFsCUOP+ACTMQcdXAAA='
+      ChangeKey: 'CQAAABYAAACac5yph9kYRpDIsFsCUOP+ACTMQctX'
+    Subject: 'Message 3'
+    Sensitivity: 'Normal'
+    Size: 2164
+    DateTimeSent: '2012-09-14T06:04:41Z'
+    DateTimeCreated: '2012-09-14T06:37:26Z'
+    HasAttachments: No
+    Sender:
+      Mailbox:
+        Name: 'Admin'
+    From:
+      Mailbox:
+        Name: 'Admin'
+    IsRead: Yes
+
+  - item_class: message
+    ItemId:
+      Id: 'AAAhAEx5c2Fubi5LZXNzbGVyQGhwaS51bmktcG90c2RhbS5kZQBGAAAAAAAOQP8UchHYRYW2kLdtztl9BwDi0v2At9wNQ4mCHb9pSDgCAAAAfDbSAACac5yph9kYRpDIsFsCUOP+ACTKmHD4AAA='
+      ChangeKey: 'CQAAABYAAACac5yph9kYRpDIsFsCUOP+ACTKoTe3'
+    Subject: 'Message 2'
+    Sensitivity: 'Normal'
+    Size: 6803
+    DateTimeSent: '2012-09-13T18:51:38Z'
+    DateTimeCreated: '2012-09-13T18:49:57Z'
+    HasAttachments: No
+    Sender:
+      Mailbox:
+        Name: 'Test User 2'
+    From:
+      Mailbox:
+        Name: 'Test User 2'
+    IsRead: Yes
+
+  - item_class: message
+    ItemId:
+      Id: 'AAAhAEx5c2Fubi5LZXNzbGVyQGhwaS51bmktcG90c2RhbS5kZQBGAAAAAAAOQP8UchHYRYW2kLdtztl9BwDi0v2At9wNQ4mCHb9pSDgCAAAAfDbSAACac5yph9kYRpDIsFsCUOP+ACTKmHD2AAA='
+      ChangeKey: 'CQAAABYAAACac5yph9kYRpDIsFsCUOP+ACTKoSMq'
+    Subject: 'Message 1'
+    Sensitivity: 'Normal'
+    Size: 26976
+    DateTimeSent: '2012-09-13T13:04:06Z'
+    DateTimeCreated: '2012-09-13T13:04:07Z'
+    HasAttachments: No
+    Sender:
+      Mailbox:
+        Name: 'Test User 2'
+    From:
+      Mailbox:
+        Name: 'Test User 2'
+    IsRead: Yes
