@@ -1,16 +1,13 @@
 require 'rubygems'
 require 'sinatra/base'
 require 'nokogiri'
-require 'yaml'
+
+require File.expand_path(File.join('..', 'config', 'config'), File.dirname(__FILE__))
 
 module LibetpanTest
 module OXWS
 
 class Autodiscover < Sinatra::Base
-  def self.users
-    @@users ||= YAML.load_file File.expand_path('users.yaml', File.dirname(__FILE__))
-  end
-
   set :nokogiri, :views => File.dirname(__FILE__)
 
   @@route = '/autodiscover/autodiscover.xml'
@@ -29,7 +26,7 @@ class Autodiscover < Sinatra::Base
       return error_invalid_request
     end
 
-    user_info = self.class.users.find { |user| user['email'] == email_address }
+    user_info = Config.users.find { |user| user['email'] == email_address }
     if user_info
       nokogiri :success, :locals => {
         :user_info => user_info,
