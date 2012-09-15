@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'sinatra/base'
+require 'sinatra/partial'
 require 'nokogiri'
 
 require File.expand_path('find_item', File.dirname(__FILE__))
@@ -8,6 +9,10 @@ module LibetpanTest
 module OXWS
 
 class EWS < Sinatra::Base
+  register Sinatra::Partial
+  set :partial_template_engine, :nokogiri
+  enable :partial_underscores
+
   set :nokogiri, :views => File.dirname(__FILE__)
 
   get '/EWS/Exchange.asmx' do

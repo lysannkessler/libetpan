@@ -1,4 +1,4 @@
-require 'rubygems'
+require File.expand_path(File.join('..', 'config', 'config'), File.dirname(__FILE__))
 
 module LibetpanTest
 module OXWS
@@ -10,7 +10,7 @@ class FindItem
   end
 
   def handle(message_node)
-    return @ews.nokogiri :find_item
+    @ews.nokogiri :find_item, :locals => { :items => Config.items['inbox'] }
   end
 end
 
