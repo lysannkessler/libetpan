@@ -1,4 +1,4 @@
-xml['t'].send(item['item_class'].capitalize.to_sym) do
+xml['t'].send(item['class_id'].capitalize.to_sym) do
   xml['t'].ItemId(:Id => item['ItemId']['Id'], :ChangeKey => item['ItemId']['ChangeKey'])
   xml['t'].Subject item['Subject']
   xml['t'].Sensitivity item['Sensitivity']

@@ -1,6 +1,6 @@
 inbox:
 
-  - item_class: message
+  - class_id: message
     ItemId:
       Id: 'AAAhAEx5c2Fubi5LZXNzbGVyQGhwaS51bmktcG90c2RhbS5kZQBGAAAAAAAOQP8UchHYRYW2kLdtztl9BwDi0v2At9wNQ4mCHb9pSDgCAAAAfDbSAACac5yph9kYRpDIsFsCUOP+ACTMQcdcAAA='
       ChangeKey: 'CQAAABYAAACac5yph9kYRpDIsFsCUOP+ACTMRWKT'
@@ -18,7 +18,7 @@ inbox:
         Name: 'Test User'
     IsRead: No
 
-  - item_class: message
+  - class_id: message
     ItemId:
       Id: 'AAAhAEx5c2Fubi5LZXNzbGVyQGhwaS51bmktcG90c2RhbS5kZQBGAAAAAAAOQP8UchHYRYW2kLdtztl9BwDi0v2At9wNQ4mCHb9pSDgCAAAAfDbSAACac5yph9kYRpDIsFsCUOP+ACTMQcdYAAA='
       ChangeKey: 'CQAAABYAAACac5yph9kYRpDIsFsCUOP+ACTMQc9f'
@@ -36,7 +36,7 @@ inbox:
         Name: 'Admin'
     IsRead: Yes
 
-  - item_class: message
+  - class_id: message
     ItemId:
       Id: 'AAAhAEx5c2Fubi5LZXNzbGVyQGhwaS51bmktcG90c2RhbS5kZQBGAAAAAAAOQP8UchHYRYW2kLdtztl9BwDi0v2At9wNQ4mCHb9pSDgCAAAAfDbSAACac5yph9kYRpDIsFsCUOP+ACTMQcdXAAA='
       ChangeKey: 'CQAAABYAAACac5yph9kYRpDIsFsCUOP+ACTMQctX'
@@ -54,7 +54,7 @@ inbox:
         Name: 'Admin'
     IsRead: Yes
 
-  - item_class: message
+  - class_id: message
     ItemId:
       Id: 'AAAhAEx5c2Fubi5LZXNzbGVyQGhwaS51bmktcG90c2RhbS5kZQBGAAAAAAAOQP8UchHYRYW2kLdtztl9BwDi0v2At9wNQ4mCHb9pSDgCAAAAfDbSAACac5yph9kYRpDIsFsCUOP+ACTKmHD4AAA='
       ChangeKey: 'CQAAABYAAACac5yph9kYRpDIsFsCUOP+ACTKoTe3'
@@ -72,7 +72,7 @@ inbox:
         Name: 'Test User 2'
     IsRead: Yes
 
-  - item_class: message
+  - class_id: message
     ItemId:
       Id: 'AAAhAEx5c2Fubi5LZXNzbGVyQGhwaS51bmktcG90c2RhbS5kZQBGAAAAAAAOQP8UchHYRYW2kLdtztl9BwDi0v2At9wNQ4mCHb9pSDgCAAAAfDbSAACac5yph9kYRpDIsFsCUOP+ACTKmHD2AAA='
       ChangeKey: 'CQAAABYAAACac5yph9kYRpDIsFsCUOP+ACTKoSMq'
