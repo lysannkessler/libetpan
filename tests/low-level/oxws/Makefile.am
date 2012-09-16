@@ -18,7 +18,7 @@ test_oxws_LDADD = $(top_srcdir)/src/libetpan.la \
 
 # test_support depends on libcurl and libxml
 noinst_LTLIBRARIES = libtest_oxws_support.la
-libtest_oxws_support_la_SOURCES = test_support.c
+libtest_oxws_support_la_SOURCES = test_support.c test_data.c
 libtest_oxws_support_la_CFLAGS = $(WERROR) \
   -I$(top_builddir)/include \
   $(LIBCURL_CPPFLAGS) $(LIBXML2_CFLAGS) \

@@ -30,61 +30,18 @@
  * SUCH DAMAGE.
  */
 
-#ifndef OXWS_TEST_SUPPORT_H
-#define OXWS_TEST_SUPPORT_H
+#ifndef OXWS_TEST_DATA_H
+#define OXWS_TEST_DATA_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <libetpan/oxws_types.h>
 
-#include "assert.h"
-#include "test_data.h"
+#include <libetpan/libetpan.h>
 
 
-#define OXWS_TEST_CHECK_RESULT(error_condition) \
-  if(error_condition) { \
-    CU_cleanup_registry(); \
-    return CU_get_error(); \
-  }
-
-#define OXWS_TEST_ADD_SUITE(suite) \
-  { \
-    CU_pSuite oxws_suite_##suite = CU_add_suite(#suite, NULL, NULL); \
-    OXWS_TEST_CHECK_RESULT(oxws_suite_##suite == NULL); \
-    oxws_suite_##suite##_add_tests(); \
-  }
-
-#define OXWS_TEST_DECLARE_TEST(suite, test) \
-  void oxws_suite_##suite##_test_##test()
-
-#define OXWS_TEST_DEFINE_TEST(suite, test) \
-  void oxws_suite_##suite##_test_##test()
-
-#define OXWS_TEST_ADD_TEST(suite, test) \
-  OXWS_TEST_CHECK_RESULT(CU_add_test(oxws_suite_##suite, #test, oxws_suite_##suite##_test_##test) == NULL);
-
-
-#define OXWS_TEST_PARAM_HOST    "localhost:3000"
-#define OXWS_TEST_PARAM_EWS_URL "https://" OXWS_TEST_PARAM_HOST "/EWS/Exchange.asmx"
-
-#define OXWS_TEST_PARAM_USER     "" /* unused because the test server does not support authentication, but is required */
-#define OXWS_TEST_PARAM_PASSWORD "" /* unused because the test server does not support authentication, but is required */
-#define OXWS_TEST_PARAM_DOMAIN   NULL /* unused because the test server does not support authentication */
-#define OXWS_TEST_CONNECT_PARAMS OXWS_TEST_PARAM_USER, OXWS_TEST_PARAM_PASSWORD, OXWS_TEST_PARAM_DOMAIN
-
-
-extern char* oxws_test_support_ca_file;
-oxws_result oxws_test_support_set_curl_init_callback(oxws* oxws);
-
-/* wrap oxws_new in order to register curl init callback */
-#ifdef LIBETPAN_TEST_MODE
-oxws* oxws_new_for_testing();
-#define oxws_new oxws_new_for_testing
-#endif
-
-oxws* oxws_new_connected_for_testing();
+int oxws_test_data_num_items_in(oxws_distinguished_folder_id distfolder_id, const char* folder_id);
 
 
 #ifdef __cplusplus
