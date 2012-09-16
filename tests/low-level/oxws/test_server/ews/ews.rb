@@ -26,14 +26,17 @@ class EWS < Sinatra::Base
 
   post '/EWS/Exchange.asmx', :provides => :xml do
     begin
+      # find SOAP envelope and body
       request_document = Nokogiri::XML.parse request.body
       body = request_document.xpath('/soap:Envelope/soap:Body', 'soap' => 'http://schemas.xmlsoap.org/soap/envelope/')
       return error(:type => :fault_soap_ns, :string => 'Root element or SOAP body is missing.') if body.empty?
+      # find SOAP action and determine handler
       handler = nil
-      if body.children.count > 0
-        message = body.children.first
-        if message.namespace.href == 'http://schemas.microsoft.com/exchange/services/2006/messages'
-          handler = self.handler(message)
+      message = body.xpath('./*') # this gets rid of text and comments
+      if message.count > 0
+        message = message.first
+        if message.namespace && message.namespace.href == 'http://schemas.microsoft.com/exchange/services/2006/messages'
+          handler = Handlers.handler(self, message)
         end
       end
       return error('Unable to handle request without a valid action parameter. Please supply a valid soap action.') if handler.nil?
