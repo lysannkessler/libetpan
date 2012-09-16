@@ -106,31 +106,6 @@ extern "C" {
 
 #define OXWS_TEST_DATA_GET_EXPECTED_ITEM_ATTR(folder, item_index, attr) \
   OXWS_TEST_DATA_##folder##_ITEM_##item_index##_##attr
-#define OXWS_TEST_DATA_ASSERT_EQUAL(folder, item_index, item, attr, expected_attr, type) \
-  CU_ASSERT_##type##_EQUAL(item->attr, OXWS_TEST_DATA_GET_EXPECTED_ITEM_ATTR(folder, item_index, expected_attr))
-#define OXWS_TEST_DATA_CHECK_ITEM_(folder, item_index, item) \
-  { \
-    OXWS_TEST_DATA_ASSERT_EQUAL(folder, item_index, item, class_id, CLASS_ID, NUMBER); \
-    CU_ASSERT_PTR_NOT_NULL(item->item_id); \
-    OXWS_TEST_DATA_ASSERT_EQUAL(folder, item_index, item, item_id->id, ITEM_ID, STRING); \
-    OXWS_TEST_DATA_ASSERT_EQUAL(folder, item_index, item, item_id->change_key, CHANGE_KEY, STRING); \
-    OXWS_TEST_DATA_ASSERT_EQUAL(folder, item_index, item, subject, SUBJECT, STRING); \
-    /* TODO Sensitivity */ \
-    OXWS_TEST_DATA_ASSERT_EQUAL(folder, item_index, item, size, SIZE, NUMBER); \
-    /* TODO DateTimeSent, DateTimeCreated, HasAttachments */ \
-    switch(item->class_id) { \
-      case OXWS_ITEM_CLASS_MESSAGE: \
-        CU_ASSERT_PTR_NOT_NULL(((oxws_message*)item)->sender); \
-        OXWS_TEST_DATA_ASSERT_EQUAL(folder, item_index, ((oxws_message*)item), sender->name, SENDER_MAILBOX_NAME, STRING); \
-        CU_ASSERT_PTR_NOT_NULL(((oxws_message*)item)->from); \
-        OXWS_TEST_DATA_ASSERT_EQUAL(folder, item_index, ((oxws_message*)item), from->name, FROM_MAILBOX_NAME, STRING); \
-        OXWS_TEST_DATA_ASSERT_EQUAL(folder, item_index, ((oxws_message*)item), is_read, IS_READ, NUMBER); \
-        break; \
-      case OXWS_ITEM_CLASS_ITEM: \
-      default: \
-        break; \
-    } \
-  }
 
 
 int oxws_test_data_num_items_in(oxws_distinguished_folder_id distfolder_id, const char* folder_id);
