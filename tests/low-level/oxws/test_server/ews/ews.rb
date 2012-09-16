@@ -3,7 +3,7 @@ require 'sinatra/base'
 require 'sinatra/partial'
 require 'nokogiri'
 
-require File.expand_path('find_item', File.dirname(__FILE__))
+require File.expand_path('handlers', File.dirname(__FILE__))
 
 module LibetpanTest
 module OXWS
@@ -45,13 +45,6 @@ class EWS < Sinatra::Base
     end
 
     return handler.handle(message)
-  end
-
-  def handler(message_node)
-    return case message_node.name
-    when 'FindItem' then Handlers::FindItem.new(self)
-    else nil
-    end
   end
 
   def error(options = {})

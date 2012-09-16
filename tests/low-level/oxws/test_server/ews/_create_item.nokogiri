@@ -1,0 +1,3 @@
+xml['m'].Items do
+  partial :item, :collection => items, :locals => { :xml => xml }
+end

@@ -1,20 +1,26 @@
 xml['t'].send(item['class_id'].capitalize.to_sym) do
-  xml['t'].ItemId(:Id => item['ItemId']['Id'], :ChangeKey => item['ItemId']['ChangeKey'])
-  xml['t'].Subject item['Subject']
-  xml['t'].Sensitivity item['Sensitivity']
-  xml['t'].Size item['Size']
-  xml['t'].DateTimeSent item['DateTimeSent']
-  xml['t'].DateTimeCreated item['DateTimeCreated']
-  xml['t'].HasAttachments item['HasAttachments']
-  xml['t'].Sender do
-    xml['t'].Mailbox do
-      xml['t'].Name item['Sender']['Mailbox']['Name']
+  if item.has_key? 'ItemId'
+    xml['t'].ItemId(:Id => item['ItemId']['Id'], :ChangeKey => item['ItemId']['ChangeKey'])
+  end
+  xml['t'].Subject item['Subject'] if item.has_key? 'Subject'
+  xml['t'].Sensitivity item['Sensitivity'] if item.has_key? 'Sensitivity'
+  xml['t'].Size item['Size'] if item.has_key? 'Size'
+  xml['t'].DateTimeSent item['DateTimeSent'] if item.has_key? 'DateTimeSent'
+  xml['t'].DateTimeCreated item['DateTimeCreated'] if item.has_key? 'DateTimeCreated'
+  xml['t'].HasAttachments item['HasAttachments'] if item.has_key? 'HasAttachments'
+  if item.has_key? 'Sender'
+    xml['t'].Sender do
+      xml['t'].Mailbox do
+        xml['t'].Name item['Sender']['Mailbox']['Name']
+      end
     end
   end
-  xml['t'].From do
-    xml['t'].Mailbox do
-      xml['t'].Name item['From']['Mailbox']['Name']
+  if item.has_key? 'From'
+    xml['t'].From do
+      xml['t'].Mailbox do
+        xml['t'].Name item['From']['Mailbox']['Name']
+      end
     end
   end
-  xml['t'].IsRead item['IsRead']
+  xml['t'].IsRead item['IsRead'] if item.has_key? 'IsRead'
 end
