@@ -21,6 +21,7 @@
 #include "oxws.h"
 #include "autodiscover.h"
 #include "find_item.h"
+#include "create_item.h"
 
 
 int parse_options(int argc, char** argv,
@@ -81,6 +82,7 @@ int main(int argc, char** argv) {
   OXWS_TEST_ADD_SUITE(oxws);
   OXWS_TEST_ADD_SUITE(autodiscover);
   OXWS_TEST_ADD_SUITE(find_item);
+  OXWS_TEST_ADD_SUITE(create_item);
 
   /* run tests */
   CU_basic_set_mode(CU_BRM_VERBOSE);

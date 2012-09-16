@@ -30,8 +30,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef OXWS_TEST_FIND_ITEM_H
-#define OXWS_TEST_FIND_ITEM_H
+#ifndef OXWS_TEST_CREATE_ITEM_H
+#define OXWS_TEST_CREATE_ITEM_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,16 +42,12 @@ extern "C" {
 #include "test_support.h"
 
 
-#define oxws_test_suite_find_item_add_tests() \
+#define oxws_test_suite_create_item_add_tests() \
   { \
-    OXWS_TEST_ADD_TEST(find_item, basic); \
-    OXWS_TEST_ADD_TEST(find_item, returns_list); \
-    OXWS_TEST_ADD_TEST(find_item, returns_correct_items); \
+    OXWS_TEST_ADD_TEST(create_item, basic); \
   }
 
-OXWS_TEST_DECLARE_TEST(find_item, basic);
-OXWS_TEST_DECLARE_TEST(find_item, returns_list);
-OXWS_TEST_DECLARE_TEST(find_item, returns_correct_items);
+OXWS_TEST_DECLARE_TEST(create_item, basic);
 
 
 #ifdef __cplusplus

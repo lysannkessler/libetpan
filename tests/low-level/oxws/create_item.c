@@ -30,32 +30,30 @@
  * SUCH DAMAGE.
  */
 
-#ifndef OXWS_TEST_FIND_ITEM_H
-#define OXWS_TEST_FIND_ITEM_H
-
-#ifdef __cplusplus
-extern "C" {
+#ifdef HAVE_CONFIG_H
+# include <config.h>
 #endif
 
-
-#include <CUnit/Basic.h>
-#include "test_support.h"
-
-
-#define oxws_test_suite_find_item_add_tests() \
-  { \
-    OXWS_TEST_ADD_TEST(find_item, basic); \
-    OXWS_TEST_ADD_TEST(find_item, returns_list); \
-    OXWS_TEST_ADD_TEST(find_item, returns_correct_items); \
-  }
-
-OXWS_TEST_DECLARE_TEST(find_item, basic);
-OXWS_TEST_DECLARE_TEST(find_item, returns_list);
-OXWS_TEST_DECLARE_TEST(find_item, returns_correct_items);
+#include <libetpan/libetpan.h>
+#include "create_item.h"
 
 
-#ifdef __cplusplus
+OXWS_TEST_DEFINE_TEST(create_item, basic) {
+  oxws* oxws = oxws_new_connected_for_testing();
+  carray* items = NULL;
+
+  /* test if create_item returns successfully */
+  oxws_message* message = oxws_message_new();
+  oxws_item_set_subject_cstring((oxws_item*) message, "[libetpan test] message from oxws-sample");
+  oxws_item_set_body_fields_cstring((oxws_item*) message,
+          "This is just another email sent using libetpan's Exchange implementation.\n",
+          OXWS_BODY_TYPE_TEXT);
+  message->to_recipients = carray_new(1);
+  oxws_email_address* address = oxws_email_address_new();
+  oxws_email_address_set_email_address(address, "test.user2@example.com");
+  carray_add(message->to_recipients, address, NULL);
+  CU_ASSERT_OXWS_NO_ERROR(oxws_create_item(oxws, (oxws_item*) message, OXWS_MESSAGE_DISPOSITION_SEND_AND_SAVE_COPY, OXWS_DISTFOLDER_SENTITEMS, NULL));
+
+  oxws_item_array_free(items);
+  oxws_free(oxws);
 }
-#endif
-
-#endif
