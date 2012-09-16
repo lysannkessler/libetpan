@@ -30,7 +30,7 @@ class FindItem
     items = all_items[items_start..items_end] || []
     items.reverse! if reverse_search
 
-    @ews.nokogiri :find_item, :locals => {
+    @ews.render_response :find_item, :locals => {
       :indexed_paging_offset => offset,
       :total_items_in_view => all_items.count,
       :includes_last_item_in_range => items_end >= all_items.count - 1,

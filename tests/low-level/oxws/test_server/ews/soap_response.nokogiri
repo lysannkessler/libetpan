@@ -8,17 +8,11 @@ xml.Envelope 'xmlns:soap' => 'http://schemas.xmlsoap.org/soap/envelope/',
     xml['t'].ServerVersionInfo :MajorVersion => 8, :MinorVersion => 3, :MajorBuildNumber => 279, :MinorBuildNumber => 1
   end
   xml['soap'].Body do
-    xml['m'].FindItemResponse do
+    xml['m'].send(response_name.to_sym) do
       xml['m'].ResponseMessages do
-        xml['m'].FindItemResponseMessage :ResponseClass => 'Success' do
+        xml['m'].send(response_message_name.to_sym, :ResponseClass => 'Success') do
           xml['m'].ResponseCode 'NoError'
-          xml['m'].RootFolder :IndexedPagingOffset => indexed_paging_offset,
-                              :TotalItemsInView => total_items_in_view,
-                              :IncludesLastItemInRange => includes_last_item_in_range do
-            xml['t'].Items do
-              partial :item, :collection => items, :locals => { :xml => xml }
-            end
-          end
+          partial template_name, :locals => template_locals.merge({:xml => xml})
         end
       end
     end

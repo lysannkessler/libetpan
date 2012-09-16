@@ -69,6 +69,15 @@ class EWS < Sinatra::Base
     status 500
     nokogiri type, :locals => locals
   end
+
+  def render_response(template, options)
+    template_camel_case = template.to_s.split('_').map{|e| e.capitalize}.join
+    locals = { :response_name => template_camel_case + 'Response',
+               :response_message_name => template_camel_case + 'ResponseMessage',
+               :template_name => template,
+               :template_locals => options[:locals] }
+    nokogiri :soap_response, :locals => locals
+  end
 end
 
 end

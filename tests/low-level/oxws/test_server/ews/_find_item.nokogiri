@@ -1,0 +1,7 @@
+xml['m'].RootFolder :IndexedPagingOffset => indexed_paging_offset,
+                    :TotalItemsInView => total_items_in_view,
+                    :IncludesLastItemInRange => includes_last_item_in_range do
+  xml['t'].Items do
+    partial :item, :collection => items, :locals => { :xml => xml }
+  end
+end
