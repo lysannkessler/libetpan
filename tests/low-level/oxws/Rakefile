@@ -59,11 +59,16 @@ end
 
 namespace 'tests' do
   desc 'run all tests'
-  task 'run' do
+  task 'run', :prefix do |t, args|
     main_path = File.dirname(__FILE__)
+    executable = if args[:prefix]
+      File.expand_path(File.join(args[:prefix], 'share', 'libetpan', 'tests', 'low-level', 'test_oxws'), Dir.pwd)
+    else
+      File.expand_path('test_oxws', main_path)
+    end
     ssl_cert = File.expand_path(File.join('test_server', 'cert', 'server.crt'), main_path)
     command = [
-      File.expand_path('test_oxws', main_path),
+      File.expand_path(executable, main_path),
       "--ssl-cert \"#{ssl_cert}\""
     ].flatten.compact.join(' ')
     sh *command
@@ -71,17 +76,17 @@ namespace 'tests' do
 end
 
 desc 'start test server and perform all tests'
-task 'run' do
+task 'run', :prefix do |t, args|
   begin
     puts '### Starting test server ...'
     Rake::Task['test_server:start'].invoke
     sleep 1
-    puts
 
-    puts '### Running tests ...'
-    Rake::Task['tests:run'].invoke
     puts
+    puts '### Running tests ...'
+    Rake::Task['tests:run'].invoke(args[:prefix])
   ensure
+    puts
     puts '### Shutting down test server ...'
     Rake::Task['test_server:stop'].invoke
   end
