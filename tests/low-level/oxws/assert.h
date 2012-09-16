@@ -37,6 +37,7 @@
 extern "C" {
 #endif
 
+#include <CUnit/CUnit.h>
 #include <libetpan/oxws_types.h>
 
 

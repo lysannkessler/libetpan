@@ -39,8 +39,7 @@ extern "C" {
 
 #include <libetpan/oxws_types.h>
 
-#include "assert.h"
-#include "test_data.h"
+/* note: assert.h and test_data.h included at bottom */
 
 
 #define OXWS_TEST_CHECK_RESULT(error_condition) \
@@ -85,6 +84,10 @@ oxws* oxws_new_for_testing();
 #endif
 
 oxws* oxws_new_connected_for_testing();
+
+
+#include "assert.h"
+#include "test_data.h"
 
 
 #ifdef __cplusplus

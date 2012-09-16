@@ -34,8 +34,8 @@
 # include <config.h>
 #endif
 
-#include <CUnit/Basic.h>
 #include "test_data.h"
+#include "test_support.h"
 
 
 int oxws_test_data_num_items_in(oxws_distinguished_folder_id distfolder_id, const char* folder_id) {
