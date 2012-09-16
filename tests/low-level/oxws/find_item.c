@@ -59,6 +59,20 @@ OXWS_TEST_DEFINE_TEST(find_item, returns_list) {
   CU_ASSERT_NUMBER_EQUAL(items->len, oxws_test_data_num_items_in(OXWS_DISTFOLDER_INBOX, NULL));
 
   oxws_item_array_free(items);
+  oxws_free(oxws);
+}
 
+OXWS_TEST_DEFINE_TEST(find_item, returns_correct_items) {
+  oxws* oxws = oxws_new_connected_for_testing();
+  carray* items = NULL;
+
+  /* test if find_item returns all items as expected */
+  oxws_find_item(oxws, OXWS_DISTFOLDER_INBOX, NULL, OXWS_TEST_DATA_MAX_NUM_ITEMS, &items);
+  unsigned int i;
+  for(i = 0; i < items->len; i++) {
+    oxws_test_data_check_item(OXWS_DISTFOLDER_INBOX, NULL, i, carray_get(items, i));
+  }
+
+  oxws_item_array_free(items);
   oxws_free(oxws);
 }

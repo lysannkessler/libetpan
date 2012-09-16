@@ -46,10 +46,12 @@ extern "C" {
   { \
     OXWS_TEST_ADD_TEST(find_item, basic); \
     OXWS_TEST_ADD_TEST(find_item, returns_list); \
+    OXWS_TEST_ADD_TEST(find_item, returns_correct_items); \
   }
 
 OXWS_TEST_DECLARE_TEST(find_item, basic);
 OXWS_TEST_DECLARE_TEST(find_item, returns_list);
+OXWS_TEST_DECLARE_TEST(find_item, returns_correct_items);
 
 #ifdef __cplusplus
 }

@@ -50,3 +50,21 @@ int oxws_test_data_num_items_in(oxws_distinguished_folder_id distfolder_id, cons
   }
   return -1;
 }
+
+void oxws_test_data_check_item(oxws_distinguished_folder_id distfolder_id, const char* folder_id,
+        unsigned int item_index, oxws_item* item) {
+  UNUSED(folder_id);
+
+  switch(distfolder_id) {
+    case OXWS_DISTFOLDER_INBOX:
+      switch(item_index) {
+        case 0: OXWS_TEST_DATA_CHECK_ITEM_(INBOX, 0, item); break;
+        case 1: OXWS_TEST_DATA_CHECK_ITEM_(INBOX, 1, item); break;
+        case 2: OXWS_TEST_DATA_CHECK_ITEM_(INBOX, 2, item); break;
+        case 3: OXWS_TEST_DATA_CHECK_ITEM_(INBOX, 3, item); break;
+        case 4: OXWS_TEST_DATA_CHECK_ITEM_(INBOX, 4, item); break;
+      }
+
+    default: CU_FAIL_FATAL("test error: not implemented for given folder id");
+  }
+}
