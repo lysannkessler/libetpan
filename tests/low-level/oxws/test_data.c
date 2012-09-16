@@ -39,9 +39,14 @@
 
 
 int oxws_test_data_num_items_in(oxws_distinguished_folder_id distfolder_id, const char* folder_id) {
+  UNUSED(folder_id);
+
   switch(distfolder_id) {
-    case OXWS_DISTFOLDER_INBOX: return 5;
-    default: CU_FAIL_FATAL("test error: not implemented for given folder id");
+    case OXWS_DISTFOLDER_INBOX:
+      return 5;
+    default:
+      CU_FAIL_FATAL("test error: not implemented for given folder id");
+      break;
   }
   return -1;
 }

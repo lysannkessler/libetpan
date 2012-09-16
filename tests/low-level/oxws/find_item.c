@@ -40,24 +40,24 @@
 
 OXWS_TEST_DEFINE_TEST(find_item, basic) {
   oxws* oxws = oxws_new_connected_for_testing();
+  carray* items = NULL;
 
   /* test if find_item on inbox returns successfully */
-  carray* items = NULL;
   CU_ASSERT_OXWS_NO_ERROR(oxws_find_item(oxws, OXWS_DISTFOLDER_INBOX, NULL, 1, &items));
-  oxws_item_array_free(items);
 
+  oxws_item_array_free(items);
   oxws_free(oxws);
 }
 
 OXWS_TEST_DEFINE_TEST(find_item, returns_list) {
   oxws* oxws = oxws_new_connected_for_testing();
+  carray* items = NULL;
 
   /* test if find_item creates a result list of expected size */
-  int num_items = oxws_test_data_num_items_in(OXWS_DISTFOLDER_INBOX, NULL);
-  carray* items = NULL;
-  oxws_find_item(oxws, OXWS_DISTFOLDER_INBOX, NULL, num_items, &items);
+  oxws_find_item(oxws, OXWS_DISTFOLDER_INBOX, NULL, OXWS_TEST_DATA_MAX_NUM_ITEMS, &items);
   CU_ASSERT_PTR_NOT_NULL(items);
-  CU_ASSERT_NUMBER_EQUAL(items->len, num_items);
+  CU_ASSERT_NUMBER_EQUAL(items->len, oxws_test_data_num_items_in(OXWS_DISTFOLDER_INBOX, NULL));
+
   oxws_item_array_free(items);
 
   oxws_free(oxws);
