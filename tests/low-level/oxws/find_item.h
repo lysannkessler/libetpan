@@ -45,9 +45,11 @@ extern "C" {
 #define oxws_suite_find_item_add_tests() \
   { \
     OXWS_TEST_ADD_TEST(find_item, basic); \
+    OXWS_TEST_ADD_TEST(find_item, returns_list); \
   }
 
 OXWS_TEST_DECLARE_TEST(find_item, basic);
+OXWS_TEST_DECLARE_TEST(find_item, returns_list);
 
 #ifdef __cplusplus
 }

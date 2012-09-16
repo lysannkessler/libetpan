@@ -48,3 +48,17 @@ OXWS_TEST_DEFINE_TEST(find_item, basic) {
 
   oxws_free(oxws);
 }
+
+OXWS_TEST_DEFINE_TEST(find_item, returns_list) {
+  oxws* oxws = oxws_new_connected_for_testing();
+
+  /* test if find_item creates a result list of expected size */
+  int num_items = oxws_test_data_num_items_in(OXWS_DISTFOLDER_INBOX, NULL);
+  carray* items = NULL;
+  oxws_find_item(oxws, OXWS_DISTFOLDER_INBOX, NULL, num_items, &items);
+  CU_ASSERT_PTR_NOT_NULL(items);
+  CU_ASSERT_NUMBER_EQUAL(items->len, num_items);
+  oxws_item_array_free(items);
+
+  oxws_free(oxws);
+}
