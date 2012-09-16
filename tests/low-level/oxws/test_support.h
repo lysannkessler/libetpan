@@ -48,21 +48,21 @@ extern "C" {
     return CU_get_error(); \
   }
 
+#define OXWS_TEST_SUITE_FQN(suite) oxws_test_suite_##suite
+#define OXWS_TEST_TEST_FQN(suite, test) oxws_test_suite_##suite##_test_##test
+
 #define OXWS_TEST_ADD_SUITE(suite) \
   { \
-    CU_pSuite oxws_suite_##suite = CU_add_suite(#suite, NULL, NULL); \
-    OXWS_TEST_CHECK_RESULT(oxws_suite_##suite == NULL); \
-    oxws_suite_##suite##_add_tests(); \
+    CU_pSuite OXWS_TEST_SUITE_FQN(suite) = CU_add_suite(#suite, NULL, NULL); \
+    OXWS_TEST_CHECK_RESULT(OXWS_TEST_SUITE_FQN(suite) == NULL); \
+    oxws_test_suite_##suite##_add_tests(); \
   }
 
-#define OXWS_TEST_DECLARE_TEST(suite, test) \
-  void oxws_suite_##suite##_test_##test()
-
-#define OXWS_TEST_DEFINE_TEST(suite, test) \
-  void oxws_suite_##suite##_test_##test()
+#define OXWS_TEST_DECLARE_TEST(suite, test) void OXWS_TEST_TEST_FQN(suite, test)()
+#define OXWS_TEST_DEFINE_TEST(suite, test)  void OXWS_TEST_TEST_FQN(suite, test)()
 
 #define OXWS_TEST_ADD_TEST(suite, test) \
-  OXWS_TEST_CHECK_RESULT(CU_add_test(oxws_suite_##suite, #test, oxws_suite_##suite##_test_##test) == NULL);
+  OXWS_TEST_CHECK_RESULT(CU_add_test(OXWS_TEST_SUITE_FQN(suite), #test, OXWS_TEST_TEST_FQN(suite, test)) == NULL);
 
 
 #define OXWS_TEST_PARAM_HOST    "localhost:3000"

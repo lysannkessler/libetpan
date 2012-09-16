@@ -53,7 +53,7 @@ OXWS_TEST_DEFINE_TEST(oxws, new) {
 OXWS_TEST_DEFINE_TEST(oxws, set_connection_settings) {
   oxws* oxws = oxws_new();
 
-  OXWS_SUITE_OXWS_SET_CONNECTION_SETTINGS(OXWS_TEST_PARAM_EWS_URL);
+  OXWS_TEST_SUITE_OXWS_SET_CONNECTION_SETTINGS(OXWS_TEST_PARAM_EWS_URL);
   CU_ASSERT_NUMBER_EQUAL(oxws->state, OXWS_STATE_CONNECTION_SETTINGS_CONFIGURED);
 
   oxws_free(oxws);
@@ -62,7 +62,7 @@ OXWS_TEST_DEFINE_TEST(oxws, set_connection_settings) {
 OXWS_TEST_DEFINE_TEST(oxws, connect_after_set_connection_settings) {
   oxws* oxws = oxws_new();
 
-  OXWS_SUITE_OXWS_SET_CONNECTION_SETTINGS(OXWS_TEST_PARAM_EWS_URL);
+  OXWS_TEST_SUITE_OXWS_SET_CONNECTION_SETTINGS(OXWS_TEST_PARAM_EWS_URL);
   CU_ASSERT_OXWS_NO_ERROR(oxws_connect(oxws, OXWS_TEST_CONNECT_PARAMS));
 
   oxws_free(oxws);
@@ -71,7 +71,7 @@ OXWS_TEST_DEFINE_TEST(oxws, connect_after_set_connection_settings) {
 OXWS_TEST_DEFINE_TEST(oxws, connect_after_autodiscover) {
   oxws* oxws = oxws_new();
 
-  CU_ASSERT_OXWS_NO_ERROR(oxws_autodiscover_connection_settings(oxws, OXWS_SUITE_AUTODISCOVER_PARAMS_LIST));
+  CU_ASSERT_OXWS_NO_ERROR(oxws_autodiscover_connection_settings(oxws, OXWS_TEST_SUITE_AUTODISCOVER_PARAMS_LIST));
   CU_ASSERT_OXWS_NO_ERROR(oxws_connect(oxws, OXWS_TEST_CONNECT_PARAMS));
 
   oxws_free(oxws);
@@ -80,7 +80,7 @@ OXWS_TEST_DEFINE_TEST(oxws, connect_after_autodiscover) {
 OXWS_TEST_DEFINE_TEST(oxws, connect_invalid_ews_url_host) {
   oxws* oxws = oxws_new();
 
-  OXWS_SUITE_OXWS_SET_CONNECTION_SETTINGS(OXWS_SUITE_OXWS_PARAM_EWS_URL_INVALID_HOST);
+  OXWS_TEST_SUITE_OXWS_SET_CONNECTION_SETTINGS(OXWS_TEST_SUITE_OXWS_PARAM_EWS_URL_INVALID_HOST);
   CU_ASSERT_OXWS_RESULT_EQUAL(oxws_connect(oxws, OXWS_TEST_CONNECT_PARAMS), OXWS_ERROR_CONNECT);
 
   oxws_free(oxws);
@@ -89,7 +89,7 @@ OXWS_TEST_DEFINE_TEST(oxws, connect_invalid_ews_url_host) {
 OXWS_TEST_DEFINE_TEST(oxws, connect_invalid_ews_url_path) {
   oxws* oxws = oxws_new();
 
-  OXWS_SUITE_OXWS_SET_CONNECTION_SETTINGS(OXWS_SUITE_OXWS_PARAM_EWS_URL_INVALID_PATH);
+  OXWS_TEST_SUITE_OXWS_SET_CONNECTION_SETTINGS(OXWS_TEST_SUITE_OXWS_PARAM_EWS_URL_INVALID_PATH);
   CU_ASSERT_OXWS_RESULT_EQUAL(oxws_connect(oxws, OXWS_TEST_CONNECT_PARAMS), OXWS_ERROR_CONNECT);
 
   oxws_free(oxws);

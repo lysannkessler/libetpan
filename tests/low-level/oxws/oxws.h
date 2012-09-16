@@ -42,7 +42,7 @@ extern "C" {
 #include "test_support.h"
 
 
-#define oxws_suite_oxws_add_tests() \
+#define oxws_test_suite_oxws_add_tests() \
   { \
     OXWS_TEST_ADD_TEST(oxws, new); \
     OXWS_TEST_ADD_TEST(oxws, set_connection_settings); \
@@ -60,14 +60,14 @@ OXWS_TEST_DECLARE_TEST(oxws, connect_invalid_ews_url_host);
 OXWS_TEST_DECLARE_TEST(oxws, connect_invalid_ews_url_path);
 
 
-#define OXWS_SUITE_OXWS_SET_CONNECTION_SETTINGS(ews_url) \
+#define OXWS_TEST_SUITE_OXWS_SET_CONNECTION_SETTINGS(ews_url) \
   oxws_connection_settings settings; \
   memset(&settings, 0, sizeof(settings)); \
   settings.as_url = ews_url; \
   CU_ASSERT_OXWS_NO_ERROR(oxws_set_connection_settings(oxws, &settings));
 
-#define OXWS_SUITE_OXWS_PARAM_EWS_URL_INVALID_HOST "https://" "localhorst" "/EWS/Exchange.asmx"
-#define OXWS_SUITE_OXWS_PARAM_EWS_URL_INVALID_PATH "https://" OXWS_TEST_PARAM_HOST "/EWS/invalid.asmx"
+#define OXWS_TEST_SUITE_OXWS_PARAM_EWS_URL_INVALID_HOST "https://" "localhorst" "/EWS/Exchange.asmx"
+#define OXWS_TEST_SUITE_OXWS_PARAM_EWS_URL_INVALID_PATH "https://" OXWS_TEST_PARAM_HOST "/EWS/invalid.asmx"
 
 
 #ifdef __cplusplus
