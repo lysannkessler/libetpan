@@ -78,7 +78,7 @@ int main(int argc, char ** argv) {
             "This is just another email sent using libetpan's Exchange implementation.\n" \
             "It's ok to feel annoyed by now :P",
             OXWS_BODY_TYPE_TEXT);
-    message->to_recipients = carray_new(3);
+    message->to_recipients = carray_new(1);
     oxws_email_address* address = oxws_email_address_new();
     oxws_email_address_set_email_address(address, user);
     carray_add(message->to_recipients, address, NULL);
