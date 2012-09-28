@@ -94,8 +94,37 @@ OXWS_TEST_DEFINE_TEST(oxws, connect_invalid_ews_url_path) {
 
   OXWS_TEST_SUITE_OXWS_SET_CONNECTION_SETTINGS(OXWS_TEST_SUITE_OXWS_PARAM_EWS_URL_INVALID_PATH);
   CU_ASSERT_OXWS_RESULT_EQUAL(oxws_connect(oxws, OXWS_TEST_CONNECT_PARAMS), OXWS_ERROR_CONNECT);
+  CU_ASSERT_NUMBER_EQUAL(oxws->state, OXWS_STATE_CONNECTION_SETTINGS_CONFIGURED);
 
   oxws_free(oxws);
 }
 
-/* TODO add tests for invalid credentials */
+OXWS_TEST_DEFINE_TEST(oxws, connect_invalid_auth) {
+  oxws* oxws = oxws_new();
+
+  OXWS_TEST_SUITE_OXWS_SET_CONNECTION_SETTINGS(OXWS_TEST_PARAM_EWS_URL);
+
+#if 0
+  /* TODO the test server does not support authentication, therefore the following assertions fail */
+
+  CU_ASSERT_OXWS_RESULT_EQUAL(oxws_connect(oxws,
+      OXWS_TEST_PARAM_USER_INVALID,
+      OXWS_TEST_PARAM_PASSWORD,
+      OXWS_TEST_PARAM_DOMAIN),
+    OXWS_ERROR_AUTH_FAILED);
+  CU_ASSERT_OXWS_RESULT_EQUAL(oxws_connect(oxws,
+      OXWS_TEST_PARAM_USER,
+      OXWS_TEST_PARAM_PASSWORD_INVALID,
+      OXWS_TEST_PARAM_DOMAIN),
+    OXWS_ERROR_AUTH_FAILED);
+  CU_ASSERT_OXWS_RESULT_EQUAL(oxws_connect(oxws,
+      OXWS_TEST_PARAM_USER,
+      OXWS_TEST_PARAM_PASSWORD,
+      OXWS_TEST_PARAM_DOMAIN_INVALID),
+    OXWS_ERROR_AUTH_FAILED);
+#endif
+
+  CU_ASSERT_NUMBER_EQUAL(oxws->state, OXWS_STATE_CONNECTION_SETTINGS_CONFIGURED);
+
+  oxws_free(oxws);
+}

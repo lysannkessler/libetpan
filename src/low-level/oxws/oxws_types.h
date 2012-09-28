@@ -63,6 +63,8 @@ enum oxws_result {
   /* the configured URL does not point to a supported Exchange Web Services 2007
      service */
   OXWS_ERROR_NO_EWS,
+  /* authentication attempt was unsuccessful, check credentials. */
+  OXWS_ERROR_AUTH_FAILED,
   /* Exchange autodiscover failed */
   OXWS_ERROR_AUTODISCOVER_UNAVAILABLE,
   /* autodiscover failed because the email is invalid */

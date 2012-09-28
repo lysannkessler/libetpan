@@ -73,6 +73,10 @@ extern "C" {
 #define OXWS_TEST_PARAM_DOMAIN   NULL /* unused because the test server does not support authentication */
 #define OXWS_TEST_CONNECT_PARAMS OXWS_TEST_PARAM_USER, OXWS_TEST_PARAM_PASSWORD, OXWS_TEST_PARAM_DOMAIN
 
+#define OXWS_TEST_PARAM_USER_INVALID     "missing.user"
+#define OXWS_TEST_PARAM_PASSWORD_INVALID "invalid"
+#define OXWS_TEST_PARAM_DOMAIN_INVALID   "INVALID"
+
 
 extern char* oxws_test_support_ca_file;
 oxws_result oxws_test_support_set_curl_init_callback(oxws* oxws);

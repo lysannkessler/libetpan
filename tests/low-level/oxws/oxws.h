@@ -50,6 +50,7 @@ extern "C" {
     OXWS_TEST_ADD_TEST(oxws, connect_after_autodiscover); \
     OXWS_TEST_ADD_TEST(oxws, connect_invalid_ews_url_host); \
     OXWS_TEST_ADD_TEST(oxws, connect_invalid_ews_url_path); \
+    OXWS_TEST_ADD_TEST(oxws, connect_invalid_auth); \
   }
 
 OXWS_TEST_DECLARE_TEST(oxws, new);
@@ -58,6 +59,7 @@ OXWS_TEST_DECLARE_TEST(oxws, connect_after_set_connection_settings);
 OXWS_TEST_DECLARE_TEST(oxws, connect_after_autodiscover);
 OXWS_TEST_DECLARE_TEST(oxws, connect_invalid_ews_url_host);
 OXWS_TEST_DECLARE_TEST(oxws, connect_invalid_ews_url_path);
+OXWS_TEST_DECLARE_TEST(oxws, connect_invalid_auth);
 
 
 #define OXWS_TEST_SUITE_OXWS_SET_CONNECTION_SETTINGS(ews_url) \
