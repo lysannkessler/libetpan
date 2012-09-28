@@ -140,10 +140,10 @@ oxws_result oxws_autodiscover(oxws* oxws, const char* host, const char* email_ad
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, oxws_handle_response_xml_callback);
   /*   try */
   OXWS_AUTODISCOVER_TRY_STEP(1);
-  if(result != OXWS_NO_ERROR)
+  if(result != OXWS_NO_ERROR && result != OXWS_ERROR_AUTODISCOVER_BAD_EMAIL)
     OXWS_AUTODISCOVER_TRY_STEP(2);
   /*   set result */
-  if(result != OXWS_NO_ERROR)
+  if(result != OXWS_NO_ERROR && result != OXWS_ERROR_AUTODISCOVER_BAD_EMAIL)
     result = OXWS_ERROR_AUTODISCOVER_UNAVAILABLE;
 
   /* clean up */
@@ -175,12 +175,16 @@ oxws_result oxws_autodiscover_try_url(CURL* curl, oxws_autodiscover_sax_context*
     long http_response = 0;
     curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_response);
     if(http_response == 200) {
-      if (sax_context->state == OXWS_AUTODISCOVER_SAX_CONTEXT_STATE_END_DOCUMENT && sax_context->found_target_protocol) {
+      if (sax_context->state != OXWS_AUTODISCOVER_SAX_CONTEXT_STATE_END_DOCUMENT) {
+        result = OXWS_ERROR_AUTODISCOVER_UNAVAILABLE;
+      } else if (sax_context->found_target_protocol) {
         result = OXWS_NO_ERROR;
         /* copy settings */
         free(settings->as_url); free(settings->oof_url); free(settings->um_url); free(settings->oab_url);
         memcpy(settings, &sax_context->settings, sizeof(oxws_connection_settings));
         memset(&sax_context->settings, 0, sizeof(oxws_connection_settings));
+      } else if (sax_context->error_code == 500 || sax_context->error_code == 501) {
+        result = OXWS_ERROR_AUTODISCOVER_BAD_EMAIL;
       } else {
         result = OXWS_ERROR_AUTODISCOVER_UNAVAILABLE;
       }
@@ -190,6 +194,7 @@ oxws_result oxws_autodiscover_try_url(CURL* curl, oxws_autodiscover_sax_context*
   /* clean up */
   if(response_xml_parser != NULL)
     xmlFreeParserCtxt(response_xml_parser);
+  oxws_autodiscover_sax_context_free(sax_context);
 
   return result;
 }
@@ -199,6 +204,11 @@ oxws_result oxws_autodiscover_sax_context_init(oxws_autodiscover_sax_context* co
   if(context == NULL) return OXWS_ERROR_INVALID_PARAMETER;
   memset(context, 0, sizeof(oxws_autodiscover_sax_context));
   return OXWS_NO_ERROR;
+}
+
+void oxws_autodiscover_sax_context_free(oxws_autodiscover_sax_context* context) {
+  if(context == NULL) return NULL;
+  free(context->error_message);
 }
 
 
@@ -264,6 +274,22 @@ void oxws_autodiscover_sax_handler_start_element_ns(void* user_data,
       /* TODO warn */
     }
 
+  } else if(OXWS_AUTODISCOVER_SAX_CONTEXT_STATE_MATCHES_TAG(START_DOCUMENT, RESPONSE, "Error")) {
+    OXWS_AUTODISCOVER_SAX_CONTEXT_SET_STATE(ERROR); /* this is not _ERROR! */
+
+  /* elements within Error */
+  } else if(OXWS_AUTODISCOVER_SAX_CONTEXT_STATE_IS(ERROR)) {
+    if(OXWS_AUTODISCOVER_SAX_IS_NS_NODE(RESPONSE, "ErrorCode")) {
+      OXWS_AUTODISCOVER_SAX_CONTEXT_SET_STATE(ERROR_CODE);
+      OXWS_AUTODISCOVER_SAX_CONTEXT_PREPARE_STRING(3); /* 3 digit error code */
+    } else if(OXWS_AUTODISCOVER_SAX_IS_NS_NODE(RESPONSE, "Message")) {
+      OXWS_AUTODISCOVER_SAX_CONTEXT_SET_STATE(ERROR_MESSAGE);
+      OXWS_AUTODISCOVER_SAX_CONTEXT_PREPARE_STRING(50);
+    } else {
+      /* unhandeled / unknown element in Error */
+      /* TODO warn */
+    }
+
   } else {
     /* unknown node */
     /* TODO warn */
@@ -301,17 +327,30 @@ void oxws_autodiscover_sax_handler_end_element_ns(void* user_data,
     OXWS_AUTODISCOVER_SAX_CONTEXT_FREE_STRING();
     OXWS_AUTODISCOVER_SAX_CONTEXT_SET_STATE(PROTOCOL);
   } else if(OXWS_AUTODISCOVER_SAX_CONTEXT_STATE_MATCHES_TAG(PROTOCOL_AS_URL, RESPONSE_A, "ASUrl")) {
-    OXWS_AUTODISCOVER_SAX_CONTEXT_ASSIGN_CSTRING_TO_SETTING(as_url);
+    OXWS_AUTODISCOVER_SAX_CONTEXT_ASSIGN_CSTRING(settings.as_url);
     OXWS_AUTODISCOVER_SAX_CONTEXT_SET_STATE(PROTOCOL);
   } else if(OXWS_AUTODISCOVER_SAX_CONTEXT_STATE_MATCHES_TAG(PROTOCOL_OOF_URL, RESPONSE_A, "OOFUrl")) {
-    OXWS_AUTODISCOVER_SAX_CONTEXT_ASSIGN_CSTRING_TO_SETTING(oof_url);
+    OXWS_AUTODISCOVER_SAX_CONTEXT_ASSIGN_CSTRING(settings.oof_url);
     OXWS_AUTODISCOVER_SAX_CONTEXT_SET_STATE(PROTOCOL);
   } else if(OXWS_AUTODISCOVER_SAX_CONTEXT_STATE_MATCHES_TAG(PROTOCOL_UM_URL, RESPONSE_A, "UMUrl")) {
-    OXWS_AUTODISCOVER_SAX_CONTEXT_ASSIGN_CSTRING_TO_SETTING(um_url);
+    OXWS_AUTODISCOVER_SAX_CONTEXT_ASSIGN_CSTRING(settings.um_url);
     OXWS_AUTODISCOVER_SAX_CONTEXT_SET_STATE(PROTOCOL);
   } else if(OXWS_AUTODISCOVER_SAX_CONTEXT_STATE_MATCHES_TAG(PROTOCOL_OAB_URL, RESPONSE_A, "OABUrl")) {
-    OXWS_AUTODISCOVER_SAX_CONTEXT_ASSIGN_CSTRING_TO_SETTING(oab_url);
+    OXWS_AUTODISCOVER_SAX_CONTEXT_ASSIGN_CSTRING(settings.oab_url);
     OXWS_AUTODISCOVER_SAX_CONTEXT_SET_STATE(PROTOCOL);
+
+  } else if(OXWS_AUTODISCOVER_SAX_CONTEXT_STATE_MATCHES_TAG(ERROR, RESPONSE, "Error")) {
+    /* stop parsing, because the server returned an error */
+    OXWS_AUTODISCOVER_SAX_CONTEXT_SET_STATE(END_DOCUMENT);
+
+  } else if(OXWS_AUTODISCOVER_SAX_CONTEXT_STATE_MATCHES_TAG(ERROR_CODE, RESPONSE, "ErrorCode")) {
+    /* TODO check string */
+    context->error_code = atoi(context->string->str);
+    OXWS_AUTODISCOVER_SAX_CONTEXT_FREE_STRING();
+    OXWS_AUTODISCOVER_SAX_CONTEXT_SET_STATE(ERROR);
+  } else if(OXWS_AUTODISCOVER_SAX_CONTEXT_STATE_MATCHES_TAG(ERROR_MESSAGE, RESPONSE, "Message")) {
+    OXWS_AUTODISCOVER_SAX_CONTEXT_ASSIGN_CSTRING(error_message);
+    OXWS_AUTODISCOVER_SAX_CONTEXT_SET_STATE(ERROR);
 
   } else {
     /* TODO warn for unknown tags */

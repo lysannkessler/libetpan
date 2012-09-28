@@ -65,6 +65,8 @@ enum oxws_result {
   OXWS_ERROR_NO_EWS,
   /* Exchange autodiscover failed */
   OXWS_ERROR_AUTODISCOVER_UNAVAILABLE,
+  /* autodiscover failed because the email is invalid */
+  OXWS_ERROR_AUTODISCOVER_BAD_EMAIL,
   /* request was not successful (HTTP status code != 200) */
   OXWS_ERROR_REQUEST_FAILED,
   /* no or invalid response received for SOAP request */

@@ -79,6 +79,11 @@ enum oxws_autodiscover_sax_context_state {
   OXWS_AUTODISCOVER_SAX_CONTEXT_STATE_PROTOCOL_UM_URL,
   OXWS_AUTODISCOVER_SAX_CONTEXT_STATE_PROTOCOL_OAB_URL,
 
+  /* inside the Error element */
+  OXWS_AUTODISCOVER_SAX_CONTEXT_STATE_ERROR, /* this is not _ERROR! */
+  OXWS_AUTODISCOVER_SAX_CONTEXT_STATE_ERROR_CODE,
+  OXWS_AUTODISCOVER_SAX_CONTEXT_STATE_ERROR_MESSAGE,
+
   /* End of document has been parsed, used to identify whether the response was
      parsed completely */
   OXWS_AUTODISCOVER_SAX_CONTEXT_STATE_END_DOCUMENT,
@@ -103,6 +108,8 @@ struct oxws_autodiscover_sax_context {
   oxws_autodiscover_sax_context_state state;
 
   short found_target_protocol;
+  unsigned short error_code;
+  char* error_message;
 
   MMAPString* string;
 };
@@ -120,6 +127,8 @@ typedef struct oxws_autodiscover_sax_context oxws_autodiscover_sax_context;
           - OXWS_NO_ERROR: success
 */
 oxws_result oxws_autodiscover_sax_context_init(oxws_autodiscover_sax_context* context);
+
+void oxws_autodiscover_sax_context_free(oxws_autodiscover_sax_context* context);
 
 
 /*
@@ -172,19 +181,18 @@ oxws_result oxws_autodiscover_sax_context_init(oxws_autodiscover_sax_context* co
   /* TODO check string */ \
   (strcmp(context->string->str, "EXCH") == 0)
 
-#define OXWS_AUTODISCOVER_SAX_CONTEXT_ASSIGN_CSTRING_TO_SETTING(setting) \
+#define OXWS_AUTODISCOVER_SAX_CONTEXT_ASSIGN_CSTRING(prop) \
   { \
     /* TODO check string */ \
-    if(context->settings.setting != NULL) { \
+    if(context->prop != NULL) { \
       /* TODO warn */ \
-      free(context->settings.setting); \
+      free(context->prop); \
     } \
-    context->settings.setting = malloc(strlen(context->string->str) + 1); \
+    context->prop = malloc(strlen(context->string->str) + 1); \
     /* TODO warn if result == NULL */ \
-    memcpy(context->settings.setting, context->string->str, strlen(context->string->str) + 1); \
+    memcpy(context->prop, context->string->str, strlen(context->string->str) + 1); \
     OXWS_AUTODISCOVER_SAX_CONTEXT_FREE_STRING(); \
   }
-
 
 /*
   SAX handlers
