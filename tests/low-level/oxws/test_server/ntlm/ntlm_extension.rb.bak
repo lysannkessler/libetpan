@@ -1,0 +1,177 @@
+require 'rubygems'
+require 'sinatra/base'
+
+require 'base64'
+
+require File.expand_path('flags', File.dirname(__FILE__))
+
+
+# Override Thin connection method to uniquely identify the connection.
+# See LibetpanTest::OXWS::NTLM::Private's @@authorized_connections.
+module Thin
+  class Connection
+    @@original_process = instance_method(:process)
+    def process
+      @request.env['thin.connection_id'] = self.object_id
+      @@original_process.bind(self).call
+    end
+  end
+end
+
+
+module LibetpanTest
+module OXWS
+
+# Dummy implementation of NTLM over HTTP. It's enough to perform the 'handshake'
+# and verify the corectness of the challange response.
+module NTLM
+
+  module Helpers
+    def check_ntlm_auth
+      # check session
+      return if Private.connection_authorized? request.env['thin.connection_id']
+
+      # check Authorization header
+      authorization = request.env['HTTP_AUTHORIZATION']
+      unless authorization
+        # Authorization header is missing. Ask for NTLM auth.
+        response['WWW-Authenticate'] = 'NTLM'
+        halt 401
+      end
+
+      # decode message header
+      msg_bin = Base64.decode64 authorization.gsub(/\s*NTLM\s+/, '')
+      msg_fields = msg_bin.unpack 'a8 L<'
+      msg_keys = %w[signature message_type]
+      msg = Hash[msg_keys.length.times.map { |i| [msg_keys[i], msg_fields[i]] }]
+
+      # check signature
+      halt 401 unless msg['signature'] == "NTLMSSP\x00"
+
+      # dispatch message type
+      case msg['message_type']
+      when 1 # negotiate
+        challenge = Private.process_negotiate_message msg_bin, msg
+        response['WWW-Authenticate'] = 'NTLM ' + challenge
+        halt 401
+      when 2 # challenge
+        halt 401 # error, sent only by server
+      when 3 # authenticate
+        if Private.process_authenticate_message msg_bin, msg
+          Private.authorize_connection request.env['thin.connection_id']
+        else
+          halt 401
+        end
+      else
+        # invalid message type
+        halt 401
+      end
+    end
+  end
+
+  def self.registered(app)
+    app.helpers NTLM::Helpers
+
+    # Configuration
+    #app.set :partial_underscores, false
+    #app.set :partial_template_engine, :haml
+  end
+
+  module Private
+    def self.process_negotiate_message(msg_bin, msg)
+      # parse fixed fields
+      msg_fields = msg_bin.unpack 'x12 L< S<x2L< S<x2L<'
+      msg_keys = %w[negotiate_flags domain_name_len domain_name_buffer_offset workstation_len workstation_buffer_offset]
+      msg.merge! Hash[msg_keys.length.times.map { |i| [msg_keys[i], msg_fields[i]] }]
+      msg['negotiate_flags'] = Flags.deserialize msg['negotiate_flags']
+
+      # parse remaining fields
+      msg_format = 'x32'
+      msg_keys = []
+      if msg['negotiate_flags']['negotiate_version']
+        msg_format << ' a8'
+        msg_keys << 'version'
+      end
+      if msg['negotiate_flags']['negotiate_oem_domain_supplied']
+        msg_format << ' @' + msg['domain_name_buffer_offset'].to_s + 'a' + msg['domain_name_len'].to_s
+        msg_keys << 'domain_name'
+      end
+      if msg['negotiate_flags']['negotiate_oem_workstation_supplied']
+        msg_format << ' @' + msg['workstation_buffer_offset'].to_s + 'a' + msg['workstation_len'].to_s
+        msg_keys << 'workstation'
+      end
+      msg_fields = msg_bin.unpack msg_format
+      msg.merge! Hash[msg_keys.length.times.map { |i| [msg_keys[i], msg_fields[i]] }]
+      request_msg = msg
+
+      # build response
+      target_name = 'LOCALHOST'
+      challange_flags = Flags.new 'request_target', 'negotiate_ntlm', 'negotiate_always_sign'
+      msg = { 'signature' => "NTLMSSP\x00", 'message_type' => 2, 'target_name' => target_name,
+        'target_name_len' => target_name.length, 'target_name_max_len' => target_name.length, 'target_name_buffer_offset' => 48,
+        'negotiate_flags' => challange_flags.serialize, 'reserved' => 0, 'target_info_fields' => 0 }
+      # TODO target name fields, target info fields, according flags, according payload
+      msg['server_challange'] = "\\\xE3k\xAA\x9CUQ\xDB" # Random.new.bytes(8)
+      msg_fields_order = %w[signature message_type
+        target_name_len target_name_max_len target_name_buffer_offset
+        negotiate_flags server_challange reserved target_info_fields
+        target_name]
+      msg_bin = msg_fields_order.map { |key| msg[key] }.pack 'a8 L< S<S<L< b32 a8 Q< Q< a'+target_name.length.to_s
+
+      # encode response
+      return Base64.encode64(msg_bin)
+    end
+
+    def self.process_authenticate_message(msg_bin, msg)
+      # parse fixed fields
+      msg_fields = msg_bin.unpack 'x12 S<x2L< S<x2L< S<x2L< S<x2L< S<x2L< S<x2L< L<'
+      msg_keys = %w[lm_challenge_response_len lm_challenge_response_buffer_offset
+        nt_challenge_response_len nt_challenge_response_buffer_offset
+        domain_name_len domain_name_buffer_offset
+        user_name_len user_name_buffer_offset
+        workstation_len workstation_buffer_offset
+        encrypted_random_session_key_len encrypted_random_session_key_buffer_offset
+        negotiate_flags]
+      msg.merge! Hash[msg_keys.length.times.map { |i| [msg_keys[i], msg_fields[i]] }]
+      msg['negotiate_flags'] = Flags.deserialize msg['negotiate_flags']
+
+      # parse remaining fields
+      msg_format = 'x64'
+      msg_keys = []
+      if msg['negotiate_flags']['negotiate_version']
+        msg_format << ' a8'; msg_keys << 'version'
+      end
+      msg_format << ' a16'; msg_keys << 'mic'
+      %w[lm_challenge_response nt_challenge_response domain_name user_name workstation encrypted_random_session_key].each do |field|
+        msg_format << ' @' + msg[field+'_buffer_offset'].to_s + 'a' + msg[field+'_len'].to_s
+        msg_keys << field
+      end
+      msg_fields = msg_bin.unpack msg_format
+      msg.merge! Hash[msg_keys.length.times.map { |i| [msg_keys[i], msg_fields[i]] }]
+      request_msg = msg
+
+      # test credentials
+      if request_msg['lm_challenge_response'] != "\xC9\xA4&\xAA=\x863\x9C9z\xEA\x15o\x96\x15\x91\x8C\xEELR\xE6\x97\x7FM" ||
+         request_msg['nt_challenge_response'] != "6\x05\x13\x1E_\xE0=\xEF~\x16\xB6\xFA\x1A\x8B\x03\xABW\xD6\xD5|\xE8)\x9E\xB4" ||
+         request_msg['user_name'] != 'test.user' ||
+         (request_msg['domain_name'].downcase != 'localhost' && request_msg['domain_name'] != '')
+        return false
+      end
+      return true
+    end
+
+    @@authorized_connections = []
+    def self.authorize_connection(connection_id)
+      @@authorized_connections << connection_id
+    end
+    def self.connection_authorized?(connection_id)
+      @@authorized_connections.include? connection_id
+    end
+  end
+
+end
+
+end
+end
+
+Sinatra.register LibetpanTest::OXWS::NTLM
