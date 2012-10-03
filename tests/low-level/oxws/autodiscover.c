@@ -86,9 +86,6 @@ OXWS_TEST_DEFINE_TEST(autodiscover, invalid_params) {
       OXWS_TEST_SUITE_AUTODISCOVER_PARAM_DOMAIN),
     OXWS_ERROR_AUTODISCOVER_BAD_EMAIL);
 
-#if 0
-  /* TODO test server does not support authorization, therefore the following 3 assertions fail */
-
   /* invalid user */
   CU_ASSERT_OXWS_RESULT_EQUAL(oxws_autodiscover_connection_settings(oxws,
       OXWS_TEST_SUITE_AUTODISCOVER_PARAM_HOST,
@@ -115,7 +112,6 @@ OXWS_TEST_DEFINE_TEST(autodiscover, invalid_params) {
       OXWS_TEST_SUITE_AUTODISCOVER_PARAM_PASSWORD,
       OXWS_TEST_SUITE_AUTODISCOVER_PARAM_DOMAIN_INVALID),
     OXWS_ERROR_AUTH_FAILED);
-#endif
 
   /* connection settings are empty */
   CU_ASSERT_PTR_NULL_FATAL(oxws->connection_settings.as_url);

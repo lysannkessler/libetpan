@@ -166,7 +166,9 @@ oxws_result oxws_connect(oxws* oxws, const char* username, const char* password,
   } else {
     long http_response = 0;
     curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_response);
-    if(http_response != 200) {
+    if(http_response == 401) {
+      result = OXWS_ERROR_AUTH_FAILED;
+    } else if(http_response != 200) {
       result = OXWS_ERROR_CONNECT;
     } else if(!found_wsdl) {
       result = OXWS_ERROR_NO_EWS;

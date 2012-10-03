@@ -140,10 +140,10 @@ oxws_result oxws_autodiscover(oxws* oxws, const char* host, const char* email_ad
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, oxws_handle_response_xml_callback);
   /*   try */
   OXWS_AUTODISCOVER_TRY_STEP(1);
-  if(result != OXWS_NO_ERROR && result != OXWS_ERROR_AUTODISCOVER_BAD_EMAIL)
+  if(result != OXWS_NO_ERROR && result != OXWS_ERROR_AUTODISCOVER_BAD_EMAIL && result != OXWS_ERROR_AUTH_FAILED)
     OXWS_AUTODISCOVER_TRY_STEP(2);
   /*   set result */
-  if(result != OXWS_NO_ERROR && result != OXWS_ERROR_AUTODISCOVER_BAD_EMAIL)
+  if(result != OXWS_NO_ERROR && result != OXWS_ERROR_AUTODISCOVER_BAD_EMAIL && result != OXWS_ERROR_AUTH_FAILED)
     result = OXWS_ERROR_AUTODISCOVER_UNAVAILABLE;
 
   /* clean up */
@@ -174,7 +174,9 @@ oxws_result oxws_autodiscover_try_url(CURL* curl, oxws_autodiscover_sax_context*
   if(curl_code == CURLE_OK) {
     long http_response = 0;
     curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_response);
-    if(http_response == 200) {
+    if(http_response == 401) {
+      result = OXWS_ERROR_AUTH_FAILED;
+    } else if(http_response == 200) {
       if (sax_context->state != OXWS_AUTODISCOVER_SAX_CONTEXT_STATE_END_DOCUMENT) {
         result = OXWS_ERROR_AUTODISCOVER_UNAVAILABLE;
       } else if (sax_context->found_target_protocol) {

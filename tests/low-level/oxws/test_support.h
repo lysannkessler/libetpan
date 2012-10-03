@@ -68,9 +68,9 @@ extern "C" {
 #define OXWS_TEST_PARAM_HOST    "localhost:3000"
 #define OXWS_TEST_PARAM_EWS_URL "https://" OXWS_TEST_PARAM_HOST "/EWS/Exchange.asmx"
 
-#define OXWS_TEST_PARAM_USER     "" /* unused because the test server does not support authentication, but is required */
-#define OXWS_TEST_PARAM_PASSWORD "" /* unused because the test server does not support authentication, but is required */
-#define OXWS_TEST_PARAM_DOMAIN   NULL /* unused because the test server does not support authentication */
+#define OXWS_TEST_PARAM_USER     "test.user"
+#define OXWS_TEST_PARAM_PASSWORD "shegalkin"
+#define OXWS_TEST_PARAM_DOMAIN   "EXAMPLE"
 #define OXWS_TEST_CONNECT_PARAMS OXWS_TEST_PARAM_USER, OXWS_TEST_PARAM_PASSWORD, OXWS_TEST_PARAM_DOMAIN
 
 #define OXWS_TEST_PARAM_USER_INVALID     "missing.user"
