@@ -308,6 +308,11 @@ extern xmlSAXHandler oxws_autodiscover_sax_handler;
     result = oxws_autodiscover_try_url(curl, &sax_context, url, settings); \
   } while(0);
 
+#define OXWS_AUTODISCOVER_TRY_NEXT_STEP(result) \
+  result != OXWS_NO_ERROR && \
+  result != OXWS_ERROR_AUTODISCOVER_BAD_EMAIL && \
+  result != OXWS_ERROR_AUTH_FAILED
+
 /*
   oxws_autodiscover_try_url()
 

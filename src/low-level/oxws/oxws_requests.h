@@ -75,6 +75,7 @@ extern const unsigned short oxws_distfolder_id_name_map_length;
             * no host given and host cannot be extracted from email_address
             * no username given and username cannot be extracted from
               email_address
+          - OXWS_ERROR_AUTH_FAILED: credentials are invalid
           - OXWS_ERROR_AUTODISCOVER_UNAVAILABLE: autodiscovering the
             connection settings failed
           - OXWS_ERROR_INTERNAL: arbitrary failure

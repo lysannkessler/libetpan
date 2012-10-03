@@ -140,10 +140,10 @@ oxws_result oxws_autodiscover(oxws* oxws, const char* host, const char* email_ad
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, oxws_handle_response_xml_callback);
   /*   try */
   OXWS_AUTODISCOVER_TRY_STEP(1);
-  if(result != OXWS_NO_ERROR && result != OXWS_ERROR_AUTODISCOVER_BAD_EMAIL && result != OXWS_ERROR_AUTH_FAILED)
+  if(OXWS_AUTODISCOVER_TRY_NEXT_STEP(result))
     OXWS_AUTODISCOVER_TRY_STEP(2);
   /*   set result */
-  if(result != OXWS_NO_ERROR && result != OXWS_ERROR_AUTODISCOVER_BAD_EMAIL && result != OXWS_ERROR_AUTH_FAILED)
+  if(OXWS_AUTODISCOVER_TRY_NEXT_STEP(result))
     result = OXWS_ERROR_AUTODISCOVER_UNAVAILABLE;
 
   /* clean up */
