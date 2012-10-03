@@ -1,0 +1,16 @@
+domain: EXAMPLE
+
+users:
+  - user: test.user
+    email: test.user@example.com
+    name: 'User, Test'
+    _password: shegalkin
+    dn_suffix: Test.User
+    server_name: 8MXMA1R
+
+  - user: test.user2
+    email: test.user2@example.com
+    name: 'User 2, Test'
+    _password: shegalkin
+    dn_suffix: Test.User2
+    server_name: 8mxstu1r

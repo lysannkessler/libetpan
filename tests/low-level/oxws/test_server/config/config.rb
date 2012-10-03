@@ -10,9 +10,11 @@ module Config
     YAML.load_file File.expand_path(name + '.yaml', File.dirname(__FILE__))
   end
 
-  def self.users
-    @@users ||= self.load_yaml 'users'
+  def self.user_directory
+    @@user_directory ||= self.load_yaml 'user_directory'
   end
+  def self.domain; self.user_directory['domain']; end
+  def self.users; self.user_directory['users']; end
 
   @@items_per_folder = nil
   def self.items
