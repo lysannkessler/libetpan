@@ -54,3 +54,12 @@ $(top_builddir)/stamp-prepare: libetpan-config.h
 libetpan-config.h: libetpan-config.h.in config.h
 	cat $(srcdir)/libetpan-config.h.in | $(CPP) -I$(top_builddir) - \
 	| sed -e '/^#/d;/^[ \t]*$$/d;s/^@/#/' > $@
+
+
+# tests
+if ENABLE_TESTS
+test: tests
+	cd $(srcdir)/tests/low-level/oxws && \
+	bundle install && \
+	rake run
+endif
