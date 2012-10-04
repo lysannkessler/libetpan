@@ -384,7 +384,6 @@ static int pgp_decrypt(struct mailprivacy * privacy,
     mailmessage * msg,
     struct mailmime * mime, struct mailmime ** result)
 {
-  struct mailmime * version_mime;
   struct mailmime * encrypted_mime;
   clistiter * cur;
   char encrypted_filename[PATH_MAX];
@@ -407,7 +406,6 @@ static int pgp_decrypt(struct mailprivacy * privacy,
     goto err;
   }
 
-  version_mime = clist_content(cur);
   cur = clist_next(cur);
   if (cur == NULL) {
     res = MAIL_ERROR_INVAL;
@@ -571,7 +569,6 @@ pgp_verify(struct mailprivacy * privacy,
   int r;
   clistiter * cur;
   char command[PATH_MAX];
-  int sign_ok;
   struct mailmime * description_mime;
   char decrypted_filename[PATH_MAX];
   char description_filename[PATH_MAX];
@@ -654,16 +651,13 @@ pgp_verify(struct mailprivacy * privacy,
   snprintf(command, sizeof(command), "gpg --batch --yes --verify '%s' '%s'",
       quoted_signature_filename, quoted_signed_filename);
 
-  sign_ok = 0;
   r = gpg_command_passphrase(privacy, msg, command, NULL,
       decrypted_filename, description_filename);
   switch (r) {
   case NO_ERROR_PGP:
-    sign_ok = 1;
     break;
   case ERROR_PGP_NOPASSPHRASE:
   case ERROR_PGP_CHECK:
-    sign_ok = 0;
     break;
   case ERROR_PGP_COMMAND:
     res = MAIL_ERROR_COMMAND;
@@ -758,7 +752,6 @@ static int pgp_verify_clearsigned(struct mailprivacy * privacy,
   int r;
   char command[PATH_MAX];
   int res;
-  int sign_ok;
   size_t written;
   char signed_filename[PATH_MAX];
   FILE * signed_f;
@@ -824,16 +817,13 @@ static int pgp_verify_clearsigned(struct mailprivacy * privacy,
   snprintf(command, sizeof(command),
       "gpg --batch --yes --decrypt '%s'", quoted_signed_filename);
 
-  sign_ok = 0;
   r = gpg_command_passphrase(privacy, msg, command, NULL,
       stripped_filename, description_filename);
   switch (r) {
   case NO_ERROR_PGP:
-    sign_ok = 1;
     break;
   case ERROR_PGP_NOPASSPHRASE:
   case ERROR_PGP_CHECK:
-    sign_ok = 0;
     break;
   case ERROR_PGP_COMMAND:
     res = MAIL_ERROR_COMMAND;
@@ -985,7 +975,6 @@ static int pgp_decrypt_armor(struct mailprivacy * privacy,
   struct mailmime * multipart;
   int r;
   int res;
-  int sign_ok;
   char quoted_encrypted_filename[PATH_MAX];
 
   if (mime->mm_parent == NULL) {
@@ -1047,16 +1036,13 @@ static int pgp_decrypt_armor(struct mailprivacy * privacy,
       "gpg --passphrase-fd=0 --batch --yes --decrypt '%s'",
       quoted_encrypted_filename);
 
-  sign_ok = 0;
   r = gpg_command_passphrase(privacy, msg, command, NULL,
       decrypted_filename, description_filename);
   switch (r) {
   case NO_ERROR_PGP:
-    sign_ok = 1;
     break;
   case ERROR_PGP_NOPASSPHRASE:
   case ERROR_PGP_CHECK:
-    sign_ok = 0;
     break;
   case ERROR_PGP_COMMAND:
     res = MAIL_ERROR_COMMAND;

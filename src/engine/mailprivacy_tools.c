@@ -478,36 +478,11 @@ int mailprivacy_get_mime(struct mailprivacy * privacy,
   return res;
 }
 
-#ifndef LIBETPAN_SYSTEM_BASENAME
-static char * libetpan_basename(char * filename)
-{
-  char * next;
-  char * p;
-  
-  p = filename;
-  next = strchr(p, '/');
-  
-  while (next != NULL) {
-    p = next;
-    next = strchr(p + 1, '/');
-  }
-  
-  if (p == filename)
-    return filename;
-  else
-    return p + 1;
-}
-#else
-#define libetpan_basename(a) basename(a)
-#endif
-
 struct mailmime *
 mailprivacy_new_file_part(struct mailprivacy * privacy,
     char * filename,
     char * default_content_type, int default_encoding)
 {
-  char basename_buf[PATH_MAX];
-  char * name;
   struct mailmime_mechanism * encoding;
   struct mailmime_content * content;
   struct mailmime * mime;
@@ -517,14 +492,6 @@ mailprivacy_new_file_part(struct mailprivacy * privacy,
   int encoding_type;
   char * content_type_str;
   int do_encoding;
-  
-  if (filename != NULL) {
-    strncpy(basename_buf, filename, PATH_MAX);
-    name = libetpan_basename(basename_buf);
-  }
-  else {
-    name = NULL;
-  }
   
   encoding = NULL;
   

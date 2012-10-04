@@ -74,7 +74,6 @@ int parse_options(int argc, char ** argv,
     char ** path, char ** cache_directory,
     char ** flags_directory)
 {
-  int indx;
 #if HAVE_GETOPT_LONG
   static struct option long_options[] = {
     {"driver",   1, 0, 'd'},
@@ -94,8 +93,6 @@ int parse_options(int argc, char ** argv,
   int r;
   char location[PATH_MAX];
   char * env_user;
-
-  indx = 0;
 
   * driver = MBOX_STORAGE;
   * server = NULL;

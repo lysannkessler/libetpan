@@ -487,14 +487,9 @@ int mailstream_send_data_with_context(mailstream * s, const char * message,
 static inline ssize_t get_data_size(const char * line, size_t length,
     size_t * result)
 {
-  int fix_eol;
-  const char * start;
   size_t count;
   size_t fixed_count;
-  
-  start = line;
 
-  fix_eol = 0;
   count = 0;
   fixed_count = 0;
   
@@ -509,7 +504,6 @@ static inline ssize_t get_data_size(const char * line, size_t length,
       length --;
 
       if (length == 0) {
-        fix_eol = 1;
         fixed_count ++;
         break;
       }
@@ -523,7 +517,6 @@ static inline ssize_t get_data_size(const char * line, size_t length,
 	break;
       }
       else {
-        fix_eol = 1;
         fixed_count ++;
         break;
       }
@@ -534,7 +527,6 @@ static inline ssize_t get_data_size(const char * line, size_t length,
       count ++;
       length --;
 
-      fix_eol = 1;
       fixed_count ++;
       break;
     }
@@ -553,12 +545,10 @@ size_t mailstream_get_data_crlf_size(const char * message, size_t size)
 {
   const char * current;
   size_t count;
-  size_t last;
   size_t remaining;
   size_t fixed_count;
   
   count = 0;
-  last = 0;
   fixed_count = 0;
   
   current = message;
