@@ -209,7 +209,7 @@ oxws_result oxws_autodiscover_sax_context_init(oxws_autodiscover_sax_context* co
 }
 
 void oxws_autodiscover_sax_context_free(oxws_autodiscover_sax_context* context) {
-  if(context == NULL) return NULL;
+  if(context == NULL) return;
   free(context->error_message);
 }
 
