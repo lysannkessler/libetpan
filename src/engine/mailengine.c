@@ -587,11 +587,10 @@ static void folder_free_msg_list(struct folder_ref_info * ref_info,
 
   for(i = 0 ; i < carray_count(env_list->msg_tab) ; i ++) {
     mailmessage * msg;
-    int count;
 
     msg = carray_get(env_list->msg_tab, i);
 
-    count = folder_message_unref(ref_info, msg);
+    folder_message_unref(ref_info, msg);
   }
   carray_set_size(env_list->msg_tab, 0);
   mailmessage_list_free(env_list);
@@ -846,7 +845,6 @@ static int folder_connect(struct storage_ref_info * ref_info,
     struct mailfolder * folder)
 {
   int r;
-  struct folder_ref_info * folder_ref_info;
 
   r = do_storage_connect(ref_info);
   if (r != MAIL_NO_ERROR)
@@ -855,8 +853,6 @@ static int folder_connect(struct storage_ref_info * ref_info,
   r = mailfolder_connect(folder);
   if (r != MAIL_NO_ERROR)
     return r;
-
-  folder_ref_info = storage_get_folder_ref(ref_info, folder);
 
   return MAIL_NO_ERROR;
 }

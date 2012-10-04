@@ -1395,7 +1395,6 @@ int mailmime_language_parse(const char * message, size_t length,
   int r;
   int res;
   clist * list;
-  int first;
   struct mailmime_language * language;
 
   cur_token = * indx;
@@ -1405,8 +1404,6 @@ int mailmime_language_parse(const char * message, size_t length,
     res = MAILIMF_ERROR_MEMORY;
     goto err;
   }
-
-  first = TRUE;
 
   while (1) {
     char * atom;

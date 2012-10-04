@@ -109,8 +109,8 @@ if test "x$GCC" = xyes; then
   CFLAGS="$CFLAGS -W -Wall"
 fi
 AC_ARG_ENABLE(syntax,   [  --enable-unstrict-syntax  be lazy on syntax checking for protocols (default=no)], , [AC_DEFINE(UNSTRICT_SYNTAX, 1, [Define to be lazy on protocol syntax])])
-AC_ARG_ENABLE(warn_as_err,   [  --enable-Werror          setup flags (gcc) to treat warnings as errors (default=no)],[],[])
-if test "x$enable_Werror" = xyes; then
+AC_ARG_ENABLE(werror,   [  --enable-werror         setup flags (gcc) to treat warnings as errors (default=no)],[],[])
+if test "x$enable_werror" = xyes; then
   if test "x$GCC" = xyes; then
     AC_SUBST([WERROR], [-Werror])
   fi

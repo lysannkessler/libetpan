@@ -131,9 +131,6 @@ void mailstream_cancel_notify(struct mailstream_cancel * cancel)
 {
   char ch;
   struct mailstream_cancel_internal * ms_internal;
-#ifndef WIN32
-  int r;
-#endif
   
   ms_internal = cancel->ms_internal;
   MUTEX_LOCK(&ms_internal->ms_lock);
@@ -144,7 +141,7 @@ void mailstream_cancel_notify(struct mailstream_cancel * cancel)
   
   ch = 0;
 #ifndef WIN32
-  r = write(cancel->ms_fds[1], &ch, 1);
+  write(cancel->ms_fds[1], &ch, 1);
 #else
   SetEvent(ms_internal->event);
 #endif
@@ -154,8 +151,7 @@ void mailstream_cancel_ack(struct mailstream_cancel * cancel)
 {
 #ifndef WIN32
   char ch;
-  int r;
-  r = read(cancel->ms_fds[0], &ch, 1);
+  read(cancel->ms_fds[0], &ch, 1);
 #endif
 }
 
@@ -178,12 +174,11 @@ int mailstream_cancel_cancelled(struct mailstream_cancel * cancel)
 
 int mailstream_cancel_get_fd(struct mailstream_cancel * cancel)
 {
-  struct mailstream_cancel_internal * ms_internal;
-  
-  ms_internal = cancel->ms_internal;
 #ifndef WIN32
   return cancel->ms_fds[0];
 #else
+  struct mailstream_cancel_internal * ms_internal;
+  ms_internal = cancel->ms_internal;
   return ms_internal->event;
 #endif
 }
