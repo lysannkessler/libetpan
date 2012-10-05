@@ -57,3 +57,24 @@ OXWS_TEST_DEFINE_TEST(create_item, basic) {
   oxws_item_array_free(items);
   oxws_free(oxws);
 }
+
+OXWS_TEST_DEFINE_TEST(create_item, save_only_sets_item_id) {
+  oxws* oxws = oxws_new_connected_for_testing();
+  carray* items = NULL;
+
+  oxws_message* message = oxws_message_new();
+  oxws_item_set_subject_cstring((oxws_item*) message, "[libetpan test] message from oxws-sample");
+  oxws_item_set_body_fields_cstring((oxws_item*) message,
+          "This is just another email sent using libetpan's Exchange implementation.\n",
+          OXWS_BODY_TYPE_TEXT);
+  message->to_recipients = carray_new(1);
+  oxws_email_address* address = oxws_email_address_new();
+  oxws_email_address_set_email_address(address, "test.user2@example.com");
+  carray_add(message->to_recipients, address, NULL);
+  CU_ASSERT_OXWS_NO_ERROR(oxws_create_item(oxws, (oxws_item*) message, OXWS_MESSAGE_DISPOSITION_SAVE_ONLY, OXWS_DISTFOLDER_DRAFTS, NULL));
+
+  CU_ASSERT_PTR_NOT_NULL(message->item.item_id);
+
+  oxws_item_array_free(items);
+  oxws_free(oxws);
+}

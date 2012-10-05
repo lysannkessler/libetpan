@@ -37,7 +37,6 @@
 extern "C" {
 #endif
 
-
 #include <libetpan/carray.h>
 #include <libetpan/oxws_types.h>
 #include <libetpan/oxws_types_item.h>
@@ -125,7 +124,7 @@ struct oxws_find_item_sax_context {
   /* If we are currently inside an item tag, this is the item being parsed. It
      will be appended to the list once we leave the current item tag. */
   oxws_item* item;
-  /* If we are inside a item tag of any class, this value counts the current
+  /* If we are inside an item tag of any class, this value counts the current
      node depth. This is neccessary so we know when to go back to the ITEMS
      state even if we parse unknown tags. */
   unsigned int item_node_depth;

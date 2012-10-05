@@ -45,9 +45,11 @@ extern "C" {
 #define oxws_test_suite_create_item_add_tests() \
   { \
     OXWS_TEST_ADD_TEST(create_item, basic); \
+    OXWS_TEST_ADD_TEST(create_item, save_only_sets_item_id); \
   }
 
 OXWS_TEST_DECLARE_TEST(create_item, basic);
+OXWS_TEST_DECLARE_TEST(create_item, save_only_sets_item_id);
 
 
 #ifdef __cplusplus

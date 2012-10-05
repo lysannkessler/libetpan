@@ -164,24 +164,189 @@ oxws_result oxws_create_item(oxws* oxws, oxws_item* item, oxws_message_dispositi
   }
 
   /* configure response XML parser */
-  if(oxws_handle_response_xml(oxws, NULL, NULL) != OXWS_NO_ERROR) {
+  oxws_create_item_sax_context sax_context;
+  if(oxws_create_item_sax_context_init(&sax_context, item) != OXWS_NO_ERROR ||
+     oxws_handle_response_xml(oxws, &oxws_create_item_sax_handler, &sax_context) != OXWS_NO_ERROR) {
     oxws_release_response_xml_parser(oxws);
     return OXWS_ERROR_INTERNAL;
   }
 
   /* perform request */
   int result = oxws_perform_request_xml(oxws, node_create_item);
-
-  /* print response */
-  xmlDocPtr response = oxws_get_response_xml(oxws);
-  xmlChar* response_string = NULL;
-  xmlDocDumpMemory(response, &response_string, NULL);
-  if(response_string != NULL) {
-    puts((char*) response_string);
-    xmlFree(response_string);
+  if(sax_context.state == OXWS_CREATE_ITEM_SAX_CONTEXT_STATE__ERROR) {
+    result = OXWS_ERROR_INVALID_RESPONSE;
+  } else if (sax_context.state != OXWS_CREATE_ITEM_SAX_CONTEXT_STATE_END_DOCUMENT) {
+    result = OXWS_ERROR_INTERNAL;
   }
 
   /* clean up */
   oxws_release_response_xml_parser(oxws);
   return result;
 }
+
+oxws_result oxws_create_item_sax_context_init(oxws_create_item_sax_context* context, oxws_item* item) {
+  if(context == NULL) return OXWS_ERROR_INVALID_PARAMETER;
+  memset(context, 0, sizeof(oxws_create_item_sax_context));
+  context->item = item;
+  return OXWS_NO_ERROR;
+}
+
+
+/*
+  SAX handlers
+*/
+
+void oxws_create_item_sax_handler_start_document(void* user_data) {
+  if(user_data == NULL) return;
+  oxws_create_item_sax_context* context = (oxws_create_item_sax_context*) user_data;
+
+  if(context->state != OXWS_CREATE_ITEM_SAX_CONTEXT_STATE__NONE)
+    OXWS_CREATE_ITEM_SAX_CONTEXT_SET_STATE(_ERROR);
+  if(OXWS_CREATE_ITEM_SAX_CONTEXT_STATE_IS_ERROR()) return;
+
+  OXWS_CREATE_ITEM_SAX_CONTEXT_SET_STATE(START_DOCUMENT);
+}
+
+void oxws_create_item_sax_handler_end_document(void* user_data) {
+  if(user_data == NULL) return;
+  oxws_create_item_sax_context* context = (oxws_create_item_sax_context*) user_data;
+  /* TODO check state */
+  if(OXWS_CREATE_ITEM_SAX_CONTEXT_STATE_IS_ERROR()) return;
+  OXWS_CREATE_ITEM_SAX_CONTEXT_SET_STATE(END_DOCUMENT);
+}
+
+void oxws_create_item_sax_handler_start_element_ns(void* user_data,
+        const xmlChar* localname, const xmlChar* prefix, const xmlChar* ns_uri,
+        int nb_namespaces, const xmlChar** namespaces,
+        int nb_attributes, int nb_defaulted, const xmlChar** attrs) {
+  UNUSED(prefix);
+  UNUSED(nb_namespaces); UNUSED(namespaces);
+  UNUSED(nb_defaulted);
+
+
+  if(user_data == NULL || localname == NULL) return;
+  oxws_create_item_sax_context* context = (oxws_create_item_sax_context*) user_data;
+  if(OXWS_CREATE_ITEM_SAX_CONTEXT_STATE_IS_ERROR()) return;
+
+  short inc_item_node_depth = 1;
+
+  /* TODO go to error state for invalid state-tag combinations */
+  /* TODO m:CreateItemResponseMessage, m:ResponseCode, multiple response messages */
+
+  if(OXWS_CREATE_ITEM_SAX_CONTEXT_STATE_MATCHES_TAG(START_DOCUMENT, EXCH_MESSAGES, "Items")) {
+    /* TODO check items_node_depth */
+    OXWS_CREATE_ITEM_SAX_CONTEXT_SET_STATE(ITEMS);
+
+  } else if(OXWS_CREATE_ITEM_SAX_CONTEXT_STATE_IS(ITEMS)) {
+    if(context->item != NULL || context->item_node_depth != 0) {
+      /* TODO warn */
+    }
+    OXWS_CREATE_ITEM_SAX_CONTEXT_SET_STATE(ITEM);
+    context->item_node_depth = 1;
+    inc_item_node_depth = 0; /* don't increment again on this level, only on levels below */
+
+  /* toplevel nodes within any Item (or derived class) */
+  } else if(OXWS_CREATE_ITEM_SAX_CONTEXT_STATE_IS_ITEM_TOP_LEVEL()) {
+    if(OXWS_CREATE_ITEM_SAX_IS_NS_NODE(EXCH_TYPES, "ItemId")) {
+      xmlChar* id = NULL, *change_key = NULL;
+      OXWS_CREATE_ITEM_SAX_CONTEXT_PARSE_ITEM_ID(id, change_key);
+      oxws_item_set_item_id_fields(context->item, (char*)id, (char*)change_key);
+      /* TODO warn if result != NO_ERROR */
+      xmlFree(id); xmlFree(change_key);
+
+    } else {
+      /* unknown toplevel nodes within any Item (or derived class) */
+      /* TODO warn */
+    }
+
+  } else {
+    /* unknown node */
+    /* TODO warn */
+  }
+
+  if(context->item_node_depth > 0 && inc_item_node_depth)
+    context->item_node_depth++;
+}
+
+void oxws_create_item_sax_handler_end_element_ns(void* user_data,
+        const xmlChar* localname, const xmlChar* prefix, const xmlChar* ns_uri) {
+  UNUSED(prefix);
+
+  if(user_data == NULL || localname == NULL) return;
+  oxws_create_item_sax_context* context = (oxws_create_item_sax_context*) user_data;
+  if(OXWS_CREATE_ITEM_SAX_CONTEXT_STATE_IS_ERROR()) return;
+
+  if(OXWS_CREATE_ITEM_SAX_CONTEXT_STATE_MATCHES_TAG(START_DOCUMENT, SOAP, "Envelope")) {
+    /* the end_document callback does not seem to get called. We emulate it
+       using the end of the SOAP Envelope tag */
+    oxws_create_item_sax_handler_end_document(user_data);
+
+  } else if(OXWS_CREATE_ITEM_SAX_CONTEXT_STATE_MATCHES_TAG(ITEMS, EXCH_MESSAGES, "Items")) {
+    OXWS_CREATE_ITEM_SAX_CONTEXT_SET_STATE(START_DOCUMENT);
+
+  } else if(OXWS_CREATE_ITEM_SAX_CONTEXT_STATE_IS_ITEM_TOP_LEVEL()) {
+    context->item_node_depth = 0;
+    OXWS_CREATE_ITEM_SAX_CONTEXT_SET_STATE(ITEMS);
+
+  } else {
+    /* TODO warn for unknown tags */
+    /* TODO go to error state for invalid state-tag combinations */
+  }
+
+  if(context->item_node_depth > 0)
+    context->item_node_depth--;
+}
+
+void oxws_create_item_sax_handler_characters(void* user_data, const xmlChar* chars, int length) {
+  UNUSED(length);
+
+  if(user_data == NULL || chars == NULL) return;
+  oxws_create_item_sax_context* context = (oxws_create_item_sax_context*) user_data;
+  if(OXWS_CREATE_ITEM_SAX_CONTEXT_STATE_IS_ERROR()) return;
+
+  /* TODO warn for suspicious states? */
+}
+
+void oxws_create_item_sax_handler_error(void* user_data, const char* message, ...) {
+  /* TODO log error message */
+  UNUSED(message);
+
+  if(user_data == NULL) return;
+  oxws_create_item_sax_context* context = (oxws_create_item_sax_context*) user_data;
+  OXWS_CREATE_ITEM_SAX_CONTEXT_SET_STATE(_ERROR);
+}
+
+xmlSAXHandler oxws_create_item_sax_handler = {
+  NULL, /* internalSubset */
+  NULL, /* isStandalone */
+  NULL, /* hasInternalSubset */
+  NULL, /* hasExternalSubset */
+  NULL, /* resolveEntity */
+  NULL, /* getEntity */
+  NULL, /* entityDecl */
+  NULL, /* notationDecl */
+  NULL, /* attributeDecl */
+  NULL, /* elementDecl */
+  NULL, /* unparsedEntityDecl */
+  NULL, /* setDocumentLocator */
+  oxws_create_item_sax_handler_start_document,
+  oxws_create_item_sax_handler_end_document,
+  NULL, /* startElement */
+  NULL, /* endElement */
+  NULL, /* reference */
+  oxws_create_item_sax_handler_characters,
+  NULL, /* ignorableWhitespace */
+  NULL, /* processingInstruction */
+  NULL, /* comment */
+  NULL, /* TODO warning */
+  oxws_create_item_sax_handler_error, /* error */
+  oxws_create_item_sax_handler_error, /* fatalError */
+  NULL, /* getParameterEntity */
+  NULL, /* cdataBlock */
+  NULL, /* externalSubset */
+  XML_SAX2_MAGIC, /* initialized */
+  NULL, /* _private */
+  oxws_create_item_sax_handler_start_element_ns,
+  oxws_create_item_sax_handler_end_element_ns,
+  NULL, /* serror */
+};
