@@ -57,26 +57,30 @@ namespace 'test_server' do
   end
 end
 
+test_run_args = [:user_args, :prefix]
 namespace 'tests' do
-  desc 'run all tests'
-  task 'run', :prefix do |t, args|
+  desc 'run tests. You can pass ":"-separated arguments to the test frame program'
+  task 'run', *test_run_args do |t, args|
     main_path = File.dirname(__FILE__)
-    executable = if args[:prefix]
-      File.expand_path(File.join(args[:prefix], 'share', 'libetpan', 'tests', 'low-level', 'test_oxws'), Dir.pwd)
+    prefix = args[:prefix] || ENV['oxws_test_prefix'] || nil
+    executable = if prefix
+      File.expand_path(File.join(prefix, 'share', 'libetpan', 'tests', 'low-level', 'test_oxws'), Dir.pwd)
     else
       File.expand_path('test_oxws', main_path)
     end
+    user_args = (args[:user_args] || ENV['oxws_test_args'] || '').split ':'
     ssl_cert = File.expand_path(File.join('test_server', 'cert', 'server.crt'), main_path)
     command = [
       File.expand_path(executable, main_path),
+      user_args,
       "--ssl-cert \"#{ssl_cert}\""
     ].flatten.compact.join(' ')
     sh *command
   end
 end
 
-desc 'start test server and perform all tests'
-task 'run', :prefix do |t, args|
+desc 'test_server:start, tests:run, test_server:stop'
+task 'run', *test_run_args do |t, args|
   begin
     puts '### Starting test server ...'
     Rake::Task['test_server:start'].invoke
@@ -84,7 +88,7 @@ task 'run', :prefix do |t, args|
 
     puts
     puts '### Running tests ...'
-    Rake::Task['tests:run'].invoke(args[:prefix])
+    Rake::Task['tests:run'].invoke(*test_run_args.map{|k|args[k]})
   ensure
     puts
     puts '### Shutting down test server ...'
