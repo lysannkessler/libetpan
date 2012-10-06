@@ -5444,7 +5444,6 @@ int mailimf_msg_id_parse(const char * message, size_t length,
   
   r = mailimf_greater_parse(message, length, &cur_token);
   if (r != MAILIMF_NO_ERROR) {
-    free(msg_id);
     res = r;
     goto err;
   }
@@ -5514,6 +5513,7 @@ int mailimf_msg_id_parse(const char * message, size_t length,
   mailimf_atom_free(msg_id);
   */
  err:
+  if(*result != msg_id) free(msg_id);
   return res;
 }
 

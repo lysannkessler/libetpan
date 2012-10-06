@@ -210,6 +210,7 @@ int mailmime_content_parse(const char * message, size_t length,
   int res;
 
   cur_token = * indx;
+  subtype = NULL;
 
   mailimf_cfws_parse(message, length, &cur_token);
 
@@ -278,7 +279,7 @@ int mailmime_content_parse(const char * message, size_t length,
     }
     else {
       res = r;
-      goto err;
+      goto free_type;
     }
 
     r = clist_append(parameters_list, parameter);
@@ -303,9 +304,8 @@ int mailmime_content_parse(const char * message, size_t length,
  free_parameters:
   clist_foreach(parameters_list, (clist_func) mailmime_parameter_free, NULL);
   clist_free(parameters_list);
-  
-  mailmime_subtype_free(subtype);
  free_type:
+  mailmime_subtype_free(subtype);
   mailmime_type_free(type);
  err:
   return res;

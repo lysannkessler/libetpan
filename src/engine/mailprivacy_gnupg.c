@@ -124,6 +124,7 @@ static int gpg_command_passphrase(struct mailprivacy * privacy,
         return ERROR_PGP_NOPASSPHRASE;
       }
       else {
+        free(passphrase);
         return gpg_command_passphrase(privacy, msg, command, encryption_id,
             stdoutfile, stderrfile);
       }
