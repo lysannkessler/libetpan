@@ -42,7 +42,7 @@ example_PROGRAMS = smime decrypt pgp frm frm-tree frm-simple	\
 AM_CFLAGS = -ULIBETPAN_DLL
 AM_CPPFLAGS = $(WERROR) \
   -I$(top_builddir)/include
-LDADD = $(top_srcdir)/src/libetpan.la
+LDADD = $(top_builddir)/src/libetpan.la
 
 FRMCOMMON = frm-common.h frm-common.c option-parser.h option-parser.c
 
@@ -62,3 +62,6 @@ readmsg_simple_SOURCES = $(READMSGCOMMON) readmsg-simple.c
 readmsg_uid_SOURCES = $(READMSGCOMMON) readmsg-uid.c
 
 fetch_attachment_SOURCES = $(READMSGCOMMON) fetch-attachment.c
+
+oxws_sample_CFLAGS = $(AM_CFLAGS) $(LIBCURL_CPPFLAGS) $(LIBXML2_CFLAGS)
+oxws_sample_LDFLAGS = $(LIBCURL) $(LIBXML2_LIBS)

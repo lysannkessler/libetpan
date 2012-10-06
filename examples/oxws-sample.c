@@ -18,12 +18,17 @@
 #include <string.h>
 
 #include <libetpan/libetpan.h>
+#include "../src/low-level/oxws/types_internal.h"
 
 
 int parse_options(int argc, char** argv,
       char** user, char** host, char** email, char** password,
-      char** domain, char** ews_url, short* send);
+      char** domain, char** ews_url, short* send, char** ssl_cert);
 void print_usage();
+
+char* oxws_ssl_cert;
+void curl_init_callback(CURL* curl);
+
 oxws_result list_items(oxws* oxws, oxws_distinguished_folder_id folder_id);
 static void check_error(oxws_result result, char* msg);
 
@@ -32,7 +37,7 @@ int main(int argc, char ** argv) {
   /* parse options */
   char *user, *host, *email, *password, *domain, *ews_url;
   short send;
-  int r = parse_options(argc, argv, &user, &host, &email, &password, &domain, &ews_url, &send);
+  int r = parse_options(argc, argv, &user, &host, &email, &password, &domain, &ews_url, &send, &oxws_ssl_cert);
   if(r < 0) {
     fprintf(stderr, "parse_options: internal error\n");
     exit(EXIT_FAILURE);
@@ -46,6 +51,9 @@ int main(int argc, char ** argv) {
   if(oxws == NULL) {
     fprintf(stderr, "Could not create oxws instance.");
     exit(EXIT_FAILURE);
+  }
+  if(oxws_ssl_cert != NULL) {
+    OXWS_INTERNAL(oxws)->curl_init_callback = curl_init_callback;
   }
 
   /* configure connection settings */
@@ -98,9 +106,9 @@ int main(int argc, char ** argv) {
 
 int parse_options(int argc, char** argv,
       char** user, char** host, char** email, char** password,
-      char** domain, char** ews_url, short* send) {
+      char** domain, char** ews_url, short* send, char** ssl_cert) {
 
-  static const char* short_options = "u:p:h:e:x:s";
+  static const char* short_options = "u:h:e:p:d:x:sc:";
 #if HAVE_GETOPT_LONG
   static struct option long_options[] = {
     {"user",     1, 0, 'u'},
@@ -110,12 +118,14 @@ int parse_options(int argc, char** argv,
     {"domain",   1, 0, 'd'},
     {"url",      1, 0, 'x'},
     {"send",     0, 0, 's'},
+    {"ssl-cert", 1, 0, 'c'},
+    {NULL,       0, 0, 0}
   };
 #endif
   int r = 0;
 
   if(user == NULL || password == NULL || host == NULL || email == NULL || \
-     domain == NULL || ews_url == NULL || send == NULL)
+     domain == NULL || ews_url == NULL || send == NULL || ssl_cert == NULL)
     return -1;
 
   *user = NULL;
@@ -125,6 +135,7 @@ int parse_options(int argc, char** argv,
   *domain = NULL;
   *ews_url = NULL;
   *send = 0;
+  *ssl_cert = NULL;
 
   while (r != -1) {
 #if HAVE_GETOPT_LONG
@@ -142,6 +153,7 @@ int parse_options(int argc, char** argv,
     case 'd': *domain = strdup(optarg); break;
     case 'x': *ews_url = strdup(optarg); break;
     case 's': *send = 1; break;
+    case 'c': *ssl_cert = strdup(optarg); break;
 
     case -1: break;
     default: fprintf(stderr, "error: unknown argument %c.\n", r); break;
@@ -210,7 +222,15 @@ void print_usage() {
                   "    --password -p [PWD]     password (required)\n\n" \
                   "    --domain   -d [NAME]    domain name for authentication (optional)\n" \
                   "    --url      -x [URL]     EWS URL (optional). If missing, use autodiscover.\n" \
-                  "    --send     -s           send a test email to oneself\n");
+                  "    --send     -s           send a test email to oneself\n" \
+                  "    --ssl-cert -c [FILE]    server certificate to trust (optional)\n\n");
+}
+
+
+void curl_init_callback(CURL* curl) {
+  if(curl == NULL) return;
+  if(oxws_ssl_cert != NULL)
+    curl_easy_setopt(curl, CURLOPT_CAINFO, oxws_ssl_cert);
 }
 
 
