@@ -1335,6 +1335,49 @@
 /* Begin PBXFileReference section */
 		8A499FCF15E550EC00322380 /* autodiscover.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = autodiscover.c; sourceTree = "<group>"; };
 		8A499FD315E550F700322380 /* autodiscover.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = autodiscover.h; sourceTree = "<group>"; };
+		8A79F12A16202AD7009689B3 /* Makefile.am */ = {isa = PBXFileReference; lastKnownFileType = text; path = Makefile.am; sourceTree = "<group>"; };
+		8A79F12B16202AEE009689B3 /* Makefile.am */ = {isa = PBXFileReference; lastKnownFileType = text; path = Makefile.am; sourceTree = "<group>"; };
+		8A79F12C16202B29009689B3 /* assert.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = assert.h; sourceTree = "<group>"; };
+		8A79F12D16202B29009689B3 /* autodiscover.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = autodiscover.c; sourceTree = "<group>"; };
+		8A79F12E16202B29009689B3 /* autodiscover.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = autodiscover.h; sourceTree = "<group>"; };
+		8A79F12F16202B29009689B3 /* create_item.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = create_item.c; sourceTree = "<group>"; };
+		8A79F13016202B29009689B3 /* create_item.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = create_item.h; sourceTree = "<group>"; };
+		8A79F13116202B29009689B3 /* find_item.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = find_item.c; sourceTree = "<group>"; };
+		8A79F13216202B29009689B3 /* find_item.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = find_item.h; sourceTree = "<group>"; };
+		8A79F13316202B29009689B3 /* Gemfile */ = {isa = PBXFileReference; lastKnownFileType = text; path = Gemfile; sourceTree = "<group>"; };
+		8A79F13416202B29009689B3 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		8A79F13516202B29009689B3 /* Makefile.am */ = {isa = PBXFileReference; lastKnownFileType = text; path = Makefile.am; sourceTree = "<group>"; };
+		8A79F13616202B29009689B3 /* oxws.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = oxws.c; sourceTree = "<group>"; };
+		8A79F13716202B29009689B3 /* oxws.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = oxws.h; sourceTree = "<group>"; };
+		8A79F13816202B29009689B3 /* Rakefile */ = {isa = PBXFileReference; lastKnownFileType = text; path = Rakefile; sourceTree = "<group>"; };
+		8A79F13916202B29009689B3 /* test_data.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = test_data.c; sourceTree = "<group>"; };
+		8A79F13A16202B29009689B3 /* test_data.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = test_data.h; sourceTree = "<group>"; };
+		8A79F13B16202B29009689B3 /* test_support.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = test_support.c; sourceTree = "<group>"; };
+		8A79F13C16202B29009689B3 /* test_support.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = test_support.h; sourceTree = "<group>"; };
+		8A79F13F16202B49009689B3 /* autodiscover.rb */ = {isa = PBXFileReference; lastKnownFileType = text.script.ruby; path = autodiscover.rb; sourceTree = "<group>"; };
+		8A79F14016202B49009689B3 /* error.nokogiri */ = {isa = PBXFileReference; lastKnownFileType = text; path = error.nokogiri; sourceTree = "<group>"; };
+		8A79F14116202B49009689B3 /* success.nokogiri */ = {isa = PBXFileReference; lastKnownFileType = text; path = success.nokogiri; sourceTree = "<group>"; };
+		8A79F14316202B49009689B3 /* server.crt */ = {isa = PBXFileReference; lastKnownFileType = text; path = server.crt; sourceTree = "<group>"; };
+		8A79F14416202B49009689B3 /* server.csr */ = {isa = PBXFileReference; lastKnownFileType = text; path = server.csr; sourceTree = "<group>"; };
+		8A79F14516202B49009689B3 /* server.key */ = {isa = PBXFileReference; lastKnownFileType = text; path = server.key; sourceTree = "<group>"; };
+		8A79F14716202B49009689B3 /* config.rb */ = {isa = PBXFileReference; lastKnownFileType = text.script.ruby; path = config.rb; sourceTree = "<group>"; };
+		8A79F14816202B49009689B3 /* items.yaml */ = {isa = PBXFileReference; lastKnownFileType = text; path = items.yaml; sourceTree = "<group>"; };
+		8A79F14916202B49009689B3 /* main.ru */ = {isa = PBXFileReference; lastKnownFileType = text; path = main.ru; sourceTree = "<group>"; };
+		8A79F14A16202B49009689B3 /* user_directory.yaml */ = {isa = PBXFileReference; lastKnownFileType = text; path = user_directory.yaml; sourceTree = "<group>"; };
+		8A79F14C16202B49009689B3 /* _create_item.nokogiri */ = {isa = PBXFileReference; lastKnownFileType = text; path = _create_item.nokogiri; sourceTree = "<group>"; };
+		8A79F14D16202B49009689B3 /* _find_item.nokogiri */ = {isa = PBXFileReference; lastKnownFileType = text; path = _find_item.nokogiri; sourceTree = "<group>"; };
+		8A79F14E16202B49009689B3 /* _item.nokogiri */ = {isa = PBXFileReference; lastKnownFileType = text; path = _item.nokogiri; sourceTree = "<group>"; };
+		8A79F14F16202B49009689B3 /* create_item.rb */ = {isa = PBXFileReference; lastKnownFileType = text.script.ruby; path = create_item.rb; sourceTree = "<group>"; };
+		8A79F15016202B49009689B3 /* ews.rb */ = {isa = PBXFileReference; lastKnownFileType = text.script.ruby; path = ews.rb; sourceTree = "<group>"; };
+		8A79F15116202B49009689B3 /* fault.nokogiri */ = {isa = PBXFileReference; lastKnownFileType = text; path = fault.nokogiri; sourceTree = "<group>"; };
+		8A79F15216202B49009689B3 /* fault_soap_ns.nokogiri */ = {isa = PBXFileReference; lastKnownFileType = text; path = fault_soap_ns.nokogiri; sourceTree = "<group>"; };
+		8A79F15316202B49009689B3 /* find_item.rb */ = {isa = PBXFileReference; lastKnownFileType = text.script.ruby; path = find_item.rb; sourceTree = "<group>"; };
+		8A79F15416202B49009689B3 /* handlers.rb */ = {isa = PBXFileReference; lastKnownFileType = text.script.ruby; path = handlers.rb; sourceTree = "<group>"; };
+		8A79F15516202B49009689B3 /* services.wsdl */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = services.wsdl; sourceTree = "<group>"; };
+		8A79F15616202B49009689B3 /* soap_response.nokogiri */ = {isa = PBXFileReference; lastKnownFileType = text; path = soap_response.nokogiri; sourceTree = "<group>"; };
+		8A79F15916202B49009689B3 /* main.rb */ = {isa = PBXFileReference; lastKnownFileType = text.script.ruby; path = main.rb; sourceTree = "<group>"; };
+		8A79F15B16202B49009689B3 /* flags.rb */ = {isa = PBXFileReference; lastKnownFileType = text.script.ruby; path = flags.rb; sourceTree = "<group>"; };
+		8A79F15C16202B49009689B3 /* ntlm.rb */ = {isa = PBXFileReference; lastKnownFileType = text.script.ruby; path = ntlm.rb; sourceTree = "<group>"; };
 		8AB5DFDE15E7642700C3971F /* compose-msg.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "compose-msg.c"; sourceTree = "<group>"; };
 		8AB5DFE115E7642700C3971F /* decrypt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = decrypt.c; sourceTree = "<group>"; };
 		8AB5DFE415E7642700C3971F /* fetch-attachment.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "fetch-attachment.c"; sourceTree = "<group>"; };
@@ -2185,6 +2228,7 @@
 		08FB77AEFE84172EC02AAC07 /* libetpan */ = {
 			isa = PBXGroup;
 			children = (
+				8A7166D4162029CB00B66749 /* examples */,
 				C6F9E82E105335BC0059C3BA /* src */,
 				8AB5DFB515E7642700C3971F /* tests */,
 			);
@@ -2200,7 +2244,7 @@
 			name = "Other Sources";
 			sourceTree = "<group>";
 		};
-		8AB5DFB515E7642700C3971F /* tests */ = {
+		8A7166D4162029CB00B66749 /* examples */ = {
 			isa = PBXGroup;
 			children = (
 				8AB5DFDE15E7642700C3971F /* compose-msg.c */,
@@ -2228,6 +2272,120 @@
 				8AB5E01515E7642700C3971F /* readmsg.c */,
 				8AB5E01815E7642700C3971F /* smime.c */,
 				8AB5E01B15E7642700C3971F /* smtpsend.c */,
+			);
+			path = examples;
+			sourceTree = "<group>";
+		};
+		8A79F12816202A82009689B3 /* low-level */ = {
+			isa = PBXGroup;
+			children = (
+				8A79F12916202A88009689B3 /* oxws */,
+				8A79F12B16202AEE009689B3 /* Makefile.am */,
+			);
+			path = "low-level";
+			sourceTree = "<group>";
+		};
+		8A79F12916202A88009689B3 /* oxws */ = {
+			isa = PBXGroup;
+			children = (
+				8A79F13D16202B49009689B3 /* test_server */,
+				8A79F12C16202B29009689B3 /* assert.h */,
+				8A79F12D16202B29009689B3 /* autodiscover.c */,
+				8A79F12E16202B29009689B3 /* autodiscover.h */,
+				8A79F12F16202B29009689B3 /* create_item.c */,
+				8A79F13016202B29009689B3 /* create_item.h */,
+				8A79F13116202B29009689B3 /* find_item.c */,
+				8A79F13216202B29009689B3 /* find_item.h */,
+				8A79F13316202B29009689B3 /* Gemfile */,
+				8A79F13416202B29009689B3 /* main.c */,
+				8A79F13516202B29009689B3 /* Makefile.am */,
+				8A79F13616202B29009689B3 /* oxws.c */,
+				8A79F13716202B29009689B3 /* oxws.h */,
+				8A79F13816202B29009689B3 /* Rakefile */,
+				8A79F13916202B29009689B3 /* test_data.c */,
+				8A79F13A16202B29009689B3 /* test_data.h */,
+				8A79F13B16202B29009689B3 /* test_support.c */,
+				8A79F13C16202B29009689B3 /* test_support.h */,
+			);
+			path = oxws;
+			sourceTree = "<group>";
+		};
+		8A79F13D16202B49009689B3 /* test_server */ = {
+			isa = PBXGroup;
+			children = (
+				8A79F13E16202B49009689B3 /* autodiscover */,
+				8A79F14216202B49009689B3 /* cert */,
+				8A79F14616202B49009689B3 /* config */,
+				8A79F14B16202B49009689B3 /* ews */,
+				8A79F15916202B49009689B3 /* main.rb */,
+				8A79F15A16202B49009689B3 /* ntlm */,
+			);
+			path = test_server;
+			sourceTree = "<group>";
+		};
+		8A79F13E16202B49009689B3 /* autodiscover */ = {
+			isa = PBXGroup;
+			children = (
+				8A79F13F16202B49009689B3 /* autodiscover.rb */,
+				8A79F14016202B49009689B3 /* error.nokogiri */,
+				8A79F14116202B49009689B3 /* success.nokogiri */,
+			);
+			path = autodiscover;
+			sourceTree = "<group>";
+		};
+		8A79F14216202B49009689B3 /* cert */ = {
+			isa = PBXGroup;
+			children = (
+				8A79F14316202B49009689B3 /* server.crt */,
+				8A79F14416202B49009689B3 /* server.csr */,
+				8A79F14516202B49009689B3 /* server.key */,
+			);
+			path = cert;
+			sourceTree = "<group>";
+		};
+		8A79F14616202B49009689B3 /* config */ = {
+			isa = PBXGroup;
+			children = (
+				8A79F14716202B49009689B3 /* config.rb */,
+				8A79F14816202B49009689B3 /* items.yaml */,
+				8A79F14916202B49009689B3 /* main.ru */,
+				8A79F14A16202B49009689B3 /* user_directory.yaml */,
+			);
+			path = config;
+			sourceTree = "<group>";
+		};
+		8A79F14B16202B49009689B3 /* ews */ = {
+			isa = PBXGroup;
+			children = (
+				8A79F14C16202B49009689B3 /* _create_item.nokogiri */,
+				8A79F14D16202B49009689B3 /* _find_item.nokogiri */,
+				8A79F14E16202B49009689B3 /* _item.nokogiri */,
+				8A79F14F16202B49009689B3 /* create_item.rb */,
+				8A79F15016202B49009689B3 /* ews.rb */,
+				8A79F15116202B49009689B3 /* fault.nokogiri */,
+				8A79F15216202B49009689B3 /* fault_soap_ns.nokogiri */,
+				8A79F15316202B49009689B3 /* find_item.rb */,
+				8A79F15416202B49009689B3 /* handlers.rb */,
+				8A79F15516202B49009689B3 /* services.wsdl */,
+				8A79F15616202B49009689B3 /* soap_response.nokogiri */,
+			);
+			path = ews;
+			sourceTree = "<group>";
+		};
+		8A79F15A16202B49009689B3 /* ntlm */ = {
+			isa = PBXGroup;
+			children = (
+				8A79F15B16202B49009689B3 /* flags.rb */,
+				8A79F15C16202B49009689B3 /* ntlm.rb */,
+			);
+			path = ntlm;
+			sourceTree = "<group>";
+		};
+		8AB5DFB515E7642700C3971F /* tests */ = {
+			isa = PBXGroup;
+			children = (
+				8A79F12816202A82009689B3 /* low-level */,
+				8A79F12A16202AD7009689B3 /* Makefile.am */,
 			);
 			path = tests;
 			sourceTree = "<group>";
@@ -3004,6 +3162,7 @@
 		F62D7BA815E3E4A8003CA2CF /* oxws */ = {
 			isa = PBXGroup;
 			children = (
+				F62D7BC215E3E4A8003CA2CF /* requests */,
 				F62D7BB315E3E4A8003CA2CF /* helper.c */,
 				F62D7BB415E3E4A8003CA2CF /* helper.h */,
 				F62D7BB815E3E4A8003CA2CF /* oxws.c */,
@@ -3014,7 +3173,6 @@
 				F62D7BBF15E3E4A8003CA2CF /* oxws_types.h */,
 				F62D7BC015E3E4A8003CA2CF /* oxws_types_item.c */,
 				F62D7BC115E3E4A8003CA2CF /* oxws_types_item.h */,
-				F62D7BC215E3E4A8003CA2CF /* requests */,
 				F62D7BC715E3E4A8003CA2CF /* types_internal.c */,
 				F62D7BC815E3E4A8003CA2CF /* types_internal.h */,
 				F62D7BC915E3E4A8003CA2CF /* xml.c */,
@@ -5571,6 +5729,7 @@
 				8A3015AC15E79E7100ADBD06 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8A3015D615E79E8F00ADBD06 /* Build configuration list for PBXAggregateTarget "all-ios" */ = {
 			isa = XCConfigurationList;
@@ -5579,6 +5738,7 @@
 				8A3015D815E79E8F00ADBD06 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8AB5E08D15E7654100C3971F /* Build configuration list for PBXNativeTarget "oxws-sample" */ = {
 			isa = XCConfigurationList;
