@@ -35,7 +35,7 @@ exampledir=${datadir}/@PACKAGE@/examples
 example_PROGRAMS = smime decrypt pgp frm frm-tree frm-simple	\
 	readmsg-simple fetch-attachment smtpsend readmsg-uid \
 	readmsg compose-msg imap-sample mime-create mime-parse \
-	pop-sample oxws-sample
+	pop-sample oxws
 
 # For W32, reverse the -DLIBETPAN_DLL.  Unfortunately, CFLAGS comes
 # after AM_CPPFLAGS, so we have to frob CFLAGS.
@@ -63,5 +63,5 @@ readmsg_uid_SOURCES = $(READMSGCOMMON) readmsg-uid.c
 
 fetch_attachment_SOURCES = $(READMSGCOMMON) fetch-attachment.c
 
-oxws_sample_CFLAGS = $(AM_CFLAGS) $(LIBCURL_CPPFLAGS) $(LIBXML2_CFLAGS)
-oxws_sample_LDFLAGS = $(LIBCURL) $(LIBXML2_LIBS)
+oxws_CFLAGS = $(AM_CFLAGS) $(LIBCURL_CPPFLAGS) $(LIBXML2_CFLAGS)
+oxws_LDFLAGS = $(LIBCURL) $(LIBXML2_LIBS)
