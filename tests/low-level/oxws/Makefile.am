@@ -3,6 +3,7 @@ include $(top_srcdir)/rules.mk
 AM_CFLAGS = -DLIBETPAN_TEST_MODE
 
 exampledir=${datadir}/@PACKAGE@/tests/low-level
+
 example_PROGRAMS = test_oxws
 
 test_oxws_SOURCES = main.c \
@@ -13,7 +14,7 @@ test_oxws_CFLAGS = $(WERROR) \
   $(CUNIT_CFLAGS) \
   $(AM_CFLAGS)
 test_oxws_LDFLAGS = $(CUNIT_LIBS)
-test_oxws_LDADD = $(top_srcdir)/src/libetpan.la \
+test_oxws_LDADD = $(top_builddir)/src/libetpan.la \
   libtest_oxws_support.la
 
 # test_support depends on libcurl and libxml

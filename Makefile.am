@@ -60,7 +60,7 @@ libetpan-config.h: libetpan-config.h.in config.h
 if ENABLE_TESTS
 
 test: all
-	cd $(srcdir)/tests/low-level/oxws && \
+	cd $(top_builddir)/tests/low-level/oxws && \
 	bundle install && \
 	rake run
 
