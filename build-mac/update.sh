@@ -1,18 +1,29 @@
 #!/bin/sh
+
 if test ! -d libetpan.xcodeproj ; then
-	exit 1;
+  echo "You must run this script from libetpan/build-mac" 2>&1
+  exit 1
 fi
 
 logfile="`pwd`/update.log"
 
 cd ..
-echo configuring
-./autogen.sh "$@" > "$logfile" 2>&1
+
+echo "running autogen.sh"
+./autogen.sh >> "$logfile" 2>&1
 if [[ "$?" != "0" ]]; then
-    echo "configure failed"
-    exit 1
+  echo "autogen.sh failed" 2>&1
+  exit 1
 fi
 
+echo "running configure"
+./configure  "$@" >> "$logfile" 2>&1
+if [[ "$?" != "0" ]]; then
+  echo "configure failed" 2>&1
+  exit 1
+fi
+
+# build config files
 make stamp-prepare-target >> "$logfile" 2>&1
 make libetpan-config.h >> "$logfile" 2>&1
 cd build-mac
@@ -21,7 +32,6 @@ cp -r ../include/libetpan/ include/libetpan/
 cp ../config.h include
 cp ../libetpan-config.h include
 
-# build dependencies for iOS
+# build dependencies
 sh ./prepare-ios.sh
-
 sh ./prepare-macosx.sh
