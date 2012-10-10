@@ -24,7 +24,7 @@ mkdir -p "$tmpdir"
 mkdir -p "$srcdir"
 
 if test -f "$resultdir/libsasl-$version-ios.tar.gz"; then
-	echo already built
+	echo "already there."
 	cd "$scriptdir/.."
 	tar xzf "$resultdir/libsasl-$version-ios.tar.gz"
 	exit 0
@@ -100,15 +100,14 @@ export LANG=en_US.US-ASCII
 LIB_NAME=$ARCHIVE
 TARGETS="iPhoneOS iPhoneSimulator"
 
-SDK_IOS_MIN_VERSION=4.3
-SDK_IOS_VERSION=`xcodebuild -version -sdk 2>/dev/null | egrep SDKVersion | tail -n 1 | sed -E -n -e 's|SDKVersion: *(.*) *$|\1|p'`
+XCODE_SELECT="xcode-select"
+XCODE=$(${XCODE_SELECT} --print-path)
+SDK_IOS_MIN_VERSION="4.3"
+SDK_IOS_VERSION="5.1"
 BUILD_DIR="$tmpdir/build"
 INSTALL_PATH=${BUILD_DIR}/${LIB_NAME}/universal
 
 for TARGET in $TARGETS; do
-
-    TOOLCHAIN=`xcodebuild -version -sdk 2>/dev/null | egrep iPhoneOS -B 3 | egrep '^PlatformPath: ' | sort -u | tail -n 1 | cut -d ' ' -f 2`/Developer/usr/bin
-    SYSROOT=`xcodebuild -version -sdk 2>/dev/null | egrep $TARGET -B 3 | egrep '^Path: '| egrep $SDK_IOS_VERSION | sort -u | tail -n 1| cut -d ' ' -f 2`
 
     case $TARGET in
         (iPhoneOS) 
@@ -130,22 +129,20 @@ for TARGET in $TARGETS; do
         PREFIX=${BUILD_DIR}/${LIB_NAME}/${TARGET}${SDK_IOS_VERSION}${MARCH}
         rm -rf $PREFIX
 
+        SYSROOT="${XCODE}/Platforms/${TARGET}.platform/Developer/SDKs/${TARGET}${SDK_IOS_VERSION}.sdk"
         export CFLAGS="-arch ${MARCH} -isysroot ${SYSROOT} -Os ${EXTRA_FLAGS}"
 
-        export CC=${TOOLCHAIN}/clang
-        export LD=${TOOLCHAIN}/ld
-        export AR=${TOOLCHAIN}/ar
-        export AS=${TOOLCHAIN}/as
-		if test -x ${TOOLCHAIN}/clang++; then
-			export CXX=${TOOLCHAIN}/clang++
-		else
-			export CXX=${TOOLCHAIN}/g++
-		fi
-        export NM=${TOOLCHAIN}/nm
-        export LIBTOOL=${TOOLCHAIN}/libtool
-        export RANLIB=${TOOLCHAIN}/ranlib
-        export OTOOL=${TOOLCHAIN}/otool
-        export STRIP=${TOOLCHAIN}/strip
+        XCRUN_SDK=$(echo ${TARGET} | tr '[:upper:]' '[:lower:]')
+        export CC="$(xcrun -sdk ${XCRUN_SDK} -find clang)"
+        export LD="$(xcrun -sdk ${XCRUN_SDK} -find ld)"
+        export AR="$(xcrun -sdk ${XCRUN_SDK} -find ar)"
+        export AS="$(xcrun -sdk ${XCRUN_SDK} -find as)"
+        export CXX="$(xcrun -sdk ${XCRUN_SDK} -find g++)"
+        export NM="$(xcrun -sdk ${XCRUN_SDK} -find nm)"
+        export LIBTOOL="$(xcrun -sdk ${XCRUN_SDK} -find libtool)"
+        export RANLIB="$(xcrun -sdk ${XCRUN_SDK} -find ranlib)"
+        export OTOOL="$(xcrun -sdk ${XCRUN_SDK} -find otool)"
+        export STRIP="$(xcrun -sdk ${XCRUN_SDK} -find strip)"
 
         OPENSSL="--with-openssl=$BUILD_DIR/openssl-1.0.0d/universal"
         PLUGINS="--enable-otp=no --enable-digest=no --with-des=no --enable-login"
