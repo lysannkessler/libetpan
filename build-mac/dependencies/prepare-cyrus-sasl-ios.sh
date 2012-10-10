@@ -103,7 +103,7 @@ TARGETS="iPhoneOS iPhoneSimulator"
 XCODE_SELECT="xcode-select"
 XCODE=$(${XCODE_SELECT} --print-path)
 SDK_IOS_MIN_VERSION="4.3"
-SDK_IOS_VERSION="5.1"
+SDK_IOS_VERSION="6.0"
 BUILD_DIR="$tmpdir/build"
 INSTALL_PATH=${BUILD_DIR}/${LIB_NAME}/universal
 
