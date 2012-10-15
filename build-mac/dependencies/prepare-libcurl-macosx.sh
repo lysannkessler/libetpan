@@ -4,27 +4,23 @@
 script_dir="`pwd`"
 current_dir="$script_dir"
 
-build_dir="$current_dir/build/libcurl-ios"
+build_dir="$current_dir/build/libcurl-macosx"
 mac_dir="$script_dir/.."
-final_dir="$mac_dir/libcurl-ios"
+final_dir="$mac_dir/libcurl-macosx"
 
-log_file="$current_dir/build/libcurl-build-`date +'%Y%m%d%H%M%S'`.log"
+log_file="$current_dir/build/libcurl-macosx-build-`date +'%Y%m%d%H%M%S'`.log"
 
 mkdir -p "$build_dir"
 echo "Building libcurl" > $log_file
 
-if [ -e $final_dir/lib/libcurl.a ]; then
+if [ -e "$final_dir/lib/libcurl.a" ]; then
     echo "already there."
     exit 0;
 fi
 
 cd $build_dir
-
-sh $script_dir/build-libcurl-ios.sh 2>&1 >> $log_file
-
-ERR_CODE=$?
-
-if [ "$ERR_CODE" -ne 0 -o ! -d lib -o ! -d include ]; then
+sh $script_dir/build-libcurl-macosx.sh >> $log_file 2>&1
+if [ "$?" -ne 0 -o ! -d lib -o ! -d include ]; then
     echo "build failed, see $log_file"
     exit $EXIT
 fi

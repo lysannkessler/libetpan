@@ -16,8 +16,6 @@ PROTOCOLS="--enable-http --disable-rtsp --disable-ftp --disable-file --disable-l
 CONFIGURE_FLAGS="--with-darwinssl --without-ssl --without-libssh2 --without-librtmp --without-ca-bundle ${PROTOCOLS}"
 
 DIR=`pwd`
-XCODE_SELECT="xcode-select"
-XCODE=$(${XCODE_SELECT} --print-path)
 MACOSX_MIN="10.6"
 ARCHS="i386 x86_64"
 

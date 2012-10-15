@@ -18,7 +18,7 @@ CONFIGURE_FLAGS="--with-darwinssl --without-ssl --without-libssh2 --without-libr
 DIR=`pwd`
 XCODE_SELECT="xcode-select"
 XCODE=$(${XCODE_SELECT} --print-path)
-SDK_VERSION="5.1"
+SDK_VERSION="6.0"
 IOS_MIN="5.1"
 ARCHS="i386 armv7"
 

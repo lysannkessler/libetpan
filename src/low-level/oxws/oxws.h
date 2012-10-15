@@ -144,7 +144,7 @@ oxws_result oxws_autodiscover_connection_settings(oxws* oxws,
             OXWS_STATE_CONNECTION_SETTINGS_CONFIGURED
           - OXWS_ERROR_CONNECT: cannot connect to Exchange service
           - OXWS_ERROR_AUTH_FAILED: credentials are invalid
-          - OXWS_ERROR_NO_EWS: the configured as_url dows not seem to refer
+          - OXWS_ERROR_NO_EWS: the configured as_url does not seem to refer
             to a Exchange Web Services 2007 service
           - OXWS_ERROR_INTERNAL: arbitrary failure
 
