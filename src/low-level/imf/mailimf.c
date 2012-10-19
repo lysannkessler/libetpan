@@ -5401,6 +5401,7 @@ int mailimf_msg_id_parse(const char * message, size_t length,
   int res;
 
   cur_token = * indx;
+  msg_id = NULL;
 
   r = mailimf_cfws_parse(message, length, &cur_token);
   if ((r != MAILIMF_NO_ERROR) && (r != MAILIMF_ERROR_PARSE))
