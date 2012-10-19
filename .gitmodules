@@ -1,0 +1,3 @@
+[submodule "lib/libcurl"]
+	path = lib/libcurl
+	url = https://github.com/bagder/curl.git
